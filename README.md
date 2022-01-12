@@ -1,35 +1,35 @@
-# Richmedia Temple Server [![Travis](https://img.shields.io/travis/mediamonks/richmedia-temple-server.svg)](https://travis-ci.org/mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/v/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/dm/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server)
+# Display Development Server [![Travis](https://img.shields.io/travis/mediamonks/richmedia-temple-server.svg)](https://travis-ci.org/mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/v/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/dm/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server)
 
-Richmedia Temple Server is used as a tool to build and develop richmedia units.
+The Display Development Server is used as a tool to build and develop richmedia units.
 
 See documentation https://mediamonks.github.io/display-advertising-docs/devserver
 
 ## Installation
 
 ```sh
-yarn add @mediamonks/richmedia-temple-server
+yarn add @mediamonks/display-dev-server
 ```
 
 ```sh
-npm i -S @mediamonks/richmedia-temple-server
+npm i -S @mediamonks/display-dev-server
 ```
 
 ## Basic Usasage
 
 ```js
 // for building
-rds-build
+dds-build
 
 // for developing
-rds-dev
+dds-dev
 ```
 
 
-maybe use [@mediamonks/generator-richmedia-temple](https://github.com/mediamonks/generator-richmedia-temple) for creating your setup automatically.
+maybe use [@mediamonks/generator-display-templates](https://github.com/mediamonks/generator-display-templates) for creating your setup automatically.
 
 ## Documentation
 
-View the [documentation](http://mediamonks.github.io/richmedia-temple-server/).
+View the [documentation](http://mediamonks.github.io/display-dev-server/).
 
 ## Contribute
 

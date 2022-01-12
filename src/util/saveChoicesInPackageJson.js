@@ -44,7 +44,7 @@ No special chars, spaces, dashes just a single word.`,
       },
     });
 
-    const command = [`rds-${type}`];
+    const command = [`dds-${type}`];
     command.push(`--glob ${glob}`);
     command.push(`--choices ${base64.encode(JSON.stringify(choices))}`);
 

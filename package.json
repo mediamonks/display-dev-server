@@ -1,10 +1,10 @@
 {
-  "name": "@mediamonks/richmedia-temple-server",
+  "name": "@mediamonks/display-dev-server",
   "version": "9.1.1",
-  "description": "This is the Richmedia Temple, used for creating richmedia units for various vendors.",
+  "description": "This is the Display.Monks development server, which handles previewing and compiling ads via webpack.",
   "scripts": {
-    "dev": "rds-dev",
-    "build": "rds-build",
+    "dev": "dds-dev",
+    "build": "dds-build",
     "doc": "node_modules/.bin/esdoc",
     "lint": "npm-run-all lint:*",
     "lint:js": "eslint src --ext .js --cache",
@@ -12,8 +12,8 @@
     "test": "mocha"
   },
   "bin": {
-    "rds-dev": "dev.js",
-    "rds-build": "build.js"
+    "dds-dev": "dev.js",
+    "dds-build": "build.js"
   },
   "main": "index.js",
   "lint-staged": {
@@ -32,7 +32,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mediamonks/temple.git"
+    "url": "git+https://github.com/mediamonks/display-dev-server.git"
   },
   "publishConfig": {
     "access": "public"
@@ -40,9 +40,9 @@
   "author": "Mient-jan Stelling",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mediamonks/temple/issues"
+    "url": "https://github.com/mediamonks/display-dev-server/issues"
   },
-  "homepage": "https://github.com/mediamonks/richmedia-temple#readme",
+  "homepage": "https://github.com/mediamonks/display-dev-server#readme",
   "devDependencies": {
     "@types/chai": "^4.2.12",
     "@types/mocha": "^2.2.44",
