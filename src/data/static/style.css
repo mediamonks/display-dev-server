@@ -453,9 +453,25 @@ label.dynamic-label:hover {
 .reload_btn {
   position: absolute;
   top: 10px;
-  left: 17px;
-  width: 38px;
-  height: 31px;
-  background-color: #000;
+  left: 25px;
   cursor: pointer;
+
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  outline: inherit;
+  font-size: 30px;
+}
+
+.reload_btn_spin {
+  animation-name: spin;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes spin {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(122deg);}
 }
