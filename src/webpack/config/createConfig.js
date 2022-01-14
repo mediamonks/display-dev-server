@@ -295,7 +295,7 @@ module.exports = function createConfig({
             options: {
               presets: [
                 [
-                  '@babel/preset-env',
+                  require.resolve('@babel/preset-env'),
                   {
                     useBuiltIns: 'usage',
                     corejs: 3,
@@ -307,10 +307,12 @@ module.exports = function createConfig({
                 ],
               ],
               plugins: [
-                `@babel/plugin-proposal-class-properties`,
-                `@babel/plugin-syntax-dynamic-import`,
-                `@babel/plugin-transform-async-to-generator`,
-                [`@babel/plugin-proposal-decorators`, {decoratorsBeforeExport: true}],
+                require.resolve(`@babel/plugin-proposal-class-properties`),
+                require.resolve(`@babel/plugin-syntax-dynamic-import`),
+                require.resolve(`@babel/plugin-transform-async-to-generator`),
+                [
+                  require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}
+                ],
               ],
             },
           },
