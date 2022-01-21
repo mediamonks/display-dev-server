@@ -80,7 +80,7 @@ module.exports = function createConfig({
 
   let optimizations = getOptimisationsFromConfig(richmediarc);
 
-  let browserSupport = ['ie 11', 'last 2 versions', 'safari >= 7'];
+  let browserSupport = richmediarc.settings.browserCompiler ? richmediarc.settings.browserCompiler : ['ie 11', 'last 2 versions', 'safari >= 7'];
 
   // override browser support
   if (richmediarc.settings.browserSupport) {
@@ -300,7 +300,6 @@ module.exports = function createConfig({
                     useBuiltIns: 'usage',
                     corejs: 3,
                     targets: {
-                      "ie": "11",
                       browsers: browserSupport,
                     },
                   },
