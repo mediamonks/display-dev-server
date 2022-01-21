@@ -80,11 +80,11 @@ module.exports = function createConfig({
 
   let optimizations = getOptimisationsFromConfig(richmediarc);
 
-  let browserSupport = richmediarc.settings.browserCompiler ? richmediarc.settings.browserCompiler : ['ie 11', 'last 2 versions', 'safari >= 7'];
+  let browserCompiler = richmediarc.settings.browserSupport ? richmediarc.settings.browserSupport : ['ie 11', 'last 2 versions', 'safari >= 7'];
 
   // override browser support
-  if (richmediarc.settings.browserSupport) {
-    browserSupport = richmediarc.settings.browserSupport;
+  if (richmediarc.settings.browserCompiler) {
+    browserCompiler = richmediarc.settings.browserCompiler;
   }
 
   // entry.push('@babel/polyfill');
@@ -213,7 +213,7 @@ module.exports = function createConfig({
                       features: {
                         'nesting-rules': true,
                       },
-                      browsers: browserSupport,
+                      browsers: browserCompiler,
                     }),
                     require('postcss-nested')()
                   ];
@@ -300,7 +300,7 @@ module.exports = function createConfig({
                     useBuiltIns: 'usage',
                     corejs: 3,
                     targets: {
-                      browsers: browserSupport,
+                      browsers: browserCompiler,
                     },
                   },
                 ],
