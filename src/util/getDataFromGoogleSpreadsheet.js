@@ -2,6 +2,7 @@ const getGoogleSheetIdFromUrl = require("../util/getGoogleSheetIdFromUrl");
 const chalk = require('chalk');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const isGoogleSpreadsheetUrl = require('./isGoogleSpreadsheetUrl');
+const getOAuth2Client = require('./getOAuth2Client');
 
 module.exports = async function getDataFromGoogleSpreadsheet(contentSource) {
   const cacheSpreadSheets = {};
@@ -13,7 +14,16 @@ module.exports = async function getDataFromGoogleSpreadsheet(contentSource) {
 
   console.log(`${chalk.green('✔')} gathering google sheets data for ${id}`);
   cacheSpreadSheets[id] = new GoogleSpreadsheet(id);
-  cacheSpreadSheets[id].useApiKey(contentSource.apiKey);
+
+  if (contentSource.hasOwnProperty('apiKey')) {
+    console.log(`${chalk.green('✔')} using API key`);
+    cacheSpreadSheets[id].useApiKey(contentSource.apiKey);
+  } else {
+    console.log(`${chalk.green('✔')} no API key found, defaulting to OAuth2`);
+    const oAuth2Client = await getOAuth2Client();
+    cacheSpreadSheets[id].useOAuth2Client(oAuth2Client);
+  }
+
   await cacheSpreadSheets[id].loadInfo();
 
   const doc = cacheSpreadSheets[id];
