@@ -473,5 +473,5 @@ label.dynamic-label:hover {
 
 @keyframes spin {
   from {transform: rotate(0deg);}
-  to {transform: rotate(122deg);}
+  to {transform: rotate(360deg);}
 }
