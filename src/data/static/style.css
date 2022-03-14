@@ -289,6 +289,11 @@ label.dynamic-label:hover {
   .mdl-layout__header .mdl-layout__drawer-button {
     margin: 14px 20px
   }
+
+  .mdl-layout__header-row {
+    height: 56px;
+    padding: 0 16px 0 30px;
+  }
 }
 
 .mdl-layout__header {
@@ -314,6 +319,14 @@ label.dynamic-label:hover {
 
 .mdl-button {
   text-transform: none;
+}
+
+.mdl-layout__header-row {
+  padding: 0 40px 0 20px;
+}
+
+.mdl-layout-title {
+
 }
 
 /* Toggle CSS */
@@ -451,24 +464,22 @@ label.dynamic-label:hover {
 }
 
 .reload_btn {
-  position: absolute;
-  top: 10px;
-  left: 25px;
-  cursor: pointer;
-
-  background: none;
-  color: inherit;
-  border: none;
-  padding: 0;
-  outline: inherit;
+  display: block;
+  position: relative;
   font-size: 30px;
+  line-height: 1;
+  letter-spacing: .02em;
+  font-weight: 400;
+  box-sizing: border-box;
+  border-width: 0px;
+  background: transparent;
+  color: rgba(158, 158, 158, .8);
+  padding-right: 20px;
+  cursor: pointer;
 }
 
-.reload_btn_spin {
-  animation-name: spin;
-  animation-duration: 1s;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in-out;
+.reload_btn:hover {
+  color: white;
 }
 
 @keyframes spin {
