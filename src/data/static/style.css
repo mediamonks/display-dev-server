@@ -132,7 +132,9 @@ body {
   width: 40px;
   min-width: 40px;
   height: 40px;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
 }
 
 .mdl-button:hover {
@@ -333,33 +335,37 @@ label.dynamic-label:hover {
 .layout-toggle {
   width: 80px;
   height: 40px;
-  border: 1px solid #bcaaa4;
-  border-radius: 6px;
   margin-left: 20px;
+  border: 1px solid white;
   display: flex;
-  background-color: #000;
+  border-radius: 6px;
 }
 
 .layout-toggle-button {
   width: 50%;
   height: 100%;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
   padding: 6px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-content: center;
-  background-color: #000;
+  color: white;
+  background: transparent;
 
-  transition: background-color 0.7s;
+  transition: background-color 0.2s;
   transition-delay: 0s;
-  transition-timing-function: ease-in;
+  transition-timing-function: ease-in-out;
+}
+
+.layout-toggle-button:hover {
+  background-color: rgba(158, 158, 158, .5);
 }
 
 .layout-toggle-button.active {
   background-color: #FFF;
+  color: #474747;
 }
 
 .layout-toggle-button:focus {
@@ -386,26 +392,13 @@ label.dynamic-label:hover {
 
 .layout-toggle-button .toggle-icon {
   background-color: #FFF;
+  color: white;
   transition: background-color 0.7s;
   transition-timing-function: ease-out;
 }
 
 .layout-toggle-button.active .toggle-icon {
-  background-color: #000;
-}
-
-.layout-toggle-button .toggle-icon.line {
-  width: 15px;
-  height: 4px;
-  border-radius: 2px;
-  margin: 1px;
-}
-
-.layout-toggle-button .toggle-icon.square {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin: 1px;
+  background-color: #474747;
 }
 
 .banner-name {
