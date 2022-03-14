@@ -69,7 +69,7 @@
     <div class="mdl-layout__header-row">
 
       {{#if settings.isGoogleSpreadsheetBanner}}
-        <button class="reload_btn" onclick="toggleSpinAnimation()">&#9842;</button>
+        <button class="reload_btn material-icons">cloud_sync</button>
       {{/if}}
 
       <!--      <a class="reload_btn" href="reload/"></a>-->
@@ -83,24 +83,12 @@
       <!-- Layout Toggle -->
       <!-- TODO replace with SVG -->
       <div class="layout-toggle" onclick="toggleClickHandler()">
-        <button class="layout-toggle-button left {{#ifEquals query.list-view "true"}} active {{/ifEquals}}">
-          <div class='toggle-icon-wrapper column'>
-            <div class="toggle-icon square"></div>
-            <div class="toggle-icon square"></div>
-          </div>
-          <div class='toggle-icon-wrapper column'>
-            <div class="toggle-icon line"></div>
-            <div class="toggle-icon line"></div>
-            <div class="toggle-icon line"></div>
-            <div class="toggle-icon line"></div>
-          </div>
+        <button class="layout-toggle-button left material-icons{{#ifEquals query.list-view "true"}} active {{/ifEquals}}">
+          list
         </button>
-        <button class="layout-toggle-button right {{#if query.list-view}} {{#ifEquals query.list-view
+        <button class="layout-toggle-button right material-icons{{#if query.list-view}} {{#ifEquals query.list-view
                                                                                       "false"}} active {{/ifEquals}} {{else}} active {{/if}}">
-          <div class="toggle-icon square"></div>
-          <div class="toggle-icon square"></div>
-          <div class="toggle-icon square"></div>
-          <div class="toggle-icon square"></div>
+          grid_view
         </button>
       </div>
 

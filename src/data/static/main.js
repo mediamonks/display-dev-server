@@ -349,11 +349,3 @@ function toggleLayout() {
   staggerCardAnimation();
 }
 
-/*
-Toggle spin animation
-*/
-
-function toggleSpinAnimation() {
-  let reload_btn = document.querySelector('.reload_btn');
-  reload_btn.classList.add("reload_btn_spin");
-}

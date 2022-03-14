@@ -132,7 +132,9 @@ body {
   width: 40px;
   min-width: 40px;
   height: 40px;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
 }
 
 .mdl-button:hover {
@@ -289,6 +291,11 @@ label.dynamic-label:hover {
   .mdl-layout__header .mdl-layout__drawer-button {
     margin: 14px 20px
   }
+
+  .mdl-layout__header-row {
+    height: 56px;
+    padding: 0 16px 0 30px;
+  }
 }
 
 .mdl-layout__header {
@@ -316,37 +323,49 @@ label.dynamic-label:hover {
   text-transform: none;
 }
 
+.mdl-layout__header-row {
+  padding: 0 40px 0 20px;
+}
+
+.mdl-layout-title {
+
+}
+
 /* Toggle CSS */
 .layout-toggle {
   width: 80px;
   height: 40px;
-  border: 1px solid #bcaaa4;
-  border-radius: 6px;
   margin-left: 20px;
+  border: 1px solid white;
   display: flex;
-  background-color: #000;
+  border-radius: 6px;
 }
 
 .layout-toggle-button {
   width: 50%;
   height: 100%;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
   padding: 6px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-content: center;
-  background-color: #000;
+  color: white;
+  background: transparent;
 
-  transition: background-color 0.7s;
+  transition: background-color 0.2s;
   transition-delay: 0s;
-  transition-timing-function: ease-in;
+  transition-timing-function: ease-in-out;
+}
+
+.layout-toggle-button:hover {
+  background-color: rgba(158, 158, 158, .5);
 }
 
 .layout-toggle-button.active {
   background-color: #FFF;
+  color: #474747;
 }
 
 .layout-toggle-button:focus {
@@ -373,26 +392,13 @@ label.dynamic-label:hover {
 
 .layout-toggle-button .toggle-icon {
   background-color: #FFF;
+  color: white;
   transition: background-color 0.7s;
   transition-timing-function: ease-out;
 }
 
 .layout-toggle-button.active .toggle-icon {
-  background-color: #000;
-}
-
-.layout-toggle-button .toggle-icon.line {
-  width: 15px;
-  height: 4px;
-  border-radius: 2px;
-  margin: 1px;
-}
-
-.layout-toggle-button .toggle-icon.square {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin: 1px;
+  background-color: #474747;
 }
 
 .banner-name {
@@ -451,27 +457,25 @@ label.dynamic-label:hover {
 }
 
 .reload_btn {
-  position: absolute;
-  top: 10px;
-  left: 25px;
-  cursor: pointer;
-
-  background: none;
-  color: inherit;
-  border: none;
-  padding: 0;
-  outline: inherit;
+  display: block;
+  position: relative;
   font-size: 30px;
+  line-height: 1;
+  letter-spacing: .02em;
+  font-weight: 400;
+  box-sizing: border-box;
+  border-width: 0px;
+  background: transparent;
+  color: rgba(158, 158, 158, .8);
+  padding-right: 20px;
+  cursor: pointer;
 }
 
-.reload_btn_spin {
-  animation-name: spin;
-  animation-duration: 1s;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in-out;
+.reload_btn:hover {
+  color: white;
 }
 
 @keyframes spin {
   from {transform: rotate(0deg);}
-  to {transform: rotate(122deg);}
+  to {transform: rotate(360deg);}
 }
