@@ -15,6 +15,32 @@
     },
     "settings": {
       "properties": {
+        "browserSupport": {
+          "description": "Which browsers are supported, please remove 'not ie 11' from the list if you want to support it",
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "optimizations": {
+          "type": "object",
+          "properties": {
+            "css": {
+              "type": "boolean"
+            },
+            "image": {
+              "type": "boolean"
+            },
+            "html": {
+              "type": "boolean"
+            },
+            "js": {
+              "type": "boolean"
+            }
+          }
+        },
         "useOriginalImageName": {
           "type": "boolean"
         },
@@ -50,6 +76,48 @@
               "minimum": 1
             }
           }
+        },
+        "fonts": {
+          "description": "Define fonts and subsets of characters with richmediarc content objects or just a text string",
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "sources": {
+                  "description": "Define the font-path(s) to the font file(s) that you want to create a subset out of, woff or woff2 files for example",
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string",
+                      "format": "uri-reference"
+                    }
+                  ]
+                },
+                "subset": {
+                  "type": "object",
+                  "properties": {
+                    "glyphs": {
+                      "description": "Define a subset of characters with richmediarc content objects or just a text string",
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "glyphs"
+                  ]
+                }
+              },
+              "required": [
+                "sources",
+                "subset"
+              ]
+            }
+          ]
         }
       }
     }
