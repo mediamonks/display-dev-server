@@ -28,7 +28,7 @@ module.exports = async function getRichmediaRC(filepath) {
     if (typeof value === 'string'
       && !isExternalURL(value)
       && !path.isAbsolute(value)
-      && isFile(value))
+      && fs.existsSync(path.resolve(dirname, value)))
     {
       obj[name] = path.resolve(dirname, value);
     }
