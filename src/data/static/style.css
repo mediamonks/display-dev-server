@@ -198,12 +198,34 @@ label.dynamic-label:hover {
   height: -moz-fit-content;
   height: fit-content;
 }
+.gsDevContainer {
+  position: relative;
+  bottom: 0px;
+  display: inline-block;
+  height: 42px;
+  width: 100%;
+  margin-bottom: 10px;
+  display: none;
+
+
+}
+
+.mdl-card__actions.gsDev .gsDevContainer {
+  display: block;
+}
+
+.mdl-card__actions.gsDev .iconsContainer {
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, .1);
+}
+
 
 .iconsContainer {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   padding-bottom: 10px;
+
   border-bottom: 1px solid rgba(0, 0, 0, .1);
 }
 
