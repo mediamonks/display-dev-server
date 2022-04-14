@@ -7,24 +7,24 @@ var elementsActionScreenshot = document.querySelectorAll('.action-screenshot');
 var filterDropdownArray = document.querySelectorAll('.filter');
 
 
-// gsap.registerPlugin(GSDevTools);
+gsap.registerPlugin(GSDevTools);
 
 
 for (let index = 0; index < elementsActionRefresh.length; index++) {
   (function() {
 
     // for QA debugging the timeline, we add an eventistener to each iframe, so when param ?gsdevtools=true is true in the url of the preview page, you get a gsdevtools scrubber timeline
-    // iframes[index].contentWindow.addEventListener("getMainTimeline", function (e) {
-    //   const animation = e.detail;
-    //   if(getParameterValue('gsdevtools') === "true" && animation) {
-    //     iframes[index].parentElement.parentElement.querySelector('.mdl-card__actions').classList.add('gsDev');
-    //     animation.pause();
-    //
-    //     const tl = gsap.timeline();
-    //     tl.to(animation,{duration:animation.totalDuration(), totalProgress:1, ease:Linear.easeNone})
-    //     GSDevTools.create({container:iframes[index].parentElement.parentElement.querySelector('.gsDevContainer'),  animation: tl, globalSync: false });
-    //   }
-    // });
+    iframes[index].contentWindow.addEventListener("getMainTimeline", function (e) {
+      const animation = e.detail;
+      if(getParameterValue('gsdevtools') === "true" && animation) {
+        iframes[index].parentElement.parentElement.querySelector('.mdl-card__actions').classList.add('gsDev');
+        animation.pause();
+
+        const tl = gsap.timeline();
+        tl.to(animation,{duration:animation.totalDuration(), totalProgress:1, ease:Linear.easeNone})
+        GSDevTools.create({container:iframes[index].parentElement.parentElement.querySelector('.gsDevContainer'),  animation: tl, globalSync: false });
+      }
+    });
 
     iframes[index].addEventListener('load', function() {
       iframes[index].parentElement.querySelector('.loader').classList.add('paused', 'hide');
