@@ -3,7 +3,6 @@ const isExternalURL = require('../../util/isExternalURL');
 const getRichmediaRC = require('../../util/getRichmediaRC');
 const leafs = require('../../util/leafs');
 const isFile = require('../../util/isFile');
-const fs = require('fs');
 const path = require('path');
 
 /**
@@ -51,10 +50,14 @@ module.exports = function RichmediaRCLoader(data) {
       });
     }
 
-    //convert the entry paths to a relative path
-    leafs(data.settings.entry, (value, obj, name) => {
-      obj[name] = "./" + path.basename(value)
-    });
+    //convert the settings paths to a relative path
+    if (data && data.settings) {
+      leafs(data.settings, (value, obj, name) => {
+        if (isFile(value) && !isExternalURL(value)) {
+          obj[name] = "./" + path.basename(value)
+        }
+      });
+    }
 
     data = JSON.stringify(data)
       .replace(/\u2028/g, '\\u2028')
