@@ -4,6 +4,7 @@ const getRichmediaRC = require('../../util/getRichmediaRC');
 const leafs = require('../../util/leafs');
 const isFile = require('../../util/isFile');
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Allows you to import external files into a json value.
