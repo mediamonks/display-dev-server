@@ -50,6 +50,11 @@ module.exports = function RichmediaRCLoader(data) {
       });
     }
 
+    //convert the entry paths to a relative path
+    leafs(data.settings.entry, (value, obj, name) => {
+      obj[name] = "./" + path.basename(value)
+    });
+
     data = JSON.stringify(data)
       .replace(/\u2028/g, '\\u2028')
       .replace(/\u2029/g, '\\u2029');
