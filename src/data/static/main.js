@@ -76,6 +76,7 @@ for (let index = 0; index < elementsActionRefresh.length; index++) {
 this.counter = 0;
 
 const bannerSizeDropdown = document.querySelector('.banner-size-dropdown');
+removeSpacebarScrollDown();
 removeDuplicateFromSelect(bannerSizeDropdown);
 setBannerSizeSelectValue('banner-size-dropdown', 'banner-size-dropdown');
 setDynamicFilterValue();
@@ -162,6 +163,17 @@ function refreshCardsVisibility() {
   });
 
   staggerCardAnimation();
+}
+
+function removeSpacebarScrollDown() {
+  //when gsdevtools is on, prevent scrolling down when pressing spacebar
+  if(getParameterValue('gsdevtools') === "true") {
+    window.addEventListener('keydown', (e) => {
+      if (e.keyCode === 32 && e.target === document.body) {
+        e.preventDefault();
+      }
+    });
+  }
 }
 
 /*
