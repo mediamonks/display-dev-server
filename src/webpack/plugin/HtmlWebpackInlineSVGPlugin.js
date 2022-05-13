@@ -452,22 +452,18 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  optimizeSvg ({ html, inlineImage, data, resolve }) {
-    const svgo = new SVGO({
-      plugins: this.getSvgoConfig()
-    })
+  async optimizeSvg ({ html, inlineImage, data, resolve }) {
 
-    svgo.optimize(data)
-      .then((result) => {
+    // const config = this.getSvgoConfig();
+    // await SVGO.loadConfig(this.getSvgoConfig());
 
-        const optimisedSVG = result.data
+    const result = SVGO.optimize(data, {
+        cleanupIDs: false
+    });
 
-        html = this.replaceImageWithSVG(html, inlineImage, optimisedSVG)
-
-        resolve(html)
-
-      })
-      .catch((err) => console.log(chalk.red(err)))
+    const optimisedSVG = result.data;
+    html = this.replaceImageWithSVG(html, inlineImage, optimisedSVG)
+    resolve(html);
   }
 
   /**

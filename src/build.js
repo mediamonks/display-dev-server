@@ -169,13 +169,13 @@ module.exports = async function build({
 
       if (stats.hasErrors()) {
         info.errors.forEach((item, index) => {
-          console.log(chalk.red(item));
+          console.log(chalk.red(item.message));
         });
       }
 
       if (stats.hasWarnings()) {
         info.warnings.forEach(item => {
-          console.log(chalk.green(item));
+          console.log(chalk.green(item.message));
         });
       }
 
