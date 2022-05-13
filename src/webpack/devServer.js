@@ -6,7 +6,7 @@ const webpackDevMiddleware = require('webpack-dev-middleware');
 const express = require('express');
 const handlebars = require('handlebars');
 const portfinder = require('portfinder');
-const screenshot = require('@mediamonks/richmedia-temple-screenshot');
+// const screenshot = require('@mediamonks/richmedia-temple-screenshot');
 const util = require('util');
 const chalk = require('chalk');
 const opener = require('opener');
@@ -74,7 +74,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
     app.use(
       webpackDevMiddleware(compiler, {
-        noInfo: true,
+        // noInfo: true,
         publicPath: `/${name}/`,
         // publicPath: config.output.publicPath,
         // publicPath: config.output.path,
@@ -126,47 +126,47 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     res.send(template(templateConfig));
   });
 
-  app.get('/screenshot/:target', (req, res) => {
-    const name = req.params.target;
-
-    const folder = path.join(process.cwd(), 'tmpFolder');
-    if (!fs.existsSync(folder)) {
-      fs.mkdirSync(folder);
-    }
-
-    const location = path.join(folder, 'screenshot.png');
-    const result = settingsList.find(val => getNameFromLocation(val.location) === name);
-
-    const data = {
-      config: {},
-      url: `http://localhost:${port}/${name}/`,
-      location,
-    };
-
-    if (
-      result &&
-      result.data &&
-      result.data.settings &&
-      result.data.settings.size &&
-      result.data.settings.size.width &&
-      result.data.settings.size.height
-    ) {
-      data.clip = {
-        x: 0,
-        y: 0,
-        width: result.data.settings.size.width,
-        height: result.data.settings.size.height,
-      };
-    }
-
-    screenshot
-      .fromUrl(data)
-      .then(() => readFile(location))
-      .then(img => {
-        res.contentType('image/png');
-        res.end(img, 'binary');
-      });
-  });
+  // app.get('/screenshot/:target', (req, res) => {
+  //   const name = req.params.target;
+  //
+  //   const folder = path.join(process.cwd(), 'tmpFolder');
+  //   if (!fs.existsSync(folder)) {
+  //     fs.mkdirSync(folder);
+  //   }
+  //
+  //   const location = path.join(folder, 'screenshot.png');
+  //   const result = settingsList.find(val => getNameFromLocation(val.location) === name);
+  //
+  //   const data = {
+  //     config: {},
+  //     url: `http://localhost:${port}/${name}/`,
+  //     location,
+  //   };
+  //
+  //   if (
+  //     result &&
+  //     result.data &&
+  //     result.data.settings &&
+  //     result.data.settings.size &&
+  //     result.data.settings.size.width &&
+  //     result.data.settings.size.height
+  //   ) {
+  //     data.clip = {
+  //       x: 0,
+  //       y: 0,
+  //       width: result.data.settings.size.width,
+  //       height: result.data.settings.size.height,
+  //     };
+  //   }
+  //
+  //   screenshot
+  //     .fromUrl(data)
+  //     .then(() => readFile(location))
+  //     .then(img => {
+  //       res.contentType('image/png');
+  //       res.end(img, 'binary');
+  //     });
+  // });
 
   app.get("/reload_dynamic_data", async function (req, res) {
     const contentSource = configs[0].settings.data.settings.contentSource;
