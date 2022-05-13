@@ -232,9 +232,9 @@ module.exports = function createConfig({
                   }
 
                   if (richmediarc.settings.optimizations.css) {
-                    postcssOptionsObj.plugins.push(require('cssnano')({
-                      preset: 'default',
-                    }))
+                    // postcssOptionsObj.plugins.push(require('cssnano')({
+                    //   preset: 'cssnano-preset-default',
+                    // }))
                   }
 
                   return postcssOptionsObj;
