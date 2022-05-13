@@ -553,9 +553,6 @@ module.exports = function createConfig({
     }))
   }
 
-  console.log('optimizations');
-  console.log(config.optimization)
-
   if (mode === DevEnum.DEVELOPMENT) {
     config.watch = true;
     // config.plugins.push(new webpack.HotModuleReplacementPlugin());
