@@ -11,6 +11,10 @@
     "prettify": "prettier --write \"src/**/*.{js,json}\"",
     "test": "mocha"
   },
+  "engines": {
+    "node": ">= 16",
+    "npm": ">= 8"
+  },
   "bin": {
     "dds-dev": "dev.js",
     "dds-build": "build.js"
@@ -80,7 +84,10 @@
     "open": "^8.4.0",
     "opener": "^1.5.2",
     "portfinder": "^1.0.28",
+    "postcss-css-variables": "^0.18.0",
+    "postcss-loader": "^6.2.1",
     "postcss-nested": "^5.0.6",
+    "postcss-preset-env": "^7.5.0",
     "sanitize-filename": "^1.6.3",
     "server-destroy": "^1.0.1",
     "subset-font": "^1.4.0",
