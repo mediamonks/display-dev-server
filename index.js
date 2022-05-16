@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
-const devBuild = require('./src/devBuild');
-const jsonParseDeep = require('./src/util/jsonParseDeep');
+const displayDevServer = require('./src/displayDevServer');
+// const jsonParseDeep = require('./src/util/jsonParseDeep');
 const program = require('commander');
 const chalk = require('chalk');
 const packageJson = require('./package.json');
@@ -17,7 +17,7 @@ program
 
 const options = program.opts();
 
-devBuild({
+displayDevServer({
   mode: options.mode,
   glob: options.glob,
   stats: options.stats,
