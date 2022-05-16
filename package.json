@@ -16,6 +16,7 @@
     "npm": ">= 8"
   },
   "bin": {
+    "dds": "index.js",
     "dds-dev": "dev.js",
     "dds-build": "build.js"
   },
@@ -57,6 +58,7 @@
     "babel-loader": "^8.2.5",
     "chalk": "^4.1.2",
     "cli-spinner": "^0.2.10",
+    "commander": "^9.2.0",
     "copy-webpack-plugin": "^10.2.4",
     "core-js": "^3.22.5",
     "css-loader": "^6.7.1",
