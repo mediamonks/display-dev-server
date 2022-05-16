@@ -1,7 +1,6 @@
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const globPromise = require('glob-promise');
-const webpack = require('webpack');
 const Spinner = require('cli-spinner').Spinner;
 const inquirer = require('inquirer');
 const path = require('path');
@@ -13,7 +12,6 @@ const parsePlaceholdersInObject = require('./util/parsePlaceholdersInObject');
 const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
 const buildFiles = require('./webpack/buildFiles');
-const getTemplate = require('./util/getBuildTemplate');
 
 module.exports = async function devBuild({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null}) {
   const buildTarget = './build';
@@ -162,5 +160,4 @@ module.exports = async function devBuild({mode = 'development', glob = './**/.ri
     await buildFiles(result, buildTarget);
   }
 
-  console.log('Done.')
 };

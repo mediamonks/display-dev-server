@@ -1,34 +1,22 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const webpack = require('webpack');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const express = require('express');
-const handlebars = require('handlebars');
+// const handlebars = require('handlebars');
 const portfinder = require('portfinder');
-// const screenshot = require('@mediamonks/richmedia-temple-screenshot');
 const util = require('util');
 const chalk = require('chalk');
-const opener = require('opener');
+const open = require('open');
 
-const isGoogleSpreadsheetUrl = require('../util/isGoogleSpreadsheetUrl');
-const getGoogleSheetIdFromUrl = require('../util/getGoogleSheetIdFromUrl');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
 const getDataFromGoogleSpreadsheet = require('../util/getDataFromGoogleSpreadsheet');
+const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
-const cacheSpreadSheets = {};
-const cacheSheets = {};
-
-
-const readFile = util.promisify(fs.readFile);
-const getTemplate = require('../util/getDevTemplate');
+const getTemplate = require('../util/getPreviewTemplate');
 const getNameFromLocation = require('../util/getNameFromLocation');
-
-handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-  return arg1 == arg2 ? options.fn(this) : options.inverse(this);
-});
 
 /**
  *
@@ -45,7 +33,7 @@ module.exports = async function devServer(configs, openLocation = true) {
 
   if (openLocation) {
     // opener
-    opener(httpLocation);
+    open(httpLocation);
   }
 
   console.log(`${chalk.blue('i')} Server running. Please go to ${httpLocation}
@@ -59,10 +47,6 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     const name = getNameFromLocation(settingsList[index].location);
 
     config.mode = 'development';
-    // config.entry.main = [
-    //   `webpack-hot-middleware/client?path=/${name}/${hmrPath}&reload=true`,
-    //   ...config.entry.main,
-    // ];
 
     config.output = {
       ...config.output,
@@ -70,14 +54,13 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       hotUpdateMainFilename: '.hot/.hot-update.json',
     };
 
-    const compiler = webpack(config);
+    const compiler = webpack(config, function(result) {
+      console.log(result)
+    });
 
     app.use(
       webpackDevMiddleware(compiler, {
-        // noInfo: true,
         publicPath: `/${name}/`,
-        // publicPath: config.output.publicPath,
-        // publicPath: config.output.path,
       }),
     );
 
@@ -86,10 +69,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
         path: `/${name}/${hmrPath}`,
       }),
     );
-    //
-    // app.use(webpackHotMiddleware(compiler, {
-    //   path: `/${getNameFromSettings(settingsList[index])}/__webpack_hmr`
-    // }));
+
     app.use('/static', express.static(path.join(__dirname, '../data/static')));
   });
 
@@ -125,48 +105,6 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
     res.send(template(templateConfig));
   });
-
-  // app.get('/screenshot/:target', (req, res) => {
-  //   const name = req.params.target;
-  //
-  //   const folder = path.join(process.cwd(), 'tmpFolder');
-  //   if (!fs.existsSync(folder)) {
-  //     fs.mkdirSync(folder);
-  //   }
-  //
-  //   const location = path.join(folder, 'screenshot.png');
-  //   const result = settingsList.find(val => getNameFromLocation(val.location) === name);
-  //
-  //   const data = {
-  //     config: {},
-  //     url: `http://localhost:${port}/${name}/`,
-  //     location,
-  //   };
-  //
-  //   if (
-  //     result &&
-  //     result.data &&
-  //     result.data.settings &&
-  //     result.data.settings.size &&
-  //     result.data.settings.size.width &&
-  //     result.data.settings.size.height
-  //   ) {
-  //     data.clip = {
-  //       x: 0,
-  //       y: 0,
-  //       width: result.data.settings.size.width,
-  //       height: result.data.settings.size.height,
-  //     };
-  //   }
-  //
-  //   screenshot
-  //     .fromUrl(data)
-  //     .then(() => readFile(location))
-  //     .then(img => {
-  //       res.contentType('image/png');
-  //       res.end(img, 'binary');
-  //     });
-  // });
 
   app.get("/reload_dynamic_data", async function (req, res) {
     const contentSource = configs[0].settings.data.settings.contentSource;
@@ -224,37 +162,14 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     res.send('ok');
   });
 
-
-  app.post('/api/upload', (req, res) => {});
-
-  const server = app.listen(port, () => {});
+  // notr sure if this does anything
+  // app.post('/api/upload', (req, res) => {});
 
   // eslint-disable-next-line
   process.stdin.resume();//so the program will not close instantly
 
-  const doCleanup = () => {
-    configs.forEach(config => {
-      try {
-        if (config.settings.willBeDeletedAfterServerCloses) {
-          //console.log('checking ' + config.settings.location)
-          const fileData = fs.readFileSync(config.settings.location, {encoding: 'utf8'});
-          const fileDataJson = JSON.parse(fileData);
-
-          if (config.settings.uniqueHash === fileDataJson.uniqueHash) {
-            //console.log('valid. deleting ' + config.settings.location)
-            fs.unlinkSync(config.settings.location);
-          }
-        }
-
-      } catch (e) {
-        console.log(e);
-        console.log('Could not clean up file(s). Manual cleanup needed');
-      }
-    })
-  }
-
   function exitHandler(options, exitCode) {
-    if (options.cleanup) doCleanup();
+    if (options.cleanup) removeTempRichmediaRc(configs);
     if (exitCode || exitCode === 0) console.log(exitCode);
     if (options.exit) process.exit();
   }
@@ -272,4 +187,5 @@ ${chalk.grey.bold('-------------------------------------------------------')}
   //catches uncaught exceptions
   process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
+  app.listen(port, () => {});
 };

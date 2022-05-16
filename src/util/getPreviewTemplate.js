@@ -5,14 +5,14 @@ const path = require('path');
 let prom;
 
 handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-  return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+  return arg1 === arg2 ? options.fn(this) : options.inverse(this);
 });
 
 /**
  *
  * @return {Promise<HandlebarsTemplateDelegate<T>>}
  */
-module.exports = function getTemplate() {
+module.exports = function getPreviewTemplate() {
   if (!prom) {
     prom = Promise.resolve(true).then(
       () =>

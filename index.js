@@ -1,10 +1,6 @@
 #! /usr/bin/env node
 
-// const dev = require('./src/dev');
-// const build = require('./src/build');
-
 const devBuild = require('./src/devBuild');
-
 const jsonParseDeep = require('./src/util/jsonParseDeep');
 const program = require('commander');
 const chalk = require('chalk');
@@ -20,9 +16,6 @@ program
   .parse(process.argv);
 
 const options = program.opts();
-
-console.log(options)
-//console.log(args);
 
 devBuild({
   mode: options.mode,

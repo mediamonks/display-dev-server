@@ -1,9 +1,12 @@
 const chalk = require('chalk');
 const webpack = require('webpack');
-const getTemplate = require('../util/getBuildTemplate');
+
 const fs = require('fs-extra');
 const path = require('path');
 const globPromise = require('glob-promise');
+
+const getTemplate = require('../util/getPreviewTemplate');
+const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
 module.exports = async function buildFiles(result, buildTarget) {
   const webpackPromiseArray = [];
@@ -74,34 +77,11 @@ module.exports = async function buildFiles(result, buildTarget) {
     });
   });
 
-
   //return built index.html
   await fs.outputFile('./build/index.html', template(templateConfig));
 
-
-
   console.log('Removing temp .richmediarc...')
-  result.forEach(result => {
-    try {
-      if (result.settings.willBeDeletedAfterServerCloses) {
-        console.log('checking ' + result.settings.location)
-        const fileData = fs.readFileSync(result.settings.location, {encoding: 'utf8'});
-        const fileDataJson = JSON.parse(fileData);
-
-        if (result.settings.uniqueHash === fileDataJson.uniqueHash) {
-          console.log('valid. deleting ' + result.settings.location)
-          fs.unlinkSync(result.settings.location);
-        } else {
-          console.log('not valid.')
-        }
-      }
-
-    } catch (e) {
-      console.log(e);
-      console.log('Could not clean up file(s). Manual cleanup needed');
-    }
-  })
+  removeTempRichmediaRc(result);
 
   return globPromise(`${buildTarget}/**/*`);
-
 }
