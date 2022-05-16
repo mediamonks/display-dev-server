@@ -1,8 +1,6 @@
 # Display Development Server [![Travis](https://img.shields.io/travis/mediamonks/richmedia-temple-server.svg)](https://travis-ci.org/mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/v/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/dm/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server)
 
-The Display Development Server is used as a tool to build and develop richmedia units.
-
-See documentation https://mediamonks.github.io/display-advertising-docs/devserver
+The Display Development Server is used as a tool to build and develop display ads.
 
 ## Installation
 
@@ -11,40 +9,28 @@ yarn add @mediamonks/display-dev-server
 ```
 
 ```sh
-npm i -S @mediamonks/display-dev-server
+npm i @mediamonks/display-dev-server
 ```
 
-## Basic Usasage
+## Basic Usage
 
 ```js
 // for building
-dds-build
+dds --mode production
 
 // for developing
-dds-dev
+dds --mode development
 ```
 
-
-maybe use [@mediamonks/generator-display-templates](https://github.com/mediamonks/generator-display-templates) for creating your setup automatically.
+The easiest way to get started is by using the yeoman template [@mediamonks/generator-display-templates](https://github.com/mediamonks/generator-display-templates)
 
 ## Documentation
 
-View the [documentation](http://mediamonks.github.io/display-dev-server/).
+View the [documentation](https://mediamonks.github.io/display-advertising-docs/).
 
 ## Contribute
 
 View [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-
-## Changelog
-
-View [CHANGELOG.md](./CHANGELOG.md)
-
-
-## Authors
-
-View [AUTHORS.md](./AUTHORS.md)
-
 
 ## LICENSE
 
