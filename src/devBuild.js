@@ -12,13 +12,13 @@ const findRichmediaRC = require('./util/findRichmediaRC');
 const parsePlaceholdersInObject = require('./util/parsePlaceholdersInObject');
 const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
+const buildFiles = require('./webpack/buildFiles');
 const getTemplate = require('./util/getBuildTemplate');
 
 module.exports = async function devBuild({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null}) {
   const buildTarget = './build';
 
   console.log(`${chalk.blue('i')} Searching for configs`);
-
 
   const spinner = new Spinner('processing.. %s');
   spinner.setSpinnerString('/-\\|');
@@ -149,119 +149,18 @@ module.exports = async function devBuild({mode = 'development', glob = './**/.ri
     stats: false,
   });
 
+  result = result.map((webpack, index) => {
+    return {
+      webpack,
+      settings: configsResult[index],
+    };
+  });
+
   if (mode === 'development') {
-
-    result = result.map((webpack, index) => {
-      return {
-        webpack,
-        settings: configsResult[index],
-      };
-    });
-
     await devServer(result, choices.openLocation);
-
   } else {
-
-    return new Promise((resolve, reject) => {
-      webpack(result).run((err, stats) => {
-
-        if (err) {
-          console.error(err.stack || err);
-          if (err.details) {
-            err.details.forEach((item, index) => {
-              console.error(index, item);
-            });
-          }
-          return;
-        }
-
-        const info = stats.toJson();
-
-        if (stats.hasErrors()) {
-          info.errors.forEach((item, index) => {
-            console.log(chalk.red(item.message));
-          });
-        }
-
-        if (stats.hasWarnings()) {
-          info.warnings.forEach(item => {
-            console.log(chalk.green(item.message));
-          });
-        }
-
-        resolve();
-      });
-    })
-
-      .then(async () => {
-        const template = await getTemplate();
-
-        console.log('Removing temp .richmediarc...')
-        configsResult.forEach(config => {
-          try {
-            if (config.willBeDeletedAfterServerCloses) {
-              console.log('checking ' + config.location)
-              const fileData = fs.readFileSync(config.location, {encoding: 'utf8'});
-              const fileDataJson = JSON.parse(fileData);
-
-              if (config.uniqueHash === fileDataJson.uniqueHash) {
-                console.log('valid. deleting ' + config.location)
-                fs.unlinkSync(config.location);
-              } else {
-                console.log('not valid.')
-              }
-            }
-
-          } catch (e) {
-            console.log(e);
-            console.log('Could not clean up file(s). Manual cleanup needed');
-          }
-        })
-
-        const templateConfig = {
-          banner: configsResult.map((richmediarc, index) => {
-
-            const webpackConfig = result[index];
-
-            let bundleName = /[^/\\]*$/.exec(webpackConfig.output.path)[0]
-            // bundleName = getNameFromLocation(bundleName);
-            // console.log(name);
-
-            let width = richmediarc.data.settings.size.width;
-            let height = richmediarc.data.settings.size.height;
-            const isDevelopment = false;
-
-            // if (item.data.settings.expandable) {
-            //   width = item.data.settings.expandable.width;
-            //   height = item.data.settings.expandable.height;
-            //   title += "_EXP_" + width + "x" + height;
-            // }
-
-            return {
-              src: `./${bundleName}/`,
-              name: bundleName,
-              title: bundleName,
-              width,
-              height,
-              isDevelopment,
-            };
-          }),
-        };
-
-        // move static files to folder
-        await fs.mkdir('./build/static/');
-        const staticPreviewFiles = ['gsap.min.js', 'GSDevTools.min.js', 'main.js', 'material-design.css', 'material-design.js', 'style.css'];
-        await staticPreviewFiles.forEach(filename => {
-          fs.copyFile(path.join(__dirname, 'data/static/')+filename, './build/static/'+filename, (err) => {
-            if (err) throw err;
-          });
-        });
-
-        //return built index.html
-        return fs.outputFile('./build/index.html', template(templateConfig));
-      })
-      .then(() => {
-        return globPromise(`${buildTarget}/**/*`);
-      });
+    await buildFiles(result, buildTarget);
   }
+
+  console.log('Done.')
 };
