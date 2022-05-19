@@ -109,7 +109,10 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
       });
     }
 
-    answers = await inquirer.prompt(questions);
+    answers = {
+      ...answers,
+      ...await inquirer.prompt(questions)
+    }
 
     await saveChoicesInPackageJson(mode === 'development' ? 'dev' : 'build', {
       glob,
