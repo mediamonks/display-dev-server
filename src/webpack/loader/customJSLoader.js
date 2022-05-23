@@ -8,8 +8,8 @@ module.exports = function customLoader(content) {
 
   const callback = this.async();
   const options = this.getOptions();
+  const replacementString = '\'webpackWillReplaceThisWithConfig\'';
 
-  console.log('Running custom Loader')
   // add the source richmediarc to dependencies so it gets watched by the dev server
   this.addDependency(options.configFilepath);
 
@@ -23,7 +23,7 @@ module.exports = function customLoader(content) {
     console.log('no parent rc?')
   }
 
-  if (content.indexOf('replaceThisWithRichMediaConfig') >= 1) {
+  if (content.indexOf(replacementString) >= 1) {
 
     // remove paths from config
     leafs(options.config, function(value, obj, name, path) {
@@ -32,7 +32,7 @@ module.exports = function customLoader(content) {
       }
     });
 
-    content = content.replace('\'replaceThisWithRichMediaConfig\'', JSON.stringify(options.config));
+    content = content.replace(replacementString, JSON.stringify(options.config));
 
   }
 
