@@ -339,9 +339,10 @@ module.exports = function createConfig({
                   },
                 },
                 {
-                  loader: path.resolve(path.join(__dirname, '../loader/CustomLoader.js')),
+                  loader: path.resolve(path.join(__dirname, '../loader/CustomJSLoader.js')),
                   options: {
                     config: richmediarc,
+                    configFilepath: richmediarcFilepath,
                   },
                 },
               ];
