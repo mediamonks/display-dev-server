@@ -67,8 +67,8 @@ module.exports = function createConfig({
     isVirtual = false;
   }
 
-  let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[hash].[ext]";
-  
+  let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[contenthash].[ext]";
+
   let optimizations = getOptimisationsFromConfig(richmediarc);
 
 
@@ -110,7 +110,7 @@ module.exports = function createConfig({
 
     output: {
       //filename: './[name].js',
-      filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[hash].js",
+      filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[contenthash].js",
       path: outputPath,
       // library: 'someLibName',
       // libraryTarget: 'commonjs',
@@ -145,7 +145,7 @@ module.exports = function createConfig({
             {
               loader: 'file-loader',
               options: {
-                name: "[name]_[hash].css",
+                name: "[name]_[contenthash].css",
               },
             },
             {
