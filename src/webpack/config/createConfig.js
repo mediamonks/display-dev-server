@@ -93,7 +93,7 @@ module.exports = function createConfig({
   }
 
   // entry.push('@babel/polyfill');
-  entry.push('whatwg-fetch');
+  // entry.push('whatwg-fetch');
   entry.push(richmediarc.settings.entry.js);
 
   // check for trailing slash.
@@ -124,6 +124,9 @@ module.exports = function createConfig({
     output: {
       filename: './[name].js',
       path: outputPath,
+      // library: 'someLibName',
+      // libraryTarget: 'commonjs',
+      iife: false
     },
     externals: {
       // gsap external
@@ -318,31 +321,45 @@ module.exports = function createConfig({
           test: /\.js$/,
           // adding exception to libraries coming from @mediamonks namespace.
           exclude: /(?!(node_modules\/@mediamonks)|(node_modules\\@mediamonks))node_modules/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                [
-                  require.resolve('@babel/preset-env'),
-                  {
-                    useBuiltIns: 'usage',
-                    corejs: 3,
-                    targets: {
-                      browsers: browserCompiler,
-                    },
+          use: function () {
+              return [
+                {
+                  loader: 'babel-loader',
+                  options: {
+                    presets: [
+                      [
+                        require.resolve('@babel/preset-env'),
+                        {
+                          useBuiltIns: 'usage',
+                          corejs: 3,
+                          targets: {
+                            browsers: browserCompiler,
+                          },
+                        },
+                      ],
+                    ],
+                    plugins: [
+                      require.resolve(`@babel/plugin-proposal-class-properties`),
+                      require.resolve(`@babel/plugin-syntax-dynamic-import`),
+                      require.resolve(`@babel/plugin-transform-async-to-generator`),
+                      // require.resolve(`@babel/plugin-transform-arrow-functions`),
+                      // require.resolve(`@babel/plugin-transform-spread`),
+                      [
+                        require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}
+                      ],
+                    ],
                   },
-                ],
-              ],
-              plugins: [
-                require.resolve(`@babel/plugin-proposal-class-properties`),
-                require.resolve(`@babel/plugin-syntax-dynamic-import`),
-                require.resolve(`@babel/plugin-transform-async-to-generator`),
-                [
-                  require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}
-                ],
-              ],
-            },
-          },
+                },
+                {
+                  loader: path.resolve(path.join(__dirname, '../loader/CustomLoader.js')),
+                  options: {
+                    config: richmediarc,
+                  },
+                },
+              ];
+            }
+
+
         },
         {
           test: /richmediaconfig/,
@@ -543,12 +560,29 @@ module.exports = function createConfig({
     minimizer: []
   };
 
+
   if (optimizations.js) {
     config.optimization.splitChunks = {
       chunks: 'async',
     };
 
     config.optimization.minimizer.push(new TerserPlugin());
+
+  } else {
+    // standard implementation, no minifying, but removing comments
+    config.optimization.minimizer.push(new TerserPlugin({
+      terserOptions: {
+        compress: false,
+        mangle: false,
+        module: true,
+        format: {
+          comments: false,
+          beautify: true,
+          indent_level: 2
+        },
+      },
+      extractComments: false,
+    }),);
   }
 
   if (optimizations.image) {
