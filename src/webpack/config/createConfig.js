@@ -68,19 +68,6 @@ module.exports = function createConfig({
   }
 
   let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[hash].[ext]";
-  let imageNameHashing = namedHashing;
-  let useImageOptimisation = true;
-
-  if (richmediarc && richmediarc.settings) {
-    if (richmediarc.settings.useOriginalImageNames || richmediarc.settings.useOriginalImageName) {
-      imageNameHashing = '';
-    }
-
-    if (richmediarc.settings.useOriginalFileNames) {
-      namedHashing = '';
-      imageNameHashing = '';
-    }
-  }
   
   let optimizations = getOptimisationsFromConfig(richmediarc);
 
@@ -207,8 +194,6 @@ module.exports = function createConfig({
                       );
                     }
                   });
-
-
 
                   const postcssOptionsObj = {
                     plugins: [
