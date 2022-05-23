@@ -67,7 +67,7 @@ module.exports = function createConfig({
     isVirtual = false;
   }
 
-  let namedHashing = '_[sha512:hash:base64:7]';
+  let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[hash].[ext]";
   let imageNameHashing = namedHashing;
   let useImageOptimisation = true;
 
@@ -81,7 +81,7 @@ module.exports = function createConfig({
       imageNameHashing = '';
     }
   }
-
+  
   let optimizations = getOptimisationsFromConfig(richmediarc);
 
 
@@ -122,7 +122,8 @@ module.exports = function createConfig({
     },
 
     output: {
-      filename: './[name].js',
+      //filename: './[name].js',
+      filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[hash].js",
       path: outputPath,
       // library: 'someLibName',
       // libraryTarget: 'commonjs',
@@ -157,7 +158,7 @@ module.exports = function createConfig({
             {
               loader: 'file-loader',
               options: {
-                name: `[name]${namedHashing}.css`,
+                name: "[name]_[hash].css",
               },
             },
             {
@@ -174,7 +175,8 @@ module.exports = function createConfig({
             {
               loader: 'file-loader',
               options: {
-                name: `[name]${namedHashing}.css`,
+                // name: `[name]${namedHashing}.css`,
+                name: namedHashing,
                 esModule: false
               },
             },
@@ -273,7 +275,8 @@ module.exports = function createConfig({
             {
               loader: 'file-loader',
               options: {
-                name: `[name]${imageNameHashing}.[ext]`,
+                //name: `[name]${imageNameHashing}.[ext]`,
+                name: namedHashing,
                 esModule: false
               },
             },
@@ -387,7 +390,7 @@ module.exports = function createConfig({
             {
               loader: 'file-loader',
               options: {
-                name: `[name]${namedHashing}.[ext]`,
+                name: namedHashing,
               },
             },
           ],
@@ -400,7 +403,8 @@ module.exports = function createConfig({
               } : {
               loader: 'file-loader',
                 options: {
-                  name: `[name]${namedHashing}.[ext]`,
+                  // name: `[name]${namedHashing}.[ext]`,
+                  name: namedHashing,
                 }
             },
             {
