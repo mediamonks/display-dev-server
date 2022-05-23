@@ -20,10 +20,10 @@ const sanitizeFilename = require('sanitize-filename');
 const DevEnum = require('../../data/DevEnum');
 const isFile = require('../../util/isFile');
 const isExternalURL = require('../../util/isExternalURL');
-const getRichmediaRCSync = require('../../util/getRichmediaRCSync');
+// const getRichmediaRCSync = require('../../util/getRichmediaRCSync');
 const parsePlaceholders = require('../../util/parsePlaceholders');
 const flattenObjectToCSSVars = require('../../util/flattenObjectToCSSVars');
-const resolveRichmediaRCPathsToWebpackPaths = require('../../util/resolveRichmediaRCPathsToWebpackPaths');
+// const resolveRichmediaRCPathsToWebpackPaths = require('../../util/resolveRichmediaRCPathsToWebpackPaths');
 const getOptimisationsFromConfig = require('../../util/options/getOptimisationsFromConfig');
 // const RichmediaRCPlugin = require('../plugin/RichmediaRCPlugin');
 
@@ -372,15 +372,15 @@ module.exports = function createConfig({
             },
           },
         },
-        {
-          test: /.richmediarc$/,
-          exclude: /node_modules/,
-          type: 'javascript/dynamic',
-          use: {
-            loader: path.resolve(path.join(__dirname, '../loader/RichmediaRCLoader.js')),
-            options: {},
-          },
-        },
+        // {
+        //   test: /.richmediarc$/,
+        //   exclude: /node_modules/,
+        //   type: 'javascript/dynamic',
+        //   use: {
+        //     loader: path.resolve(path.join(__dirname, '../loader/RichmediaRCLoader.js')),
+        //     options: {},
+        //   },
+        // },
         {
           test: /\.(eot)$/,
           use: [
