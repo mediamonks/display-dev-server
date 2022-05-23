@@ -405,7 +405,13 @@ module.exports = function createConfig({
                 configLoaderName: "richmediaconfig"
               }
             },
-            {loader: 'handlebars-loader'},
+            // {loader: 'handlebars-loader'},
+            {
+              loader: 'handlebars-loader',
+              options: {
+                helperDirs: path.join(__dirname, '../../util/handlebars/helpers'),
+              }
+            },
             {
               loader: 'extract-loader',
               options: {
