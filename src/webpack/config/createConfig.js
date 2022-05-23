@@ -198,6 +198,12 @@ module.exports = function createConfig({
                   const postcssOptionsObj = {
                     plugins: [
                       [
+                        "postcss-import",
+                        {
+                          // Options
+                        },
+                      ],
+                      [
                         "postcss-css-variables",
                         {
                           variables: cssVariables
