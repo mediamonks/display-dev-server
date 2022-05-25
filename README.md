@@ -1,4 +1,9 @@
-# Display Development Server [![Travis](https://img.shields.io/travis/mediamonks/richmedia-temple-server.svg)](https://travis-ci.org/mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/v/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server) [![npm](https://img.shields.io/npm/dm/@mediamonks/richmedia-temple-server.svg?maxAge=2592000)](https://www.npmjs.com/package/@mediamonks/richmedia-temple-server)
+# Display Development Server
+[![npm-version](https://img.shields.io/npm/v/@mediamonks/display-dev-server)](https://www.npmjs.com/package/@mediamonks/display-dev-server)
+[![npm-downloads](https://img.shields.io/npm/dm/@mediamonks/display-dev-server)](https://www.npmjs.com/package/@mediamonks/display-dev-server)
+[![github-contributors](https://img.shields.io/github/contributors/mediamonks/display-dev-server)](https://github.com/mediamonks/display-dev-server)
+[![github-activity](https://img.shields.io/github/commit-activity/m/mediamonks/display-dev-server)](https://github.com/mediamonks/display-dev-server/commits/master)
+[![libraries.io-dependencies](https://img.shields.io/librariesio/github/mediamonks/display-dev-server)](https://libraries.io/github/mediamonks/display-dev-server)
 
 The Display Development Server is used as a tool to build and develop richmedia units.
 
