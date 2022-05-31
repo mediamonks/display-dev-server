@@ -14,9 +14,10 @@ const schema = require('../../schema/richmediarc.schema.json');
  *
  * @param {string} richmediaConfigLocation
  * @param {any} richmediaConfig
+ * @param buildTarget
  * @return {{filepathHtml: string, filepathJs: string, filepathRichmediaRC: string, outputPath: string}}
  */
-function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig) {
+function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig, buildTarget = './build') {
   const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(schema);
   const valid = validate(richmediaConfig);
@@ -38,7 +39,7 @@ function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig) 
   }
 
   const outputPath = path.resolve(
-    path.join('./build/', getNameFromLocation(richmediaConfigLocation)),
+    path.join(`${buildTarget}`, getNameFromLocation(richmediaConfigLocation)),
   );
   const richmediarcFilepath = path.resolve(richmediaConfigLocation);
 
@@ -52,9 +53,11 @@ function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig) 
  *
  * @param {Array<{location, data}>} richmediarcList
  * @param {string} mode
+ * @param stats
+ * @param buildTarget
  * @return {Promise<any[]>}
  */
-async function createConfigByRichmediarcList(richmediarcList, { mode, stats }) {
+async function createConfigByRichmediarcList(richmediarcList, { mode, stats, buildTarget = './build' }) {
   const promiseList = richmediarcList.map(
     ({ location, data }) => {
       /**
@@ -67,7 +70,7 @@ async function createConfigByRichmediarcList(richmediarcList, { mode, stats }) {
        * } = validateSchemaAndCreatePaths(location, data);
        */
       const webpackConfig = createConfig({
-        ...validateSchemaAndCreatePaths(location, data),
+        ...validateSchemaAndCreatePaths(location, data, buildTarget),
         richmediarc: data,
         options: {
           mode,

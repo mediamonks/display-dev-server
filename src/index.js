@@ -13,9 +13,7 @@ const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
 const buildFiles = require('./webpack/buildFiles');
 
-module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null}) {
-  const buildTarget = './build';
-
+module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null, buildTarget = './build'}) {
   console.log(`${chalk.blue('i')} Searching for configs`);
 
   const spinner = new Spinner('processing.. %s');
@@ -148,6 +146,7 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
     stats: false,
+    buildTarget
   });
 
   result = result.map((webpack, index) => {

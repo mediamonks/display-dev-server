@@ -69,16 +69,16 @@ module.exports = async function buildFiles(result, buildTarget) {
   };
 
   // move static files to folder
-  await fs.mkdir('./build/static/');
+  await fs.mkdir(`./${buildTarget}/static/`);
   const staticPreviewFiles = ['gsap.min.js', 'GSDevTools.min.js', 'main.js', 'material-design.css', 'material-design.js', 'style.css'];
   await staticPreviewFiles.forEach(filename => {
-    fs.copyFile(path.join(__dirname, '../data/static/')+filename, './build/static/'+filename, (err) => {
+    fs.copyFile(path.join(__dirname, `../data/static/`)+filename, `./${buildTarget}/static/${filename}`, (err) => {
       if (err) throw err;
     });
   });
 
   //return built index.html
-  await fs.outputFile('./build/index.html', template(templateConfig));
+  await fs.outputFile(`./${buildTarget}/index.html`, template(templateConfig));
 
   console.log('Removing temp .richmediarc...')
   removeTempRichmediaRc(result);
