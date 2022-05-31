@@ -5,15 +5,15 @@ module.exports = function removeTempRichmediaRc (configs) {
   configs.forEach(config => {
     try {
       if (config.settings.willBeDeletedAfterServerCloses) {
-        console.log('checking ' + config.settings.location)
+        // console.log('checking ' + config.settings.location)
         const fileData = fs.readFileSync(config.settings.location, {encoding: 'utf8'});
         const fileDataJson = JSON.parse(fileData);
 
         if (config.settings.uniqueHash === fileDataJson.uniqueHash) {
-          console.log('valid. deleting ' + config.settings.location)
+          // console.log('valid. deleting ' + config.settings.location)
           fs.unlinkSync(config.settings.location);
         } else {
-          console.log('not valid.')
+          // console.log('not valid.')
         }
       }
 
