@@ -62,11 +62,6 @@ module.exports = function createConfig({
     devtool = 'inline-source-map';
   }
 
-  let isVirtual = true;
-  if (fs.existsSync(richmediarcFilepath)) {
-    isVirtual = false;
-  }
-
   let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[contenthash].[ext]";
 
   let optimizations = getOptimisationsFromConfig(richmediarc);
@@ -363,7 +358,6 @@ module.exports = function createConfig({
             options: {
               configFilepath: richmediarcFilepath,
               config: richmediarc,
-              isVirtual,
             },
           },
         },
@@ -404,7 +398,6 @@ module.exports = function createConfig({
               options: {
                 configFilepath: richmediarcFilepath,
                 config: richmediarc,
-                isVirtual,
               },
             },
           ],
@@ -449,34 +442,6 @@ module.exports = function createConfig({
         template: richmediarc.settings.entry.html,
         minify: richmediarc.settings.optimizations.html,
         filename: './index.html',
-        // templateParameters: (compilation, assets, assetTags, options) => {
-        //   let data = {};
-        //   if (!isVirtual) {
-        //     data = resolveRichmediaRCPathsToWebpackPaths(
-        //       compilation,
-        //       getRichmediaRCSync(richmediarcFilepath),
-        //     );
-        //   } else {
-        //     data = resolveRichmediaRCPathsToWebpackPaths(
-        //       compilation,
-        //       JSON.parse(JSON.stringify(richmediarc)),
-        //     );
-        //   }
-        //
-        //   return {
-        //     ...data,
-        //     DEVELOPMENT: JSON.stringify(mode === DevEnum.DEVELOPMENT),
-        //     PRODUCTION: JSON.stringify(mode === DevEnum.PRODUCTION),
-        //
-        //     compilation,
-        //     webpackConfig: compilation.options,
-        //     htmlWebpackPlugin: {
-        //       tags: assetTags,
-        //       files: assets,
-        //       options,
-        //     },
-        //   };
-        // },
       }),
       new HtmlWebpackInlineSVGPlugin({
         runPreEmit: true
