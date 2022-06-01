@@ -12,6 +12,7 @@ const parsePlaceholdersInObject = require('./util/parsePlaceholdersInObject');
 const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
 const buildFiles = require('./webpack/buildFiles');
+const deepmerge = require('deepmerge');
 
 module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null, buildTarget = './build', configOverride = {}}) {
   console.log(`${chalk.blue('i')} Searching for configs`);
@@ -59,12 +60,10 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
     }
   });
 
-  // potentially overwrite all found configs with config overrides from options
   if (configOverride.settings) {
-    console.log(`potentially overwrite all found configs with config overrides from options`);
+    console.log(`config override settings found`);
     configs.forEach(config => {
-      config.data.settings.useOriginalFileNames = configOverride.settings.useOriginalFileNames;
-      config.data.settings.optimizations = configOverride.settings.optimizations;
+      config.data.settings = deepmerge(config.data.settings, configOverride.settings)
     });
   }
   
