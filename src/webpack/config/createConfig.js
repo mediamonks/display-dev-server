@@ -222,7 +222,7 @@ module.exports = function createConfig({
                     ],
                   }
 
-                  if (richmediarc.settings.optimizations.css) {
+                  if (optimizations.css) {
                     // postcssOptionsObj.plugins.push(require('cssnano')({
                     //   preset: 'cssnano-preset-default',
                     // }))
@@ -427,7 +427,7 @@ module.exports = function createConfig({
             {
               loader: 'html-loader',
               options: {
-                minimize: richmediarc.settings.optimizations.html,
+                minimize: optimizations.html,
                 esModule: false,
 
                 // attrs: [':src', ':href', 'netflix-video:source', ':data-src', ':data'],
@@ -440,7 +440,7 @@ module.exports = function createConfig({
     plugins: [
       new HtmlWebpackPlugin({
         template: richmediarc.settings.entry.html,
-        minify: richmediarc.settings.optimizations.html,
+        minify: optimizations.html,
         filename: './index.html',
       }),
       new HtmlWebpackInlineSVGPlugin({
