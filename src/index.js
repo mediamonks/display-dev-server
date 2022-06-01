@@ -13,7 +13,7 @@ const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
 const buildFiles = require('./webpack/buildFiles');
 
-module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null, buildTarget = './build'}) {
+module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null, buildTarget = './build', configOverride = {}}) {
   console.log(`${chalk.blue('i')} Searching for configs`);
 
   const spinner = new Spinner('processing.. %s');
@@ -35,6 +35,15 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
 
   // parse placeholders in content source so it works with spreadsheets
   configs.forEach(config => {
+
+    // check if there is a config override for the feed (from options)
+    if (configOverride.settings?.contentSource) {
+      console.log('Found a contentSource override!!')
+      config.data.settings.contentSource = {
+        url: configOverride.settings.contentSource.url
+      }
+    }
+
     if(config.data.settings.contentSource) {
       config.data.settings.contentSource = parsePlaceholdersInObject(config.data.settings.contentSource, config.data);
     }
@@ -50,6 +59,15 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
     }
   });
 
+  // potentially overwrite all found configs with config overrides from options
+  if (configOverride.settings) {
+    console.log(`potentially overwrite all found configs with config overrides from options`);
+    configs.forEach(config => {
+      config.data.settings.useOriginalFileNames = configOverride.settings.useOriginalFileNames;
+      config.data.settings.optimizations = configOverride.settings.optimizations;
+    });
+  }
+  
   const questions = [];
 
   if (!choices) {
