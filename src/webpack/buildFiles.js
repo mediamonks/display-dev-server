@@ -9,41 +9,49 @@ const getTemplate = require('../util/getPreviewTemplate');
 const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
 module.exports = async function buildFiles(result, buildTarget) {
+
+  function webpackRun(config) {
+    return new Promise(resolve => {
+      webpack(config).run((err, stats) => {
+        if (err) {
+          console.error(err.stack || err);
+          if (err.details) {
+            err.details.forEach((item, index) => {
+              console.error(index, item.message);
+            });
+          }
+          return;
+        }
+
+        const info = stats.toJson();
+
+        if (stats.hasErrors()) {
+          info.errors.forEach((item, index) => {
+            console.log(chalk.red(item.message));
+          });
+        }
+
+        if (stats.hasWarnings()) {
+          info.warnings.forEach(item => {
+            console.log(chalk.green(item.message));
+          });
+        }
+        resolve();
+      });
+    });
+  }
+
+  // for (const config of result) {
+  //   console.log('compiling..', config.settings.location)
+  //   await webpackRun(config.webpack);
+  //   console.log('done')
+  // }
+
   const webpackPromiseArray = [];
 
   result.forEach(result => {
     const config = result.webpack;
-    webpackPromiseArray.push(new Promise((resolve, reject) => {
-        webpack(config).run((err, stats) => {
-
-          if (err) {
-            console.error(err.stack || err);
-            if (err.details) {
-              err.details.forEach((item, index) => {
-                console.error(index, item);
-              });
-            }
-            return;
-          }
-
-          const info = stats.toJson();
-
-          if (stats.hasErrors()) {
-            info.errors.forEach((item, index) => {
-              console.log(chalk.red(item.message));
-            });
-          }
-
-          if (stats.hasWarnings()) {
-            info.warnings.forEach(item => {
-              console.log(chalk.green(item.message));
-            });
-          }
-
-          resolve();
-        });
-      }),
-    );
+    webpackPromiseArray.push(webpackRun(config));
   });
 
   await Promise.all(webpackPromiseArray);
