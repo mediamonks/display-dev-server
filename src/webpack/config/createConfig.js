@@ -242,69 +242,52 @@ module.exports = function createConfig({
             },
           ],
         },
-        // {
-        //   test: /\.(mp4|svg)$/,
-        //   type: "asset",
-        //   // use: [
-        //   //   {
-        //   //     loader: 'file-loader',
-        //   //     options: {
-        //   //       name: `[name]${namedHashing}.[ext]`,
-        //   //       esModule: false
-        //   //     },
-        //   //   },
-        //   // ],
-        // },
         {
-          test: /\.(jpe?g|png|gif|svg|mp4)$/i,
+          test: /\.(mp4|svg)$/,
           use: [
             {
               loader: 'file-loader',
               options: {
-                //name: `[name]${imageNameHashing}.[ext]`,
                 name: namedHashing,
                 esModule: false
               },
             },
           ],
         },
-        // {
-        //   test: /\.(gif|png|jpe?g)$/i,
-        //   use: optimizations.image ? [
-        //     {
-        //       loader: 'file-loader',
-        //       options: {
-        //         name: `[name]${imageNameHashing}.[ext]`,
-        //       },
-        //     },
-        //     {
-        //       loader: 'image-webpack-loader',
-        //       options: {
-        //         optipng: {
-        //           enabled: true,
-        //         },
-        //         mozjpeg: {
-        //           progressive: true,
-        //           quality: 80,
-        //         },
-        //         pngquant: {
-        //           quality: '65-90',
-        //           speed: 4,
-        //         },
-        //         gifsicle: {
-        //           interlaced: false,
-        //         },
-        //       },
-        //     },
-        //   ] : [
-        //     {
-        //       loader: 'file-loader',
-        //       options: {
-        //         name: `[name]${imageNameHashing}.[ext]`,
-        //       },
-        //     }
-        //   ],
-        // },
+        {
+          test: /\.(jpe?g|png|gif)$/i,
+          use: function() {
+            const imageLoadersArray = [
+              {
+                loader: 'file-loader',
+                options: {
+                  name: namedHashing,
+                  esModule: false
+                },
+              },
+            ]
+
+            if (optimizations.image) {
+              imageLoadersArray.push({
+                loader: ImageMinimizerPlugin.loader,
+                options: {
+                  minimizer: {
+                    implementation: ImageMinimizerPlugin.imageminMinify,
+                    options: {
+                      plugins: [
+                        "imagemin-gifsicle",
+                        "imagemin-mozjpeg",
+                        "imagemin-pngquant"
+                      ],
+                    },
+                  },
+                },
+              })
+            }
+
+            return imageLoadersArray;
+          }
+        },
 
         {
           test: /\.js$/,
@@ -546,13 +529,6 @@ module.exports = function createConfig({
     }),);
   }
 
-  if (optimizations.image) {
-    config.optimization.minimizer.push(new ImageMinimizerPlugin({
-      minimizer: {
-        implementation: ImageMinimizerPlugin.squooshMinify
-      },
-    }))
-  }
 
   if (mode === DevEnum.DEVELOPMENT) {
     config.watch = true;
