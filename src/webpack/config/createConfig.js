@@ -135,29 +135,11 @@ module.exports = function createConfig({
     module: {
       rules: [
         {
-          test: /\.s[ac]ss$/i,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                name: "[name]_[contenthash].css",
-              },
-            },
-            {
-              loader: 'extract-loader',
-            },
-            'resolve-url-loader',
-            // Compiles Sass to CSS
-            'sass-loader',
-          ],
-        },
-        {
           test: /\.css$/,
           use: [
             {
               loader: 'file-loader',
               options: {
-                // name: `[name]${namedHashing}.css`,
                 name: namedHashing,
                 esModule: false
               },
@@ -193,11 +175,7 @@ module.exports = function createConfig({
                   const postcssOptionsObj = {
                     plugins: [
                       ["postcss-calc"],
-                        "postcss-import",
-                        {
-                          // Options
-                        },
-                      ],
+                      ["postcss-import"],
                       [
                         "postcss-css-variables",
                         {
@@ -207,18 +185,14 @@ module.exports = function createConfig({
                       [
                         "postcss-preset-env",
                         {
-                          // stage: 2,
-                          // features: {
-                          //   'nesting-rules': true
-                          // }
+                          stage: 2,
+                          features: {
+                            'nesting-rules': true
+                          },
+                          browsers: browserCompiler,
                         },
                       ],
-                      [
-                        "postcss-nested",
-                        {
-                          // Options
-                        },
-                      ],
+                      ["postcss-nested"],
                     ],
                   }
 
