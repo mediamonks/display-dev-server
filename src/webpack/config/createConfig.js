@@ -192,7 +192,7 @@ module.exports = function createConfig({
 
                   const postcssOptionsObj = {
                     plugins: [
-                      [
+                      ["postcss-calc"],
                         "postcss-import",
                         {
                           // Options
