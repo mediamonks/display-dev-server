@@ -197,9 +197,7 @@ module.exports = function createConfig({
                   }
 
                   if (optimizations.css) {
-                    // postcssOptionsObj.plugins.push(require('cssnano')({
-                    //   preset: 'cssnano-preset-default',
-                    // }))
+                    postcssOptionsObj.plugins.push(["cssnano"]);
                   }
 
                   return postcssOptionsObj;
