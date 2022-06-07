@@ -457,8 +457,8 @@ class HtmlWebpackInlineSVGPlugin {
     // const config = this.getSvgoConfig();
     // await SVGO.loadConfig(this.getSvgoConfig());
 
-    const result = SVGO.optimize(data, {
-        cleanupIDs: false
+    const result = SVGO.optimize(data, { 
+      plugins: [ { name: 'preset-default', params: { overrides: { cleanupIDs: false }, }, }, ], 
     });
 
     const optimisedSVG = result.data;
