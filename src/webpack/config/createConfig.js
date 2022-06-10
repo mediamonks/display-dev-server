@@ -103,6 +103,8 @@ module.exports = function createConfig({
       main: entry,
     },
 
+    target: `browserslist:${browserCompiler.toString()}`,
+
     output: {
       //filename: './[name].js',
       filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[contenthash].js",
