@@ -14,17 +14,15 @@ module.exports = function RichmediaRCLoader(data) {
   const options = loaderUtils.getOptions(this);
   const loaderContext = this;
 
-  const { configFilepath, config, isVirtual } = options;
+  const { configFilepath, config } = options;
 
   let prom = Promise.resolve(config);
 
-  if (!isVirtual) {
-    prom = prom.then(() => {
-      return getRichmediaRC(configFilepath, filepath => {
-        this.addDependency(filepath);
-      });
+  prom = prom.then(() => {
+    return getRichmediaRC(configFilepath, filepath => {
+      this.addDependency(filepath);
     });
-  }
+  });
 
   prom.then(data => {
     data = typeof data === 'string' ? JSON.parse(data) : data;

@@ -11,13 +11,12 @@ module.exports = async function(content) {
   const callback = this.async();
   const options = loaderUtils.getOptions(this);
   const loaderContext = this;
-  let { configFilepath, config, isVirtual } = options;
+  let { configFilepath, config } = options;
   let glyphs = [];
 
-  if (!isVirtual) {
-    this.addDependency(configFilepath);
-    config = await getRichmediaRC(configFilepath);
-  }
+
+  this.addDependency(configFilepath);
+  config = await getRichmediaRC(configFilepath);
 
   if (config.settings.hasOwnProperty('fonts')) {
     for (const collection of config.settings.fonts) {

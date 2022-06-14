@@ -12,10 +12,9 @@ const parsePlaceholdersInObject = require('./util/parsePlaceholdersInObject');
 const expandWithSpreadsheetData = require('./util/expandWithSpreadsheetData');
 const devServer = require('./webpack/devServer');
 const buildFiles = require('./webpack/buildFiles');
+const deepmerge = require('deepmerge');
 
-module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null}) {
-  const buildTarget = './build';
-
+module.exports = async function ({mode = 'development', glob = './**/.richmediarc*', choices = null, stats = null, buildTarget = './build', configOverride = {}}) {
   console.log(`${chalk.blue('i')} Searching for configs`);
 
   const spinner = new Spinner('processing.. %s');
@@ -37,6 +36,15 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
 
   // parse placeholders in content source so it works with spreadsheets
   configs.forEach(config => {
+
+    // check if there is a config override for the feed (from options)
+    if (configOverride.settings?.contentSource) {
+      console.log('Found a contentSource override!!')
+      config.data.settings.contentSource = {
+        url: configOverride.settings.contentSource.url
+      }
+    }
+
     if(config.data.settings.contentSource) {
       config.data.settings.contentSource = parsePlaceholdersInObject(config.data.settings.contentSource, config.data);
     }
@@ -51,6 +59,13 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });
+
+  if (configOverride.settings) {
+    console.log(`config override settings found`);
+    configs.forEach(config => {
+      config.data.settings = deepmerge(config.data.settings, configOverride.settings)
+    });
+  }
 
   const questions = [];
 
@@ -139,7 +154,21 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
 
   //if the richmediarc location doesn't actually exist, assume its a config derived from google spreadsheets, so we write one to disk
   configsResult.forEach(config => {
+    let writeConfig = false;
     if (!fs.existsSync(config.location)) {
+      writeConfig = true;
+    } else {
+      try {
+        const configData = fs.readJsonSync(config.location);
+        if (configData.uniqueHash) { // this means it's a file marked for deletion (but somehow stayed behind)
+          writeConfig = true;
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    if (writeConfig) {
       const data = Buffer.from(JSON.stringify(config.data));
       fs.writeFileSync(config.location, data);
     }
@@ -148,6 +177,7 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
     stats: false,
+    buildTarget
   });
 
   result = result.map((webpack, index) => {

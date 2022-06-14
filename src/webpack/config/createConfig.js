@@ -62,11 +62,6 @@ module.exports = function createConfig({
     devtool = 'inline-source-map';
   }
 
-  let isVirtual = true;
-  if (fs.existsSync(richmediarcFilepath)) {
-    isVirtual = false;
-  }
-
   let namedHashing = richmediarc.settings.useOriginalFileNames ? '[name].[ext]' : "[name]_[contenthash].[ext]";
 
   let optimizations = getOptimisationsFromConfig(richmediarc);
@@ -108,6 +103,8 @@ module.exports = function createConfig({
       main: entry,
     },
 
+    target: `browserslist:${browserCompiler.toString()}`,
+
     output: {
       //filename: './[name].js',
       filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[contenthash].js",
@@ -140,29 +137,11 @@ module.exports = function createConfig({
     module: {
       rules: [
         {
-          test: /\.s[ac]ss$/i,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                name: "[name]_[contenthash].css",
-              },
-            },
-            {
-              loader: 'extract-loader',
-            },
-            'resolve-url-loader',
-            // Compiles Sass to CSS
-            'sass-loader',
-          ],
-        },
-        {
           test: /\.css$/,
           use: [
             {
               loader: 'file-loader',
               options: {
-                // name: `[name]${namedHashing}.css`,
                 name: namedHashing,
                 esModule: false
               },
@@ -197,12 +176,8 @@ module.exports = function createConfig({
 
                   const postcssOptionsObj = {
                     plugins: [
-                      [
-                        "postcss-import",
-                        {
-                          // Options
-                        },
-                      ],
+                      ["postcss-calc"],
+                      ["postcss-import"],
                       [
                         "postcss-css-variables",
                         {
@@ -212,25 +187,19 @@ module.exports = function createConfig({
                       [
                         "postcss-preset-env",
                         {
-                          // stage: 2,
-                          // features: {
-                          //   'nesting-rules': true
-                          // }
+                          stage: 2,
+                          features: {
+                            'nesting-rules': true
+                          },
+                          browsers: browserCompiler,
                         },
                       ],
-                      [
-                        "postcss-nested",
-                        {
-                          // Options
-                        },
-                      ],
+                      ["postcss-nested"],
                     ],
                   }
 
-                  if (richmediarc.settings.optimizations.css) {
-                    // postcssOptionsObj.plugins.push(require('cssnano')({
-                    //   preset: 'cssnano-preset-default',
-                    // }))
+                  if (optimizations.css) {
+                    postcssOptionsObj.plugins.push(["cssnano"]);
                   }
 
                   return postcssOptionsObj;
@@ -247,69 +216,52 @@ module.exports = function createConfig({
             },
           ],
         },
-        // {
-        //   test: /\.(mp4|svg)$/,
-        //   type: "asset",
-        //   // use: [
-        //   //   {
-        //   //     loader: 'file-loader',
-        //   //     options: {
-        //   //       name: `[name]${namedHashing}.[ext]`,
-        //   //       esModule: false
-        //   //     },
-        //   //   },
-        //   // ],
-        // },
         {
-          test: /\.(jpe?g|png|gif|svg|mp4)$/i,
+          test: /\.(mp4|svg)$/,
           use: [
             {
               loader: 'file-loader',
               options: {
-                //name: `[name]${imageNameHashing}.[ext]`,
                 name: namedHashing,
                 esModule: false
               },
             },
           ],
         },
-        // {
-        //   test: /\.(gif|png|jpe?g)$/i,
-        //   use: optimizations.image ? [
-        //     {
-        //       loader: 'file-loader',
-        //       options: {
-        //         name: `[name]${imageNameHashing}.[ext]`,
-        //       },
-        //     },
-        //     {
-        //       loader: 'image-webpack-loader',
-        //       options: {
-        //         optipng: {
-        //           enabled: true,
-        //         },
-        //         mozjpeg: {
-        //           progressive: true,
-        //           quality: 80,
-        //         },
-        //         pngquant: {
-        //           quality: '65-90',
-        //           speed: 4,
-        //         },
-        //         gifsicle: {
-        //           interlaced: false,
-        //         },
-        //       },
-        //     },
-        //   ] : [
-        //     {
-        //       loader: 'file-loader',
-        //       options: {
-        //         name: `[name]${imageNameHashing}.[ext]`,
-        //       },
-        //     }
-        //   ],
-        // },
+        {
+          test: /\.(jpe?g|png|gif)$/i,
+          use: function() {
+            const imageLoadersArray = [
+              {
+                loader: 'file-loader',
+                options: {
+                  name: namedHashing,
+                  esModule: false
+                },
+              },
+            ]
+
+            if (optimizations.image) {
+              imageLoadersArray.push({
+                loader: ImageMinimizerPlugin.loader,
+                options: {
+                  minimizer: {
+                    implementation: ImageMinimizerPlugin.imageminMinify,
+                    options: {
+                      plugins: [
+                        "imagemin-gifsicle",
+                        "imagemin-mozjpeg",
+                        "imagemin-pngquant"
+                      ],
+                    },
+                  },
+                },
+              })
+            }
+
+            return imageLoadersArray;
+          }
+        },
 
         {
           test: /\.js$/,
@@ -363,7 +315,6 @@ module.exports = function createConfig({
             options: {
               configFilepath: richmediarcFilepath,
               config: richmediarc,
-              isVirtual,
             },
           },
         },
@@ -404,7 +355,6 @@ module.exports = function createConfig({
               options: {
                 configFilepath: richmediarcFilepath,
                 config: richmediarc,
-                isVirtual,
               },
             },
           ],
@@ -434,7 +384,7 @@ module.exports = function createConfig({
             {
               loader: 'html-loader',
               options: {
-                minimize: richmediarc.settings.optimizations.html,
+                minimize: optimizations.html,
                 esModule: false,
 
                 // attrs: [':src', ':href', 'netflix-video:source', ':data-src', ':data'],
@@ -447,36 +397,8 @@ module.exports = function createConfig({
     plugins: [
       new HtmlWebpackPlugin({
         template: richmediarc.settings.entry.html,
-        minify: richmediarc.settings.optimizations.html,
+        minify: optimizations.html,
         filename: './index.html',
-        // templateParameters: (compilation, assets, assetTags, options) => {
-        //   let data = {};
-        //   if (!isVirtual) {
-        //     data = resolveRichmediaRCPathsToWebpackPaths(
-        //       compilation,
-        //       getRichmediaRCSync(richmediarcFilepath),
-        //     );
-        //   } else {
-        //     data = resolveRichmediaRCPathsToWebpackPaths(
-        //       compilation,
-        //       JSON.parse(JSON.stringify(richmediarc)),
-        //     );
-        //   }
-        //
-        //   return {
-        //     ...data,
-        //     DEVELOPMENT: JSON.stringify(mode === DevEnum.DEVELOPMENT),
-        //     PRODUCTION: JSON.stringify(mode === DevEnum.PRODUCTION),
-        //
-        //     compilation,
-        //     webpackConfig: compilation.options,
-        //     htmlWebpackPlugin: {
-        //       tags: assetTags,
-        //       files: assets,
-        //       options,
-        //     },
-        //   };
-        // },
       }),
       new HtmlWebpackInlineSVGPlugin({
         runPreEmit: true
@@ -581,13 +503,6 @@ module.exports = function createConfig({
     }),);
   }
 
-  if (optimizations.image) {
-    config.optimization.minimizer.push(new ImageMinimizerPlugin({
-      minimizer: {
-        implementation: ImageMinimizerPlugin.squooshMinify
-      },
-    }))
-  }
 
   if (mode === DevEnum.DEVELOPMENT) {
     config.watch = true;

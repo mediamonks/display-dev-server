@@ -20,7 +20,7 @@ module.exports = function customLoader(content) {
     const newPath = path.resolve(path.dirname(options.configFilepath), sharedRcPath);
     this.addDependency(newPath);
   } catch (e) {
-    console.log('no parent rc?')
+    // console.log('no parent rc?')
   }
 
   if (content.indexOf(replacementString) >= 1) {
