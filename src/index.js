@@ -160,7 +160,7 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
     } else {
       try {
         const configData = fs.readJsonSync(config.location);
-        if (configData.willBeDeletedAfterServerCloses) { // this means it's a file marked for deletion (but somehow stayed behind)
+        if (configData.uniqueHash) { // this means it's a file marked for deletion (but somehow stayed behind)
           writeConfig = true;
         }
       } catch (err) {
