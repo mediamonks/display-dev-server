@@ -66,7 +66,7 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
       config.data.settings = deepmerge(config.data.settings, configOverride.settings)
     });
   }
-  
+
   const questions = [];
 
   if (!choices) {
@@ -158,10 +158,16 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
     if (!fs.existsSync(config.location)) {
       writeConfig = true;
     } else {
-      if (config.location.indexOf('googlesheet') !== -1) { // it does exist, however the filename contains googlesheet
-        writeConfig = true; // this is to make sure we overwrite the old googlesheet config file if it accidentally stayed behind
+      try {
+        const configData = fs.readJsonSync(config.location);
+        if (configData.willBeDeletedAfterServerCloses) { // this means it's a file marked for deletion (but somehow stayed behind)
+          writeConfig = true;
+        }
+      } catch (err) {
+        console.error(err)
       }
     }
+
     if (writeConfig) {
       const data = Buffer.from(JSON.stringify(config.data));
       fs.writeFileSync(config.location, data);
