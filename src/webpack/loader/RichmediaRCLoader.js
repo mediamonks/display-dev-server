@@ -4,6 +4,7 @@ const getRichmediaRC = require('../../util/getRichmediaRC');
 const leafs = require('../../util/leafs');
 const isFile = require('../../util/isFile');
 const path = require('path');
+const fs = require('fs-extra');
 
 /**
  * Allows you to import external files into a json value.
@@ -16,12 +17,28 @@ module.exports = function RichmediaRCLoader(data) {
 
   const { configFilepath, config } = options;
 
+  function addConfigsAsDependencies(filePath) {
+    loaderContext.addDependency(filePath);
+
+    try {
+      const rawConfigJson = fs.readJSONSync(filePath);
+
+      if (rawConfigJson.parent) {
+        const newPath = path.resolve(path.dirname(filePath), rawConfigJson.parent);
+        addConfigsAsDependencies(newPath);
+      }
+
+    } catch (e) {
+
+    }
+  }
+
+  addConfigsAsDependencies(configFilepath); //recursively add richmediarc and sharedrc files as dependencies for webpack
+
   let prom = Promise.resolve(config);
 
   prom = prom.then(() => {
-    return getRichmediaRC(configFilepath, filepath => {
-      this.addDependency(filepath);
-    });
+    return getRichmediaRC(configFilepath);
   });
 
   prom.then(data => {
