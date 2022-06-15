@@ -20,11 +20,12 @@ const sanitizeFilename = require('sanitize-filename');
 const DevEnum = require('../../data/DevEnum');
 const isFile = require('../../util/isFile');
 const isExternalURL = require('../../util/isExternalURL');
-// const getRichmediaRCSync = require('../../util/getRichmediaRCSync');
+const getRichmediaRCSync = require('../../util/getRichmediaRCSync');
 const parsePlaceholders = require('../../util/parsePlaceholders');
 const flattenObjectToCSSVars = require('../../util/flattenObjectToCSSVars');
 // const resolveRichmediaRCPathsToWebpackPaths = require('../../util/resolveRichmediaRCPathsToWebpackPaths');
 const getOptimisationsFromConfig = require('../../util/options/getOptimisationsFromConfig');
+const addConfigsAsWebpackDependencies = require('../../util/addConfigsAsWebpackDependencies');
 // const RichmediaRCPlugin = require('../plugin/RichmediaRCPlugin');
 
 
@@ -162,8 +163,9 @@ module.exports = function createConfig({
               loader: 'postcss-loader',
               options: {
                 postcssOptions: function(loader) {
-
-                  const cssVariables = flattenObjectToCSSVars(richmediarc);
+                  addConfigsAsWebpackDependencies(richmediarcFilepath, loader);
+                  const data = getRichmediaRCSync(richmediarcFilepath);
+                  const cssVariables = flattenObjectToCSSVars(data);
                   Object.keys(cssVariables).forEach(function (name) {
                     const val = cssVariables[name];
                     if (isFile(val) && !isExternalURL(val)) {
