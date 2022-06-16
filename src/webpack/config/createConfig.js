@@ -109,7 +109,7 @@ module.exports = function createConfig({
       //filename: './[name].js',
       filename: richmediarc.settings.useOriginalFileNames ? '[name].js' : "[name]_[contenthash].js",
       path: outputPath,
-      publicPath: './',
+      publicPath: '',
       // library: 'someLibName',
       // libraryTarget: 'commonjs',
       iife: false
