@@ -379,3 +379,11 @@ function toggleLayout() {
   staggerCardAnimation();
 }
 
+/*
+Toggle darkmode
+*/
+
+function darkMode() {
+  let bodyElement = document.body;
+  bodyElement.classList.toggle("dark-mode");
+}

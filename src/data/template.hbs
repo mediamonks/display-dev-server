@@ -28,6 +28,16 @@
       let width = simulateBannerAd.offsetHeight;
 
       if (!width) adsBlocked.classList.remove('hidden');
+
+      // Check if the IOS is in dark mode
+      let darkmodeCheck = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if(darkmodeCheck){
+        document.getElementById("checkboxDark").checked = true;
+        darkMode()
+      } else {
+        console.log('Currently not in dark mode');
+      };
+
     };
   </script>
 <body>
@@ -115,6 +125,11 @@
           </select>
         </div>
       </div>
+
+      <label class="switch">
+        <input type="checkbox" id="checkboxDark" onclick="darkMode()">
+        <span class="slider round"></span>
+      </label>
 
       <!-- Navigation. We hide it in small screens. -->
       <!--<nav class="mdl-navigation mdl-layout&#45;&#45;large-screen-only">-->
