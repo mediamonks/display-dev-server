@@ -1,16 +1,18 @@
 :root {
-  --black: #121212;
-  --darkGrey: #121212;
-  --lightGrey: #1c1c1c;
-  --white: #ffffff;
+  --black: #0d1117;
+  --darkGrey: #161b22;
+  --lightGrey: #1f252f;
+  --white: #c9d1d9;
 
-  --shadowColor: 0px 0px 11px 3px rgba(255, 255, 255, 0.44);
+  --shadowColor: 0px 0px 11px 3px rgba(0, 0, 0, 0.44);
+  --lightBlue: #262d39;
 }
 
 .dark-mode {
   --themeDropDownBg: var(--black);
   --actionCard: var(--darkGrey);
   --hoverColor: var(--lightGrey);
+  --hoverItemColor: var(--lightBlue);
   --whiteColor: var(--white);
 
   --shadowBox: var(--shadowColor);
@@ -158,7 +160,8 @@ body {
 }
 
 .mdl-button:hover {
-  background-color: rgba(158, 158, 158, .5);
+  /*background-color: rgba(158, 158, 158, .5);*/
+  background-color: var(--hoverItemColor ,rgba(158, 158, 158, .5));
 }
 
 .filter-container {
@@ -345,7 +348,8 @@ label.dynamic-label:hover {
 }
 
 .mdl-layout__header {
-  background-color: #263238;
+  background-color: var(--actionCard, #263238);
+  color: var(--whiteColor, #FFFFFF);
 }
 
 .mdl-shadow--2dp {
@@ -589,4 +593,9 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.modusLabel {
+  margin-right: 20px;
+  font-size: 18px;
 }

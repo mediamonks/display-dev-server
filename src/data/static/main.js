@@ -385,5 +385,14 @@ Toggle darkmode
 
 function darkMode() {
   let bodyElement = document.body;
-  bodyElement.classList.toggle("dark-mode");
+  let darkmodeCheck = bodyElement.classList.toggle("dark-mode");
+  darkmodeOption(darkmodeCheck);
+}
+
+function darkmodeOption(value) {
+  if(value === true){
+    localStorage.setItem("dark-mode", "enabled");
+  } else {
+    localStorage.setItem("dark-mode", "disabled");
+  }
 }

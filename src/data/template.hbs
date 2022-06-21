@@ -28,16 +28,6 @@
       let width = simulateBannerAd.offsetHeight;
 
       if (!width) adsBlocked.classList.remove('hidden');
-
-      // Check if the IOS is in dark mode
-      let darkmodeCheck = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if(darkmodeCheck){
-        document.getElementById("checkboxDark").checked = true;
-        darkMode()
-      } else {
-        console.log('Currently not in dark mode');
-      };
-
     };
   </script>
 <body>
@@ -126,6 +116,7 @@
         </div>
       </div>
 
+      <label class="modusLabel">Light Mode / Dark Mode:</label>
       <label class="switch">
         <input type="checkbox" id="checkboxDark" onclick="darkMode()">
         <span class="slider round"></span>
@@ -244,6 +235,16 @@
 <script src="static/main.js"></script>
 
 <script>
+    // Check if the IOS is in dark mode
+    let darkmodeCheck = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    darkModeStorage = localStorage.getItem("dark-mode");
+    if(darkmodeCheck && darkModeStorage ==='enabled'){
+      document.getElementById("checkboxDark").checked = true;
+      darkMode()
+    } else {
+      console.log('Currently not in dark mode');
+    };
+
     {{#if settings.isGoogleSpreadsheetBanner}}
     document.querySelector('.reload_btn').addEventListener('click', function(e) {
       const xhttp = new XMLHttpRequest();
