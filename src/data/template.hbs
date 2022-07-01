@@ -116,6 +116,12 @@
         </div>
       </div>
 
+      <label class="modusLabel">Light Mode / Dark Mode:</label>
+      <label class="switch">
+        <input type="checkbox" id="checkboxDark" onclick="darkMode()">
+        <span class="slider round"></span>
+      </label>
+
       <!-- Navigation. We hide it in small screens. -->
       <!--<nav class="mdl-navigation mdl-layout&#45;&#45;large-screen-only">-->
       <!--<a class="mdl-navigation__link" href="">Link</a>-->
@@ -229,6 +235,16 @@
 <script src="static/main.js"></script>
 
 <script>
+    // Check if the IOS is in dark mode
+    let darkmodeCheck = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    darkModeStorage = localStorage.getItem("dark-mode");
+    if(darkmodeCheck && darkModeStorage ==='enabled'){
+      document.getElementById("checkboxDark").checked = true;
+      darkMode()
+    } else {
+      console.log('Currently not in dark mode');
+    };
+
     {{#if settings.isGoogleSpreadsheetBanner}}
     document.querySelector('.reload_btn').addEventListener('click', function(e) {
       const xhttp = new XMLHttpRequest();
