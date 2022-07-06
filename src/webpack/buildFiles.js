@@ -8,11 +8,10 @@ const globPromise = require('glob-promise');
 const getTemplate = require('../util/getPreviewTemplate');
 const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
-module.exports = async function buildFiles(result, buildTarget) {
-
+module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) {
   function webpackRun(config) {
     return new Promise(resolve => {
-      webpack(config).run((err, stats) => {
+      webpack(config.webpack).run((err, stats) => {
         if (err) {
           console.error(err.stack || err);
           if (err.details) {
@@ -36,25 +35,33 @@ module.exports = async function buildFiles(result, buildTarget) {
             console.log(chalk.green(item.message));
           });
         }
-        resolve();
+        resolve(config);
       });
     });
   }
 
-  // for (const config of result) {
-  //   console.log('compiling..', config.settings.location)
-  //   await webpackRun(config.webpack);
-  //   console.log('done')
-  // }
+  let buildResult = [];
+  const resultChunks = result.reduce((resultArray, item, index) => {
+    const chunkIndex = Math.floor(index/chunkSize)
+    if(!resultArray[chunkIndex]) {
+      resultArray[chunkIndex] = [] // start a new chunk
+    }
+    resultArray[chunkIndex].push(item)
+    return resultArray
+  }, []);
 
-  const webpackPromiseArray = [];
+  for (const [index, resultChunk] of resultChunks.entries()) {
+    const promiseArray = resultChunk.map( result => {
+      return webpackRun(result);
+    });
 
-  result.forEach(result => {
-    const config = result.webpack;
-    webpackPromiseArray.push(webpackRun(config));
-  });
+    const newResults = await Promise.all(promiseArray);
+    buildResult = buildResult.concat(newResults);
+    console.log(`${index+1} of ${resultChunks.length} done`)
+  }
 
-  await Promise.all(webpackPromiseArray);
+
+
 
   const template = await getTemplate();
   const templateConfig = {
@@ -91,5 +98,5 @@ module.exports = async function buildFiles(result, buildTarget) {
   console.log('Removing temp .richmediarc...')
   removeTempRichmediaRc(result);
 
-  return globPromise(`${buildTarget}/**/*`);
+  return buildResult;
 }
