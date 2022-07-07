@@ -4,6 +4,8 @@ const webpack = require('webpack');
 const fs = require('fs-extra');
 const path = require('path');
 const globPromise = require('glob-promise');
+const cliProgress = require('cli-progress');
+
 
 const getTemplate = require('../util/getPreviewTemplate');
 const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
@@ -40,6 +42,9 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     });
   }
 
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progressBar.start(result.length, 0);
+
   let buildResult = [];
   const resultChunks = result.reduce((resultArray, item, index) => {
     const chunkIndex = Math.floor(index/chunkSize)
@@ -50,6 +55,8 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     return resultArray
   }, []);
 
+
+
   for (const [index, resultChunk] of resultChunks.entries()) {
     const promiseArray = resultChunk.map( result => {
       return webpackRun(result);
@@ -57,11 +64,11 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
 
     const newResults = await Promise.all(promiseArray);
     buildResult = buildResult.concat(newResults);
-    console.log(`${index+1} of ${resultChunks.length} done`)
+
+    progressBar.update(buildResult.length);
   }
 
-
-
+  progressBar.stop();
 
   const template = await getTemplate();
   const templateConfig = {
@@ -97,6 +104,7 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
 
   console.log('Removing temp .richmediarc...')
   removeTempRichmediaRc(result);
+
 
   return buildResult;
 }
