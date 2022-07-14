@@ -18,8 +18,8 @@ module.exports = async function(content) {
   this.addDependency(configFilepath);
   config = await getRichmediaRC(configFilepath);
 
-  if (config.settings.hasOwnProperty('fonts')) {
-    for (const collection of config.settings.fonts) {
+  if (config.settings.hasOwnProperty('fonts') || config.settings.optimizations.hasOwnProperty('fonts')) {
+    for (const collection of config.settings.fonts || config.settings.optimizations.fonts) {
       for (const font of collection.sources) {
         if (!fs.existsSync(font)) console.warn(chalk.red("WARNING: " + font + " doesn't exist. Please check the path in .richmediarc"));
 
