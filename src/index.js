@@ -61,7 +61,6 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
   // parse placeholders for everything
   configs.forEach(config => {
     if (config.data) {
-      config.data = JSON.parse(JSON.stringify(config.data)); // deep copy to remove references, so each config.data can be changed separately
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });

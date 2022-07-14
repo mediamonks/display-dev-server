@@ -114,7 +114,7 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
 
         let newObj = {
           data: {
-            ...data,
+            ...JSON.parse(JSON.stringify(data)),
             content,
             uniqueHash
           },
