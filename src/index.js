@@ -190,7 +190,11 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
   if (mode === 'development') {
     await devServer(result, choices.openLocation);
   } else {
-    await buildFiles(result, buildTarget);
+    return await buildFiles(result, buildTarget);
   }
 
 };
+
+
+
+

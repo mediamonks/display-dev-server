@@ -4,15 +4,20 @@ const webpack = require('webpack');
 const fs = require('fs-extra');
 const path = require('path');
 const globPromise = require('glob-promise');
+const cliProgress = require('cli-progress');
+
 
 const getTemplate = require('../util/getPreviewTemplate');
 const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
-module.exports = async function buildFiles(result, buildTarget) {
+module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) {
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progressBar.start(result.length, 0);
+  let buildResult = [];
 
   function webpackRun(config) {
     return new Promise(resolve => {
-      webpack(config).run((err, stats) => {
+      webpack(config.webpack).run((err, stats) => {
         if (err) {
           console.error(err.stack || err);
           if (err.details) {
@@ -36,25 +41,33 @@ module.exports = async function buildFiles(result, buildTarget) {
             console.log(chalk.green(item.message));
           });
         }
-        resolve();
+        resolve(config);
       });
     });
   }
 
-  // for (const config of result) {
-  //   console.log('compiling..', config.settings.location)
-  //   await webpackRun(config.webpack);
-  //   console.log('done')
-  // }
+  const resultChunks = result.reduce((resultArray, item, index) => {
+    const chunkIndex = Math.floor(index/chunkSize)
+    if(!resultArray[chunkIndex]) {
+      resultArray[chunkIndex] = [] // start a new chunk
+    }
+    resultArray[chunkIndex].push(item)
+    return resultArray
+  }, []);
 
-  const webpackPromiseArray = [];
 
-  result.forEach(result => {
-    const config = result.webpack;
-    webpackPromiseArray.push(webpackRun(config));
-  });
+  for (const [index, resultChunk] of resultChunks.entries()) {
+    const promiseArray = resultChunk.map( result => {
+      return webpackRun(result);
+    });
 
-  await Promise.all(webpackPromiseArray);
+    const newResults = await Promise.all(promiseArray);
+    buildResult = buildResult.concat(newResults);
+
+    progressBar.update(buildResult.length);
+  }
+
+  progressBar.stop();
 
   const template = await getTemplate();
   const templateConfig = {
@@ -91,5 +104,8 @@ module.exports = async function buildFiles(result, buildTarget) {
   console.log('Removing temp .richmediarc...')
   removeTempRichmediaRc(result);
 
-  return globPromise(`${buildTarget}/**/*`);
+  return {
+    buildTarget: path.resolve(buildTarget),
+    ads: buildResult
+  }
 }
