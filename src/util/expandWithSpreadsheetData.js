@@ -36,9 +36,7 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
    * @return {string}
    */
   const getUniqueLocation = (location, contentSource, row, index, offset = 0) => {
-    const locStringPt1 = location.substr(0, location.lastIndexOf('.'));
-    const locStringPt2 = location.substr(location.lastIndexOf('.'), location.length);
-    location = locStringPt1 + 'googlesheet'; // doing this to create a unique location
+    location = location.replace('richmediarc', 'googlesheet');
 
     if (contentSource.idField) {
       let name = `${location}.${row[contentSource.idField]}`;
