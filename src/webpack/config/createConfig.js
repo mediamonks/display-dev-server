@@ -487,7 +487,9 @@ module.exports = function createConfig({
       chunks: 'async',
     };
 
-    config.optimization.minimizer.push(new TerserPlugin());
+    config.optimization.minimizer.push(new TerserPlugin({
+      extractComments: false
+    }));
 
   } else {
     // standard implementation, no minifying, but removing comments
