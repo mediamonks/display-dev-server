@@ -29,6 +29,11 @@ module.exports = async function ({mode = 'development', glob = './**/.richmediar
     throw new Error('could not find a compatible .richmediarc with entry points configured');
   }
 
+  /* only return configs that don't have uniqueHash (uniqueHash means it's a temporary config from googlesheets)
+  this is to prevent additional configs being parsed, for example if you run build while running dev in another terminal */
+  configs = configs.filter(config => {
+    return !config.data.uniqueHash;
+  });
 
   console.log(`${chalk.green('✔')} Found ${configs.length} config(s)`);
   console.log(`${chalk.green('✔')} Taking a look if it has Spreadsheets`);
