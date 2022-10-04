@@ -128,12 +128,12 @@ module.exports = function createConfig({
     },
     resolve: {
       symlinks: true,
-      modules: ['node_modules', nodeModules],
+      modules: ['node_modules', nodeModules, path.resolve("node_modules")],
     },
 
     resolveLoader: {
       symlinks: true,
-      modules: ['node_modules', nodeModules],
+      modules: ['node_modules', nodeModules, path.resolve("node_modules")],
     },
 
     module: {
