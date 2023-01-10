@@ -9,6 +9,7 @@ const archiver = require("archiver");
 
 const getTemplate = require("../util/getPreviewTemplate");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
+const getNameFromLocation = require("../util/getNameFromLocation");
 
 const getFilesizeInBytes = (filename) => {
   var stats = fs.statSync(filename);
@@ -84,18 +85,19 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   // create the ads.json
   const adsList = {
     ads: result.map((result) => {
+      const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
       return {
         width: result.settings.data.settings.size.width,
         height: result.settings.data.settings.size.height,
-        bundleName: result.settings.data.settings.bundleName,
+        bundleName: name,
         output: {
           html: {
-            url: `${result.settings.data.settings.bundleName}/index.html`,
+            url: `${name}/index.html`,
             optimizations: result.settings.data.settings.optimizations,
           },
           zip: {
-            url: `${result.settings.data.settings.bundleName}.zip`,
-            size: getFilesizeInBytes(`./${buildTarget}/${result.settings.data.settings.bundleName}.zip`),
+            url: `${name}.zip`,
+            size: getFilesizeInBytes(`./${buildTarget}/${name}.zip`),
           },
         },
       };
