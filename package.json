@@ -30,6 +30,7 @@
     "@babel/plugin-transform-async-to-generator": "^7.16.8",
     "@babel/preset-env": "^7.18.0",
     "@squoosh/lib": "^0.4.0",
+    "archiver": "^5.3.1",
     "babel-loader": "^8.2.5",
     "chalk": "^4.1.2",
     "cli-progress": "^3.11.2",
