@@ -17,6 +17,7 @@ const getFilesizeInBytes = (filename) => {
 };
 
 module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) {
+  const startTime = new Date().getTime();
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   progressBar.start(result.length, 0);
   let buildResult = [];
@@ -73,6 +74,7 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   }
 
   progressBar.stop();
+  console.log(`built in ${new Date().getTime() - startTime}ms`);
 
   // copy preview folder
   fs.copySync(path.join(__dirname, `../preview/`), buildTarget, {
