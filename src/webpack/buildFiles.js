@@ -106,7 +106,7 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   //});
 
   // write the result to ads.json in the preview dir
-  fs.writeFileSync(`${buildTarget}/data/ads.json`, JSON.stringify(adsList, null, 2));
+  fs.outputFileSync(`${buildTarget}/data/ads.json`, JSON.stringify(adsList, null, 2));
 
   // final clean up
   console.log("Removing temp .richmediarc...");
