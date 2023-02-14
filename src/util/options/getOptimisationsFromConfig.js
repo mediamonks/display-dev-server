@@ -3,22 +3,20 @@
  * @param richmediarc
  * @return {{css: boolean, javascript: boolean, html: boolean, image: boolean}}
  */
-module.exports = function getOptimisationsFromConfig(richmediarc){
+module.exports = function getOptimisationsFromConfig(richmediarc) {
   let result = {
-    css: true,
-    js: true,
-    html: true,
-    image: true,
+    css: richmediarc.settings?.optimizations?.css || true,
+    js: richmediarc.settings?.optimizations?.js || true,
+    html: richmediarc.settings?.optimizations?.html || true,
+    image: richmediarc.settings?.optimizations?.image || true,
   };
 
-  if('settings' in richmediarc
-    && 'optimizations' in richmediarc.settings)
-  {
-    const {optimizations} = richmediarc.settings;
+  if ("settings" in richmediarc && "optimizations" in richmediarc.settings) {
+    const { optimizations } = richmediarc.settings;
 
-    switch (typeof optimizations){
-      case "boolean":{
-        if(optimizations === false){
+    switch (typeof optimizations) {
+      case "boolean": {
+        if (optimizations === false) {
           result.css = false;
           result.js = false;
           result.html = false;
@@ -27,20 +25,20 @@ module.exports = function getOptimisationsFromConfig(richmediarc){
         break;
       }
 
-      case "object":{
-        if('css' in optimizations && !optimizations.css){
+      case "object": {
+        if ("css" in optimizations && !optimizations.css) {
           result.css = false;
         }
 
-        if('js' in optimizations && !optimizations.js){
+        if ("js" in optimizations && !optimizations.js) {
           result.js = false;
         }
 
-        if('html' in optimizations && !optimizations.html){
+        if ("html" in optimizations && !optimizations.html) {
           result.html = false;
         }
 
-        if('image' in optimizations && !optimizations.image){
+        if ("image" in optimizations && !optimizations.image) {
           result.image = false;
         }
       }
@@ -48,4 +46,4 @@ module.exports = function getOptimisationsFromConfig(richmediarc){
   }
 
   return result;
-}
+};
