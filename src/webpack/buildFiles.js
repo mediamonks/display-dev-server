@@ -11,6 +11,10 @@ const getTemplate = require("../util/getPreviewTemplate");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
 
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const previewWebackConfig = require("../preview/webpack.config");
+
 const getFilesizeInBytes = (filename) => {
   var stats = fs.statSync(filename);
   var fileSizeInBytes = stats.size;
@@ -77,13 +81,44 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   progressBar.stop();
   console.log(`built in ${new Date().getTime() - startTime}ms`);
 
+  console.log("compiling preview...");
+  await new Promise((resolve) => {
+    webpack(previewWebackConfig).run((err, stats) => {
+      if (err) {
+        console.error(err.stack || err);
+        if (err.details) {
+          err.details.forEach((item, index) => {
+            console.error(index, item.message);
+          });
+        }
+        return;
+      }
+
+      const info = stats.toJson();
+
+      if (stats.hasErrors()) {
+        info.errors.forEach((item, index) => {
+          console.log(chalk.red(item.message));
+        });
+      }
+
+      if (stats.hasWarnings()) {
+        info.warnings.forEach((item) => {
+          console.log(chalk.green(item.message));
+        });
+      }
+      resolve(previewWebackConfig);
+    });
+  });
+
   // copy preview folder
-  fs.copySync(path.join(__dirname, `../preview/`), buildTarget, {
+  fs.copySync(path.join(__dirname, `../preview/dist`), buildTarget, {
     overwrite: true,
   });
 
   // create the ads.json
   const adsList = {
+    maxFileSize: result[0].settings.data.settings.maxFileSize || 150,
     ads: result.map((result) => {
       const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
       return {
@@ -104,13 +139,23 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     }),
   };
 
-  // get a list of all the zip files
-  //const zipFiles = adsList.map((result) => {
-  //  return output.zip.url;
-  //});
-
   // write the result to ads.json in the preview dir
   fs.outputFileSync(`${buildTarget}/data/ads.json`, JSON.stringify(adsList, null, 2));
+
+  // write the zip file containing all zips
+  await new Promise((resolve) => {
+    const output = fs.createWriteStream(buildTarget + "/all.zip");
+    output.on("close", resolve);
+
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Sets the compression level.
+    });
+    archive.pipe(output);
+
+    adsList.ads.forEach((ad) => archive.file(path.resolve(buildTarget, ad.output.zip.url), { name: ad.output.zip.url }));
+
+    archive.finalize();
+  });
 
   // final clean up
   console.log("Removing temp .richmediarc...");
