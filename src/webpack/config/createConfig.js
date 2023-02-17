@@ -252,7 +252,17 @@ module.exports = function createConfig({
                     minimizer: {
                       implementation: ImageMinimizerPlugin.imageminMinify,
                       options: {
-                        plugins: ["imagemin-mozjpeg", "pngquant"],
+                        plugins: [
+                          "imagemin-mozjpeg",
+                          "pngquant",
+                          //[
+                          //  "pngquant",
+                          //  {
+                          //    quality: [0.6, 0.8],
+                          //    dithering: false,
+                          //  },
+                          //],
+                        ],
                       },
                     },
                   },
@@ -263,14 +273,15 @@ module.exports = function createConfig({
             return imageLoadersArray;
           },
         },
-
         {
           test: /\.js$/,
           // adding exception to libraries coming from @mediamonks namespace.
           exclude: /(?!(node_modules\/@mediamonks)|(node_modules\\@mediamonks))node_modules/,
           use: function () {
-            return [
-              {
+            let loaderArray = [];
+
+            if (!richmediarc.settings.skipBabel) {
+              loaderArray.push({
                 loader: "babel-loader",
                 options: {
                   presets: [
@@ -294,15 +305,18 @@ module.exports = function createConfig({
                     [require.resolve(`@babel/plugin-proposal-decorators`), { decoratorsBeforeExport: true }],
                   ],
                 },
+              });
+            }
+
+            loaderArray.push({
+              loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
+              options: {
+                config: richmediarc,
+                configFilepath: richmediarcFilepath,
               },
-              {
-                loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
-                options: {
-                  config: richmediarc,
-                  configFilepath: richmediarcFilepath,
-                },
-              },
-            ];
+            });
+
+            return loaderArray;
           },
         },
         {
