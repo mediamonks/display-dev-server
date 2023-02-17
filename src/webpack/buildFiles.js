@@ -1,19 +1,18 @@
-const chalk = require("chalk");
-const webpack = require("webpack");
-
 const fs = require("fs-extra");
 const path = require("path");
+
+const chalk = require("chalk");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const archiver = require("archiver");
 const globPromise = require("glob-promise");
 const cliProgress = require("cli-progress");
-const archiver = require("archiver");
 
 const getTemplate = require("../util/getPreviewTemplate");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
-
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-
 const previewWebackConfig = require("../preview/webpack.config");
+const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
 
 const getFilesizeInBytes = (filename) => {
   var stats = fs.statSync(filename);
@@ -81,6 +80,23 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   progressBar.stop();
   console.log(`built in ${new Date().getTime() - startTime}ms`);
 
+  // render backup images
+
+  if (result[0].settings.data.settings.displayAdsRecorder) {
+    const locations = result.map((result) => {
+      const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
+      const location = `${buildTarget}/${name}/index.html`;
+      return location;
+    });
+    await displayAdsRecorder({
+      targetDir: buildTarget,
+      adSelection: {
+        location: locations,
+        ...result[0].settings.data.settings.displayAdsRecorder,
+      },
+    });
+  }
+
   console.log("compiling preview...");
   await new Promise((resolve) => {
     webpack(previewWebackConfig).run((err, stats) => {
@@ -121,7 +137,7 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     maxFileSize: result[0].settings.data.settings.maxFileSize || 150,
     ads: result.map((result) => {
       const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
-      return {
+      const adObj = {
         width: result.settings.data.settings.size.width,
         height: result.settings.data.settings.size.height,
         bundleName: name,
@@ -136,6 +152,16 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
           },
         },
       };
+
+      if (result.settings.data.settings.displayAdsRecorder) {
+        result.settings.data.settings.displayAdsRecorder.output.forEach((ext) => {
+          adObj.output[ext] = {
+            url: `${name}.${ext}`,
+          };
+        });
+      }
+
+      return adObj;
     }),
   };
 
