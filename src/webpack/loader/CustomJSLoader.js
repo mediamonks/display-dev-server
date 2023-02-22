@@ -34,7 +34,7 @@ module.exports = function customLoader(content) {
       settings: {
         size: options.config.settings.size,
       },
-      ...options.config.content,
+      content: options.config.content,
     };
 
     content = content.replace(replacementString, JSON.stringify(sanitizedConfig));
