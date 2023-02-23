@@ -5,11 +5,16 @@ const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const ZipPlugin = require("zip-webpack-plugin");
+// const CopyWebpackPlugin = require("copy-webpack-plugin");
+// const ZipPlugin = require("zip-webpack-plugin");
 const VirtualModulesPlugin = require("webpack-virtual-modules");
 const HtmlWebpackInlineSVGPlugin = require("../plugin/HtmlWebpackInlineSVGPlugin");
 const GenerateJsonPlugin = require("generate-json-webpack-plugin");
+
+const WriteFilePlugin = require("../plugin/WriteFilePlugin");
+const ZipFilesPlugin = require("../plugin/ZipFilesPlugin");
+const CopyFilesPlugin = require("../plugin/CopyFilesPlugin");
+
 
 // const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -46,7 +51,7 @@ module.exports = function createConfig({
   richmediarcFilepath,
   outputPath,
 
-  options: { mode = DevEnum.DEVELOPMENT, stats = false } = {
+  options: {mode = DevEnum.DEVELOPMENT, stats = false} = {
     mode: DevEnum.DEVELOPMENT,
     stats: false,
   },
@@ -302,7 +307,7 @@ module.exports = function createConfig({
                     require.resolve(`@babel/plugin-transform-async-to-generator`),
                     // require.resolve(`@babel/plugin-transform-arrow-functions`),
                     // require.resolve(`@babel/plugin-transform-spread`),
-                    [require.resolve(`@babel/plugin-proposal-decorators`), { decoratorsBeforeExport: true }],
+                    [require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}],
                   ],
                 },
               });
@@ -354,15 +359,15 @@ module.exports = function createConfig({
           use: [
             richmediarc.settings.fontsBase64
               ? {
-                  loader: "url-loader",
-                }
+                loader: "url-loader",
+              }
               : {
-                  loader: "file-loader",
-                  options: {
-                    // name: `[name]${namedHashing}.[ext]`,
-                    name: namedHashing,
-                  },
+                loader: "file-loader",
+                options: {
+                  // name: `[name]${namedHashing}.[ext]`,
+                  name: namedHashing,
                 },
+              },
             {
               loader: path.resolve(path.join(__dirname, "../loader/RichmediaFontLoader.js")),
               options: {
@@ -451,14 +456,38 @@ module.exports = function createConfig({
 
   if (fs.existsSync(staticPath)) {
     config.plugins.push(
-      new CopyWebpackPlugin({
-        patterns: [{ from: staticPath, to: "" }],
+      // new CopyWebpackPlugin({
+      //   patterns: [{from: staticPath, to: ""}],
+      // })
+
+      new CopyFilesPlugin({
+        fromPath: staticPath
       })
     );
   }
 
+
+
+  if (richmediarc.settings.type === "flashtalking") {
+    console.log('found flashtalking ad')
+
+    const outputString = `FT.manifest({
+      "filename": "index.html",
+      "width": 300,
+      "height": 250,
+      "clickTagCount": 1
+});`
+
+
+    config.plugins.push(new WriteFilePlugin({
+      filePath: './',
+      fileName: 'manifest.js',
+      content: outputString
+    }))
+  }
+
   if (richmediarc.settings.type === "adform") {
-    let clickTags = richmediarc.settings.clickTags || { clickTAG: "http://www.adform.com" };
+    let clickTags = richmediarc.settings.clickTags || {clickTAG: "http://www.adform.com"};
     let obj = {
       version: "1.0",
       title: richmediarc.settings.bundleName || bundleName,
@@ -522,21 +551,28 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION) {
+    // config.plugins.push(
+    //   new ZipPlugin({
+    //     path: path.join(outputPath, "../"),
+    //     filename: `./${bundleName}`,
+
+    //     fileOptions: {
+    //       mtime: new Date(),
+    //       mode: 0o100664,
+    //       compress: true,
+    //       forceZip64Format: false,
+    //     },
+
+    //     zipOptions: {
+    //       forceZip64Format: false,
+    //     },
+    //   })
+    // );
+
     config.plugins.push(
-      new ZipPlugin({
-        path: path.join(outputPath, "../"),
-        filename: `./${bundleName}`,
-
-        fileOptions: {
-          mtime: new Date(),
-          mode: 0o100664,
-          compress: true,
-          forceZip64Format: false,
-        },
-
-        zipOptions: {
-          forceZip64Format: false,
-        },
+      new ZipFilesPlugin({
+        outputPath: path.join(outputPath, "../"),
+        filename: `${bundleName}.zip`
       })
     );
   }
