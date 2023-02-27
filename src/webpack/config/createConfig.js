@@ -456,16 +456,11 @@ module.exports = function createConfig({
 
   if (fs.existsSync(staticPath)) {
     config.plugins.push(
-      // new CopyWebpackPlugin({
-      //   patterns: [{from: staticPath, to: ""}],
-      // })
-
       new CopyFilesPlugin({
         fromPath: staticPath
       })
     );
   }
-
 
 
   if (richmediarc.settings.type === "flashtalking") {

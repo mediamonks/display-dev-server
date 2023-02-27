@@ -8,20 +8,33 @@ module.exports = class CopyFilesPlugin {
     this.options = options;
   }
 
-  copyFiles(options, compilation) {
-    const outputPath = compilation.compiler.outputPath;
-    const inputPath = this.options.fromPath;
-    const files = fs.readdirSync(inputPath)
-
-    files.forEach(file => {
-      if (!fs.pathExistsSync(path.resolve(outputPath))) fs.mkdirSync(path.resolve(outputPath));
-      fs.copyFileSync(path.resolve(inputPath, file), path.resolve(outputPath, file));
-    })
-  }
-
   apply(compiler) {
-    compiler.hooks.afterEmit.tapPromise('CopyFilesPlugin', async compilation => {
-      this.copyFiles(this.options, compilation);
+    compiler.hooks.thisCompilation.tap('CopyFilesPlugin', compilation => {
+      const {webpack} = compiler;
+      const {Compilation} = webpack;
+      const {RawSource} = webpack.sources;
+
+      const outputPath = compilation.compiler.outputPath;
+      const inputPath = this.options.fromPath;
+      const files = fs.readdirSync(inputPath)
+
+      files.forEach(file => {
+        const absFilePath = path.resolve(inputPath, file);
+
+        if (compilation.compiler.options.mode === 'production') {
+          if (!fs.pathExistsSync(path.resolve(outputPath))) fs.mkdirSync(path.resolve(outputPath));
+          fs.copyFileSync(absFilePath, path.resolve(outputPath, file));
+        } else {
+
+          const content = fs.readFileSync(absFilePath)
+
+          compilation.fileDependencies.add(absFilePath);
+          compilation.emitAsset(
+            file,
+            new RawSource(content)
+          );
+        }
+      })
     });
   }
 };
