@@ -12,7 +12,7 @@ const cliProgress = require("cli-progress");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
 // const previewWebackConfig = require("../preview/webpack.config");
-const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
+// const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
 
 const getFilesizeInBytes = (filename) => {
   var stats = fs.statSync(filename);
@@ -80,21 +80,21 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   progressBar.stop();
   console.log(`built in ${new Date().getTime() - startTime}ms`);
 
-  // render backup images
-  if (result[0].settings.data.settings.displayAdsRecorder) {
-    const locations = result.map((result) => {
-      const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
-      const location = `${buildTarget}/${name}/index.html`;
-      return location;
-    });
-    await displayAdsRecorder({
-      targetDir: buildTarget,
-      adSelection: {
-        location: locations,
-        ...result[0].settings.data.settings.displayAdsRecorder,
-      },
-    });
-  }
+  // // render backup images
+  // if (result[0].settings.data.settings.displayAdsRecorder) {
+  //   const locations = result.map((result) => {
+  //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
+  //     const location = `${buildTarget}/${name}/index.html`;
+  //     return location;
+  //   });
+  //   await displayAdsRecorder({
+  //     targetDir: buildTarget,
+  //     adSelection: {
+  //       location: locations,
+  //       ...result[0].settings.data.settings.displayAdsRecorder,
+  //     },
+  //   });
+  // }
 
   console.log("copying preview files...");
   // copy preview folder
