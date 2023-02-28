@@ -3,8 +3,6 @@ const path = require("path");
 
 const nodeModules = `${path.resolve(__dirname, "../../node_modules")}/`;
 
-console.log("heya");
-
 module.exports = {
   entry: path.resolve(__dirname, "../preview/src/index.js"),
   mode: "development",
