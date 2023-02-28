@@ -31,7 +31,12 @@
               "type": "boolean"
             },
             "image": {
-              "type": "boolean"
+              "type": ["boolean", "object"],
+              "properties": {
+                "minimizer": {
+                  "type": "string"
+                }
+              }
             },
             "html": {
               "type": "boolean"
@@ -107,15 +112,10 @@
                       ]
                     }
                   },
-                  "required": [
-                    "glyphs"
-                  ]
+                  "required": ["glyphs"]
                 }
               },
-              "required": [
-                "sources",
-                "subset"
-              ]
+              "required": ["sources", "subset"]
             }
           ]
         }

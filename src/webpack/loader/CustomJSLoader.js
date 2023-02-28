@@ -1,14 +1,13 @@
 // const loaderUtils = require('loader-utils');
-const leafs = require('../../util/leafs');
-const isFile = require('../../util/isFile');
-const path = require('path');
-const fs = require('fs-extra');
+const leafs = require("../../util/leafs");
+const isFile = require("../../util/isFile");
+const path = require("path");
+const fs = require("fs-extra");
 
 module.exports = function customLoader(content) {
-
   const callback = this.async();
   const options = this.getOptions();
-  const replacementString = '\'webpackWillReplaceThisWithConfig\'';
+  const replacementString = "'webpackWillReplaceThisWithConfig'";
 
   // add the source richmediarc to dependencies so it gets watched by the dev server
   this.addDependency(options.configFilepath);
@@ -24,18 +23,22 @@ module.exports = function customLoader(content) {
   }
 
   if (content.indexOf(replacementString) >= 1) {
-
     // remove paths from config
-    leafs(options.config, function(value, obj, name, path) {
+    leafs(options.config, function (value, obj, name, path) {
       if (isFile(value)) {
-        delete obj[name]
+        delete obj[name];
       }
     });
 
-    content = content.replace(replacementString, JSON.stringify(options.config));
+    const sanitizedConfig = {
+      settings: {
+        size: options.config.settings.size,
+      },
+      content: options.config.content,
+    };
 
+    content = content.replace(replacementString, JSON.stringify(sanitizedConfig));
   }
 
   callback(null, content);
-
 };
