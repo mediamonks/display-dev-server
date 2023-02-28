@@ -5,13 +5,13 @@ const getObjectByString = require('../../util/getObjectByString');
 const path = require('path');
 const fs = require('fs-extra');
 const chalk = require('chalk');
-const get = require('lodash.get');
+// const get = require('lodash.get');
 
-module.exports = async function(content) {
+module.exports = async function (content) {
   const callback = this.async();
   const options = loaderUtils.getOptions(this);
   const loaderContext = this;
-  let { configFilepath, config } = options;
+  let {configFilepath, config} = options;
   let glyphs = [];
 
 
@@ -24,9 +24,10 @@ module.exports = async function(content) {
         if (!fs.existsSync(font)) console.warn(chalk.red("WARNING: " + font + " doesn't exist. Please check the path in .richmediarc"));
 
         if (font === this.resourcePath) {
-          const allContent = collection.subset.glyphs.reduce(function(acc, cur) {
-              return acc + getObjectByString(config, cur)}
-            ,'');
+          const allContent = collection.subset.glyphs.reduce(function (acc, cur) {
+            return acc + getObjectByString(config, cur)
+          }
+            , '');
 
           // basically concatenate all content found in the glyphs node
           const allContent_arr = allContent.split(''); //create array from it

@@ -16,7 +16,7 @@ const axios = require('axios')
  */
 class HtmlWebpackInlineSVGPlugin {
 
-  constructor (options) {
+  constructor(options) {
 
     this.runPreEmit = _.get(options, 'runPreEmit', false)
     this.inlineAll = _.get(options, 'inlineAll', false)
@@ -34,7 +34,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @param {object} compiler - webpack compiler
    *
    */
-  apply (compiler) {
+  apply(compiler) {
 
 
     // Hook into the html-webpack-plugin processing
@@ -88,7 +88,7 @@ class HtmlWebpackInlineSVGPlugin {
             // fetch the output path from webpack
 
             this.outputPath = compilation.outputOptions &&
-            compilation.outputOptions.path ?
+              compilation.outputOptions.path ?
               compilation.outputOptions.path :
               ''
 
@@ -188,7 +188,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @param {Object} htmlPluginData
    *
    */
-  getUserConfig (htmlPluginData) {
+  getUserConfig(htmlPluginData) {
 
     if (_.get(htmlPluginData, 'plugin.options.svgoConfig', false)) {
       throw new Error('html-webpack-inline-svg-plugin: on your webpack configuration file svgoConfig option must now go inside HtmlWebpackInlineSVGPlugin({}) instead of HtmlWebpackPlugin({}). Also note the SVGO configuration format has changed and the one you had will need tweaking: https://github.com/theGC/html-webpack-inline-svg-plugin#config')
@@ -208,7 +208,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  updateOutputFile (html, filename) {
+  updateOutputFile(html, filename) {
 
     if (!this.outputPath || !filename) return Promise.reject(new Error('outputPath & filename must be set to update output file'))
 
@@ -244,7 +244,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  processImages (html) {
+  processImages(html) {
 
     return new Promise((resolve, reject) => {
 
@@ -290,7 +290,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  updateHTML (html, inlineImages) {
+  updateHTML(html, inlineImages) {
 
     return inlineImages.reduce((promise, imageNode) => {
 
@@ -312,7 +312,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  processImage (html) {
+  processImage(html) {
 
     return new Promise((resolve, reject) => {
 
@@ -356,7 +356,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {array}
    *
    */
-  getInlineImages (documentFragment, inlineImages) {
+  getInlineImages(documentFragment, inlineImages) {
 
     if (!inlineImages) inlineImages = []
 
@@ -389,7 +389,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {null|Object} - null if no inline image - parse5 documentFragment if there is
    *
    */
-  getFirstInlineImage (documentFragment) {
+  getFirstInlineImage(documentFragment) {
 
     const inlineImages = this.getInlineImages(documentFragment)
 
@@ -406,12 +406,12 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {boolean}
    *
    */
-  isNodeValidInlineImage (node) {
+  isNodeValidInlineImage(node) {
 
     return !!(
       node.nodeName === 'img'
-      && ((this.inlineAll && _.filter(node.attrs, { name: 'inline-exclude' }).length === 0)
-      || _.filter(node.attrs, { name: 'inline' }).length)
+      && ((this.inlineAll && _.filter(node.attrs, {name: 'inline-exclude'}).length === 0)
+        || _.filter(node.attrs, {name: 'inline'}).length)
       && this.getImagesSrc(node))
 
   }
@@ -423,9 +423,9 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {string}
    *
    */
-  getImagesSrc (inlineImage) {
+  getImagesSrc(inlineImage) {
 
-    const svgSrcObject = _.find(inlineImage.attrs, { name: 'src' })
+    const svgSrcObject = _.find(inlineImage.attrs, {name: 'src'})
 
     // image does not have a src attribute
 
@@ -452,14 +452,22 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  async optimizeSvg ({ html, inlineImage, data, resolve }) {
+  async optimizeSvg({html, inlineImage, data, resolve}) {
 
-    // const config = this.getSvgoConfig();
-    // await SVGO.loadConfig(this.getSvgoConfig());
+    const options = {
+      plugins: [
+        {
+          name: 'preset-default',
+          params: {
+            overrides: {
+              cleanupIds: false,
+            },
+          },
+        },
+      ],
+    }
 
-    const result = SVGO.optimize(data, { 
-      plugins: [ { name: 'preset-default', params: { overrides: { cleanupIDs: false }, }, }, ], 
-    });
+    const result = SVGO.optimize(data, options);
 
     const optimisedSVG = result.data;
     html = this.replaceImageWithSVG(html, inlineImage, optimisedSVG)
@@ -474,7 +482,7 @@ class HtmlWebpackInlineSVGPlugin {
    */
   getSvgoConfig() {
     const svgoDefaultConfig = [
-      { cleanupIDs: false }
+      {cleanupIDs: false}
     ]
 
     const svgoDefaultConfigFiltered = svgoDefaultConfig.filter(di =>
@@ -492,7 +500,7 @@ class HtmlWebpackInlineSVGPlugin {
    * @returns {Promise}
    *
    */
-  processOutputHtml (html, inlineImage) {
+  processOutputHtml(html, inlineImage) {
 
     return new Promise((resolve, reject) => {
 
@@ -500,8 +508,8 @@ class HtmlWebpackInlineSVGPlugin {
 
       const asset = this.__compilation.getAsset(svgSrc);
 
-      if(asset){
-        this.optimizeSvg({ html, inlineImage, data: asset.source.source().toString(), resolve });
+      if (asset) {
+        this.optimizeSvg({html, inlineImage, data: asset.source.source().toString(), resolve});
         return;
       }
 
@@ -511,7 +519,7 @@ class HtmlWebpackInlineSVGPlugin {
       // read in the svg
       fs.readFile(path.resolve(this.outputPath, svgSrc), 'utf8', (err, data) => {
         if (!err) {
-          this.optimizeSvg({ html, inlineImage, data, resolve })
+          this.optimizeSvg({html, inlineImage, data, resolve})
           return
         }
 
@@ -522,11 +530,11 @@ class HtmlWebpackInlineSVGPlugin {
         }
 
         axios.get(svgSrc)
-          .then(({ data, status }) => {
+          .then(({data, status}) => {
             if (status !== 200) {
               throw new Error(`Error when retrieving image from URL: ${status} status`)
             }
-            this.optimizeSvg({ html, inlineImage, svgSrc, data, resolve })
+            this.optimizeSvg({html, inlineImage, svgSrc, data, resolve})
           })
           .catch((err) => reject(err))
 
@@ -550,10 +558,10 @@ class HtmlWebpackInlineSVGPlugin {
     // Get all passed image attributes except 'inline' and 'src'
     const imgAttributes = inlineImage.attrs.reduce((acc, attr) => {
 
-      const { name, value } = attr
+      const {name, value} = attr
 
       return name !== 'inline'
-      && name !== 'src'
+        && name !== 'src'
         ? acc + `${name}="${value}" `
         : acc
 

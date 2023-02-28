@@ -1,26 +1,17 @@
 const path = require("path");
 const fs = require("fs");
 const webpack = require("webpack");
-// const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
-// const CopyWebpackPlugin = require("copy-webpack-plugin");
-// const ZipPlugin = require("zip-webpack-plugin");
 const VirtualModulesPlugin = require("webpack-virtual-modules");
-const HtmlWebpackInlineSVGPlugin = require("../plugin/HtmlWebpackInlineSVGPlugin");
-const GenerateJsonPlugin = require("generate-json-webpack-plugin");
+
+const sanitizeFilename = require("sanitize-filename");
 
 const WriteFilePlugin = require("../plugin/WriteFilePlugin");
 const ZipFilesPlugin = require("../plugin/ZipFilesPlugin");
 const CopyFilesPlugin = require("../plugin/CopyFilesPlugin");
-
-
-// const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-
-const sanitizeFilename = require("sanitize-filename");
-// var WriteJsonPlugin = require('write-json-webpack-plugin');
+const HtmlWebpackInlineSVGPlugin = require("../plugin/HtmlWebpackInlineSVGPlugin");
 
 const DevEnum = require("../../data/DevEnum");
 const isFile = require("../../util/isFile");
@@ -28,10 +19,8 @@ const isExternalURL = require("../../util/isExternalURL");
 const getRichmediaRCSync = require("../../util/getRichmediaRCSync");
 const parsePlaceholders = require("../../util/parsePlaceholders");
 const flattenObjectToCSSVars = require("../../util/flattenObjectToCSSVars");
-// const resolveRichmediaRCPathsToWebpackPaths = require('../../util/resolveRichmediaRCPathsToWebpackPaths');
 const getOptimisationsFromConfig = require("../../util/options/getOptimisationsFromConfig");
 const addConfigsAsWebpackDependencies = require("../../util/addConfigsAsWebpackDependencies");
-// const RichmediaRCPlugin = require('../plugin/RichmediaRCPlugin');
 
 const nodeModules = `${path.resolve(__dirname, "../../../node_modules")}/`;
 
@@ -66,9 +55,7 @@ module.exports = function createConfig({
   }
 
   let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name].[ext]" : "[name]_[contenthash].[ext]";
-
   let optimizations = getOptimisationsFromConfig(richmediarc);
-
   let browserCompiler = richmediarc.settings.browserSupport ? richmediarc.settings.browserSupport : ["ie 11", "last 2 versions", "safari >= 7"];
 
   // override browser support
@@ -76,8 +63,6 @@ module.exports = function createConfig({
     browserCompiler = richmediarc.settings.browserCompiler;
   }
 
-  // entry.push('@babel/polyfill');
-  // entry.push('whatwg-fetch');
   entry.push(richmediarc.settings.entry.js);
 
   // check for trailing slash.
@@ -108,12 +93,9 @@ module.exports = function createConfig({
     target: `browserslist:${browserCompiler.toString()}`,
 
     output: {
-      //filename: './[name].js',
       filename: richmediarc.settings.useOriginalFileNames ? "[name].js" : "[name]_[contenthash].js",
       path: outputPath,
       publicPath: "",
-      // library: 'someLibName',
-      // libraryTarget: 'commonjs',
       iife: false,
     },
     externals: {
@@ -210,14 +192,6 @@ module.exports = function createConfig({
           ],
         },
         {
-          test: /\.sketch$/,
-          use: [
-            {
-              loader: "sketch-loader",
-            },
-          ],
-        },
-        {
           test: /\.(mp4|svg)$/,
           use: [
             {
@@ -285,33 +259,42 @@ module.exports = function createConfig({
           use: function () {
             let loaderArray = [];
 
-            if (!richmediarc.settings.skipBabel) {
+            if (richmediarc.settings.optimizations.js) {
               loaderArray.push({
-                loader: "babel-loader",
+                loader: "esbuild-loader",
                 options: {
-                  presets: [
-                    [
-                      require.resolve("@babel/preset-env"),
-                      {
-                        useBuiltIns: "usage",
-                        corejs: 3,
-                        targets: {
-                          browsers: browserCompiler,
-                        },
-                      },
-                    ],
-                  ],
-                  plugins: [
-                    require.resolve(`@babel/plugin-proposal-class-properties`),
-                    require.resolve(`@babel/plugin-syntax-dynamic-import`),
-                    require.resolve(`@babel/plugin-transform-async-to-generator`),
-                    // require.resolve(`@babel/plugin-transform-arrow-functions`),
-                    // require.resolve(`@babel/plugin-transform-spread`),
-                    [require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}],
-                  ],
+                  target: 'es2015'
                 },
               });
             }
+
+            // if (!richmediarc.settings.skipBabel) {
+            //   loaderArray.push({
+            //     loader: "babel-loader",
+            //     options: {
+            //       presets: [
+            //         [
+            //           require.resolve("@babel/preset-env"),
+            //           {
+            //             useBuiltIns: "usage",
+            //             corejs: 3,
+            //             targets: {
+            //               browsers: browserCompiler,
+            //             },
+            //           },
+            //         ],
+            //       ],
+            //       plugins: [
+            //         require.resolve(`@babel/plugin-proposal-class-properties`),
+            //         require.resolve(`@babel/plugin-syntax-dynamic-import`),
+            //         require.resolve(`@babel/plugin-transform-async-to-generator`),
+            //         // require.resolve(`@babel/plugin-transform-arrow-functions`),
+            //         // require.resolve(`@babel/plugin-transform-spread`),
+            //         [require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}],
+            //       ],
+            //     },
+            //   });
+            // }
 
             loaderArray.push({
               loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
@@ -334,15 +317,6 @@ module.exports = function createConfig({
             },
           },
         },
-        // {
-        //   test: /.richmediarc$/,
-        //   exclude: /node_modules/,
-        //   type: 'javascript/dynamic',
-        //   use: {
-        //     loader: path.resolve(path.join(__dirname, '../loader/RichmediaRCLoader.js')),
-        //     options: {},
-        //   },
-        // },
         {
           test: /\.(eot)$/,
           use: [
@@ -430,18 +404,6 @@ module.exports = function createConfig({
         "node_modules/richmediaconfig": `module.exports = "DUDE"`,
       }),
 
-      // new CircularDependencyPlugin({
-      //   // exclude detection of files based on a RegExp
-      //   exclude: /node_modules/,
-      //   // add errors to webpack instead of warnings
-      //   failOnError: true,
-      //   // set the current working directory for displaying module paths
-      //   cwd: process.cwd(),
-      // }),
-      //
-      // new Visualizer({
-      //   filename: './statistics.html',
-      // }),
     ],
     stats: {
       colors: true,
@@ -462,17 +424,15 @@ module.exports = function createConfig({
     );
   }
 
-
   if (richmediarc.settings.type === "flashtalking") {
     console.log('found flashtalking ad')
 
     const outputString = `FT.manifest({
       "filename": "index.html",
-      "width": 300,
-      "height": 250,
+      "width": ${richmediarc.settings.size.width},
+      "height": ${richmediarc.settings.size.height},
       "clickTagCount": 1
 });`
-
 
     config.plugins.push(new WriteFilePlugin({
       filePath: './',
@@ -499,12 +459,12 @@ module.exports = function createConfig({
       source: "index.html",
     };
 
-    config.plugins.push(new GenerateJsonPlugin("manifest.json", obj));
+    config.plugins.push(new WriteFilePlugin({
+      filePath: './',
+      fileName: 'manifest.json',
+      content: JSON.stringify(obj, null, 2)
+    }))
   }
-
-  // if (stats === true) {
-  //   config.plugins.push(new BundleAnalyzerPlugin());
-  // }
 
   config.optimization = {
     minimize: true,
@@ -523,47 +483,28 @@ module.exports = function createConfig({
     );
   } else {
     // standard implementation, no minifying, but removing comments
-    config.optimization.minimizer.push(
-      new TerserPlugin({
-        terserOptions: {
-          compress: false,
-          mangle: false,
-          module: true,
-          format: {
-            comments: false,
-            beautify: true,
-            indent_level: 2,
-          },
-        },
-        extractComments: false,
-      })
-    );
+    // config.optimization.minimizer.push(
+    //   new TerserPlugin({
+    //     terserOptions: {
+    //       compress: false,
+    //       mangle: false,
+    //       module: false,
+    //       format: {
+    //         comments: false,
+    //         // beautify: true,
+    //         // indent_level: 2,
+    //       },
+    //     },
+    //     extractComments: false,
+    //   })
+    // );
   }
 
   if (mode === DevEnum.DEVELOPMENT) {
     config.watch = true;
-    // config.plugins.push(new webpack.HotModuleReplacementPlugin());
   }
 
   if (mode === DevEnum.PRODUCTION) {
-    // config.plugins.push(
-    //   new ZipPlugin({
-    //     path: path.join(outputPath, "../"),
-    //     filename: `./${bundleName}`,
-
-    //     fileOptions: {
-    //       mtime: new Date(),
-    //       mode: 0o100664,
-    //       compress: true,
-    //       forceZip64Format: false,
-    //     },
-
-    //     zipOptions: {
-    //       forceZip64Format: false,
-    //     },
-    //   })
-    // );
-
     config.plugins.push(
       new ZipFilesPlugin({
         outputPath: path.join(outputPath, "../"),
@@ -571,14 +512,6 @@ module.exports = function createConfig({
       })
     );
   }
-
-  // config.plugins.push(
-  //   new SimpleProgressWebpackPlugin({
-  //     format: 'compact',
-  //   }),
-  // );
-
-  // throw new Error('STOP hammer time')
 
   return config;
 };
