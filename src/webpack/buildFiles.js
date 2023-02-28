@@ -97,36 +97,36 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     });
   }
 
-  console.log("compiling preview...");
-  await new Promise((resolve) => {
-    webpack(previewWebackConfig).run((err, stats) => {
-      if (err) {
-        console.error(err.stack || err);
-        if (err.details) {
-          err.details.forEach((item, index) => {
-            console.error(index, item.message);
-          });
-        }
-        return;
-      }
+  // await new Promise((resolve) => {
+  //   webpack(previewWebackConfig).run((err, stats) => {
+  //     if (err) {
+  //       console.error(err.stack || err);
+  //       if (err.details) {
+  //         err.details.forEach((item, index) => {
+  //           console.error(index, item.message);
+  //         });
+  //       }
+  //       return;
+  //     }
 
-      const info = stats.toJson();
+  //     const info = stats.toJson();
 
-      if (stats.hasErrors()) {
-        info.errors.forEach((item, index) => {
-          console.log(chalk.red(item.message));
-        });
-      }
+  //     if (stats.hasErrors()) {
+  //       info.errors.forEach((item, index) => {
+  //         console.log(chalk.red(item.message));
+  //       });
+  //     }
 
-      if (stats.hasWarnings()) {
-        info.warnings.forEach((item) => {
-          console.log(chalk.green(item.message));
-        });
-      }
-      resolve(previewWebackConfig);
-    });
-  });
+  //     if (stats.hasWarnings()) {
+  //       info.warnings.forEach((item) => {
+  //         console.log(chalk.green(item.message));
+  //       });
+  //     }
+  //     resolve(previewWebackConfig);
+  //   });
+  // });
 
+  console.log("copying preview files...");
   // copy preview folder
   fs.copySync(path.join(__dirname, `../preview/dist`), buildTarget, {
     overwrite: true,
@@ -174,11 +174,11 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
     output.on("close", resolve);
 
     const archive = archiver("zip", {
-      zlib: { level: 9 }, // Sets the compression level.
+      zlib: {level: 9}, // Sets the compression level.
     });
     archive.pipe(output);
 
-    adsList.ads.forEach((ad) => archive.file(path.resolve(buildTarget, ad.output.zip.url), { name: ad.output.zip.url }));
+    adsList.ads.forEach((ad) => archive.file(path.resolve(buildTarget, ad.output.zip.url), {name: ad.output.zip.url}));
 
     archive.finalize();
   });
