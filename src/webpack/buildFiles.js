@@ -3,15 +3,15 @@ const path = require("path");
 
 const chalk = require("chalk");
 const webpack = require("webpack");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
 const archiver = require("archiver");
-const globPromise = require("glob-promise");
+// const globPromise = require("glob-promise");
 const cliProgress = require("cli-progress");
 
-const getTemplate = require("../util/getPreviewTemplate");
+// const getTemplate = require("../util/getPreviewTemplate");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
-const previewWebackConfig = require("../preview/webpack.config");
+// const previewWebackConfig = require("../preview/webpack.config");
 const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
 
 const getFilesizeInBytes = (filename) => {
@@ -81,7 +81,6 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   console.log(`built in ${new Date().getTime() - startTime}ms`);
 
   // render backup images
-
   if (result[0].settings.data.settings.displayAdsRecorder) {
     const locations = result.map((result) => {
       const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
@@ -96,35 +95,6 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
       },
     });
   }
-
-  // await new Promise((resolve) => {
-  //   webpack(previewWebackConfig).run((err, stats) => {
-  //     if (err) {
-  //       console.error(err.stack || err);
-  //       if (err.details) {
-  //         err.details.forEach((item, index) => {
-  //           console.error(index, item.message);
-  //         });
-  //       }
-  //       return;
-  //     }
-
-  //     const info = stats.toJson();
-
-  //     if (stats.hasErrors()) {
-  //       info.errors.forEach((item, index) => {
-  //         console.log(chalk.red(item.message));
-  //       });
-  //     }
-
-  //     if (stats.hasWarnings()) {
-  //       info.warnings.forEach((item) => {
-  //         console.log(chalk.green(item.message));
-  //       });
-  //     }
-  //     resolve(previewWebackConfig);
-  //   });
-  // });
 
   console.log("copying preview files...");
   // copy preview folder
@@ -172,14 +142,11 @@ module.exports = async function buildFiles(result, buildTarget, chunkSize = 10) 
   await new Promise((resolve) => {
     const output = fs.createWriteStream(buildTarget + "/all.zip");
     output.on("close", resolve);
-
     const archive = archiver("zip", {
       zlib: {level: 9}, // Sets the compression level.
     });
     archive.pipe(output);
-
     adsList.ads.forEach((ad) => archive.file(path.resolve(buildTarget, ad.output.zip.url), {name: ad.output.zip.url}));
-
     archive.finalize();
   });
 
