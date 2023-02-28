@@ -1,10 +1,11 @@
-const loaderUtils = require('loader-utils');
+// const loaderUtils = require('loader-utils');
 const isExternalURL = require('../../util/isExternalURL');
 const getRichmediaRC = require('../../util/getRichmediaRC');
 const leafs = require('../../util/leafs');
 const isFile = require('../../util/isFile');
 const path = require('path');
 const addConfigsAsWebpackDependencies = require('../../util/addConfigsAsWebpackDependencies');
+const stringifyRequest = require('./utils/stringifyRequest')
 
 /**
  * Allows you to import external files into a json value.
@@ -12,10 +13,10 @@ const addConfigsAsWebpackDependencies = require('../../util/addConfigsAsWebpackD
  */
 module.exports = function RichmediaRCLoader(data) {
   const callback = this.async();
-  const options = loaderUtils.getOptions(this);
+  const options = this.getOptions();
   const loaderContext = this;
 
-  const { configFilepath, config } = options;
+  const {configFilepath, config} = options;
 
   addConfigsAsWebpackDependencies(configFilepath, loaderContext); //recursively add richmediarc and sharedrc files as dependencies for webpack
 
@@ -38,8 +39,8 @@ module.exports = function RichmediaRCLoader(data) {
           const id = `uuid_replace_${ruuid.toString(16)}`;
 
           replaceItems.push({
-            key: loaderUtils.stringifyRequest(loaderContext, id),
-            value: `require(${loaderUtils.stringifyRequest(loaderContext, `${value}`)})`,
+            key: stringifyRequest(loaderContext, id),
+            value: `require(${stringifyRequest(loaderContext, `${value}`)})`,
           });
 
           this.addDependency(value);

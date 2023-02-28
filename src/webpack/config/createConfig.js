@@ -3,7 +3,6 @@ const fs = require("fs");
 const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const VirtualModulesPlugin = require("webpack-virtual-modules");
 
 const sanitizeFilename = require("sanitize-filename");
@@ -54,7 +53,7 @@ module.exports = function createConfig({
     devtool = "inline-source-map";
   }
 
-  let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name].[ext]" : "[name]_[contenthash].[ext]";
+  let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name]" : "[name]_[contenthash]";
   let optimizations = getOptimisationsFromConfig(richmediarc);
   let browserCompiler = richmediarc.settings.browserSupport ? richmediarc.settings.browserSupport : ["ie 11", "last 2 versions", "safari >= 7"];
 
@@ -122,21 +121,83 @@ module.exports = function createConfig({
     module: {
       rules: [
         {
-          test: /\.css$/,
+          test: /\.js$/,
+          // adding exception to libraries coming from @mediamonks namespace.
+          exclude: /(?!(node_modules\/@mediamonks)|(node_modules\\@mediamonks))node_modules/,
+          use: function () {
+            let loaderArray = [];
+
+            if (richmediarc.settings.optimizations.js) {
+              loaderArray.push({
+                loader: "esbuild-loader",
+                options: {
+                  target: 'es2015'
+                },
+              });
+            }
+
+            loaderArray.push({
+              loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
+              options: {
+                config: richmediarc,
+                configFilepath: richmediarcFilepath,
+              },
+            });
+
+            return loaderArray;
+          },
+        },
+        {
+          test: /richmediaconfig/,
+          use: {
+            loader: path.resolve(path.join(__dirname, "../loader/RichmediaRCLoader.js")),
+            options: {
+              configFilepath: richmediarcFilepath,
+              config: richmediarc,
+            },
+          },
+        },
+
+        {
+          test: /\.(hbs)$/,
+          use: [
+            // {
+            //   loader: path.resolve(path.join(__dirname, "../loader/LoggerLoader.js")),
+            // },
+            {
+              loader: path.resolve(path.join(__dirname, "../loader/FromHandlebarsToRawLoader.js")),
+              options: {
+                configLoaderName: "richmediaconfig",
+              },
+            },
+            {
+              loader: "handlebars-loader",
+              options: {
+                helperDirs: path.join(__dirname, "../../util/handlebars/helpers"),
+              },
+            },
+            path.resolve(path.join(__dirname, "../loader/extractLoader.js")),
+            {
+              loader: "html-loader",
+              options: {
+                minimize: optimizations.html,
+                esModule: false,
+              },
+            },
+          ],
+        },
+
+        {
+          test: /\.(scss|css)$/i,
           use: [
             {
               loader: "file-loader",
               options: {
-                name: namedHashing,
+                name: `${namedHashing}.css`,
                 esModule: false,
               },
             },
-            {
-              loader: "extract-loader",
-              options: {
-                publicPath: "",
-              },
-            },
+            path.resolve(path.join(__dirname, "../loader/extractLoader.js")),
             {
               loader: "css-loader",
               options: {
@@ -182,7 +243,7 @@ module.exports = function createConfig({
                   };
 
                   if (optimizations.css) {
-                    postcssOptionsObj.plugins.push(["cssnano"]);
+                    // postcssOptionsObj.plugins.push(["cssnano"]);
                   }
 
                   return postcssOptionsObj;
@@ -191,18 +252,7 @@ module.exports = function createConfig({
             },
           ],
         },
-        {
-          test: /\.(mp4|svg)$/,
-          use: [
-            {
-              loader: "file-loader",
-              options: {
-                name: namedHashing,
-                esModule: false,
-              },
-            },
-          ],
-        },
+
         {
           test: /\.(jpe?g|png)$/i,
           use: function () {
@@ -210,7 +260,7 @@ module.exports = function createConfig({
               {
                 loader: "file-loader",
                 options: {
-                  name: namedHashing,
+                  name: optimizations.image ? `${namedHashing}.webp` : `${namedHashing}.[ext]`,
                   esModule: false,
                 },
               },
@@ -226,108 +276,38 @@ module.exports = function createConfig({
                 });
               } else {
                 imageLoadersArray.push({
-                  loader: ImageMinimizerPlugin.loader,
-                  options: {
-                    minimizer: {
-                      implementation: ImageMinimizerPlugin.imageminMinify,
-                      options: {
-                        plugins: [
-                          "imagemin-mozjpeg",
-                          "pngquant",
-                          //[
-                          //  "pngquant",
-                          //  {
-                          //    quality: [0.6, 0.8],
-                          //    dithering: false,
-                          //  },
-                          //],
-                        ],
-                      },
-                    },
-                  },
+                  loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
+                  options: {}
                 });
+                // imageLoadersArray.push({
+                //   loader: ImageMinimizerPlugin.loader,
+                //   options: {
+                //     minimizer: {
+                //       implementation: ImageMinimizerPlugin.imageminMinify,
+                //       options: {
+                //         plugins: [
+                //           "imagemin-mozjpeg",
+                //           "pngquant",
+                //           //[
+                //           //  "pngquant",
+                //           //  {
+                //           //    quality: [0.6, 0.8],
+                //           //    dithering: false,
+                //           //  },
+                //           //],
+                //         ],
+                //       },
+                //     },
+                //   },
+                // });
               }
             }
 
             return imageLoadersArray;
           },
         },
-        {
-          test: /\.js$/,
-          // adding exception to libraries coming from @mediamonks namespace.
-          exclude: /(?!(node_modules\/@mediamonks)|(node_modules\\@mediamonks))node_modules/,
-          use: function () {
-            let loaderArray = [];
 
-            if (richmediarc.settings.optimizations.js) {
-              loaderArray.push({
-                loader: "esbuild-loader",
-                options: {
-                  target: 'es2015'
-                },
-              });
-            }
 
-            // if (!richmediarc.settings.skipBabel) {
-            //   loaderArray.push({
-            //     loader: "babel-loader",
-            //     options: {
-            //       presets: [
-            //         [
-            //           require.resolve("@babel/preset-env"),
-            //           {
-            //             useBuiltIns: "usage",
-            //             corejs: 3,
-            //             targets: {
-            //               browsers: browserCompiler,
-            //             },
-            //           },
-            //         ],
-            //       ],
-            //       plugins: [
-            //         require.resolve(`@babel/plugin-proposal-class-properties`),
-            //         require.resolve(`@babel/plugin-syntax-dynamic-import`),
-            //         require.resolve(`@babel/plugin-transform-async-to-generator`),
-            //         // require.resolve(`@babel/plugin-transform-arrow-functions`),
-            //         // require.resolve(`@babel/plugin-transform-spread`),
-            //         [require.resolve(`@babel/plugin-proposal-decorators`), {decoratorsBeforeExport: true}],
-            //       ],
-            //     },
-            //   });
-            // }
-
-            loaderArray.push({
-              loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
-              options: {
-                config: richmediarc,
-                configFilepath: richmediarcFilepath,
-              },
-            });
-
-            return loaderArray;
-          },
-        },
-        {
-          test: /richmediaconfig/,
-          use: {
-            loader: path.resolve(path.join(__dirname, "../loader/RichmediaRCLoader.js")),
-            options: {
-              configFilepath: richmediarcFilepath,
-              config: richmediarc,
-            },
-          },
-        },
-        {
-          test: /\.(eot)$/,
-          use: [
-            {
-              loader: "file-loader",
-              options: {
-                name: namedHashing,
-              },
-            },
-          ],
-        },
         {
           test: /\.(ttf|woff|woff2)$/,
           use: [
@@ -339,7 +319,7 @@ module.exports = function createConfig({
                 loader: "file-loader",
                 options: {
                   // name: `[name]${namedHashing}.[ext]`,
-                  name: namedHashing,
+                  name: `${namedHashing}.[ext]`,
                 },
               },
             {
@@ -352,34 +332,24 @@ module.exports = function createConfig({
           ],
         },
         {
-          test: /\.(hbs)$/,
+          test: /\.(eot)$/,
           use: [
             {
-              loader: path.resolve(path.join(__dirname, "../loader/FromHandlebarsToRawLoader.js")),
+              loader: "file-loader",
               options: {
-                configLoaderName: "richmediaconfig",
+                name: `${namedHashing}.[ext]`,
               },
             },
-            // {loader: 'handlebars-loader'},
+          ],
+        },
+        {
+          test: /\.(mp4|svg)$/,
+          use: [
             {
-              loader: "handlebars-loader",
+              loader: "file-loader",
               options: {
-                helperDirs: path.join(__dirname, "../../util/handlebars/helpers"),
-              },
-            },
-            {
-              loader: "extract-loader",
-              options: {
-                publicPath: "",
-              },
-            },
-            {
-              loader: "html-loader",
-              options: {
-                minimize: optimizations.html,
+                name: `${namedHashing}.[ext]`,
                 esModule: false,
-
-                // attrs: [':src', ':href', 'netflix-video:source', ':data-src', ':data'],
               },
             },
           ],
@@ -399,11 +369,9 @@ module.exports = function createConfig({
         DEVELOPMENT: JSON.stringify(mode === DevEnum.DEVELOPMENT),
         PRODUCTION: JSON.stringify(mode === DevEnum.PRODUCTION),
       }),
-
       new VirtualModulesPlugin({
         "node_modules/richmediaconfig": `module.exports = "DUDE"`,
       }),
-
     ],
     stats: {
       colors: true,
@@ -481,23 +449,6 @@ module.exports = function createConfig({
         extractComments: false,
       })
     );
-  } else {
-    // standard implementation, no minifying, but removing comments
-    // config.optimization.minimizer.push(
-    //   new TerserPlugin({
-    //     terserOptions: {
-    //       compress: false,
-    //       mangle: false,
-    //       module: false,
-    //       format: {
-    //         comments: false,
-    //         // beautify: true,
-    //         // indent_level: 2,
-    //       },
-    //     },
-    //     extractComments: false,
-    //   })
-    // );
   }
 
   if (mode === DevEnum.DEVELOPMENT) {
