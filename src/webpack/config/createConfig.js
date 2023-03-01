@@ -260,47 +260,17 @@ module.exports = function createConfig({
               {
                 loader: "file-loader",
                 options: {
-                  name: optimizations.image ? `${namedHashing}.webp` : `${namedHashing}.[ext]`,
+                  name: `${namedHashing}.[ext]`,
                   esModule: false,
                 },
               },
             ];
 
             if (optimizations.image) {
-              if (optimizations.image.minimizer === "tinypng") {
-                imageLoadersArray.push({
-                  loader: path.resolve(path.join(__dirname, "../loader/TinyPNGLoader.js")),
-                  options: {
-                    apiKey: optimizations.image.options.apiKey,
-                  },
-                });
-              } else {
-                imageLoadersArray.push({
-                  loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
-                  options: {}
-                });
-                // imageLoadersArray.push({
-                //   loader: ImageMinimizerPlugin.loader,
-                //   options: {
-                //     minimizer: {
-                //       implementation: ImageMinimizerPlugin.imageminMinify,
-                //       options: {
-                //         plugins: [
-                //           "imagemin-mozjpeg",
-                //           "pngquant",
-                //           //[
-                //           //  "pngquant",
-                //           //  {
-                //           //    quality: [0.6, 0.8],
-                //           //    dithering: false,
-                //           //  },
-                //           //],
-                //         ],
-                //       },
-                //     },
-                //   },
-                // });
-              }
+              imageLoadersArray.push({
+                loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
+                options: {}
+              });
             }
 
             return imageLoadersArray;

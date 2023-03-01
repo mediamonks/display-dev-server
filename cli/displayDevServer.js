@@ -7,6 +7,8 @@ const chalk = require('chalk');
 const packageJson = require('../package.json');
 const base64 = require("../src/util/base64");
 
+console.log(`Welcome to the ${chalk.green.bold(`Display.Monks Development Server`)} v${packageJson.version}`);
+
 program
   .version(packageJson.version)
   .option('-g, --glob <data>', 'Globbing pattern like "-p ./src/**/.richmediarc"')
