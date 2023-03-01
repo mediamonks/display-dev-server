@@ -22,7 +22,7 @@ module.exports = class CopyFilesPlugin {
         const absFilePath = path.resolve(inputPath, file);
 
         if (compilation.compiler.options.mode === 'production') {
-          if (!fs.pathExistsSync(path.resolve(outputPath))) fs.mkdirSync(path.resolve(outputPath));
+          if (!fs.pathExistsSync(path.resolve(outputPath))) fs.mkdirSync(path.resolve(outputPath), {recursive: true});
           fs.copyFileSync(absFilePath, path.resolve(outputPath, file));
         } else {
 
