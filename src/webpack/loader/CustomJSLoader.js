@@ -1,7 +1,7 @@
 // const loaderUtils = require('loader-utils');
 const leafs = require("../../util/leafs");
 const isFile = require("../../util/isFile");
-const path = require("path");
+const pathModule = require("path");
 const fs = require("fs-extra");
 
 module.exports = function customLoader(content) {
@@ -16,7 +16,7 @@ module.exports = function customLoader(content) {
   try {
     const rawConfigJson = fs.readJSONSync(options.configFilepath);
     const sharedRcPath = rawConfigJson.parent;
-    const newPath = path.resolve(path.dirname(options.configFilepath), sharedRcPath);
+    const newPath = pathModule.resolve(pathModule.dirname(options.configFilepath), sharedRcPath);
     this.addDependency(newPath);
   } catch (e) {
     // console.log('no parent rc?')
@@ -25,8 +25,9 @@ module.exports = function customLoader(content) {
   if (content.indexOf(replacementString) >= 1) {
     // remove paths from config
     leafs(options.config, function (value, obj, name, path) {
+
       if (isFile(value)) {
-        delete obj[name];
+        obj[name] = pathModule.basename(value);
       }
     });
 
