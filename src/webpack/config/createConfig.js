@@ -9,6 +9,7 @@ const sanitizeFilename = require("sanitize-filename");
 
 const WriteFilePlugin = require("../plugin/WriteFilePlugin");
 const ZipFilesPlugin = require("../plugin/ZipFilesPlugin");
+const OptimizeBundleToFilesizePlugin = require('../plugin/OptimizeBundleToFilesizePlugin');
 const CopyFilesPlugin = require("../plugin/CopyFilesPlugin");
 const HtmlWebpackInlineSVGPlugin = require("../plugin/HtmlWebpackInlineSVGPlugin");
 
@@ -426,11 +427,19 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION) {
+
     config.plugins.push(
-      new ZipFilesPlugin({
-        outputPath: path.join(outputPath, "../"),
-        filename: `${bundleName}.zip`
-      })
+      richmediarc.settings.optimizeToFileSize ?
+        new OptimizeBundleToFilesizePlugin({
+          outputPath: path.join(outputPath, "../"),
+          filename: `${bundleName}.zip`,
+          maxFileSize: richmediarc.settings.maxFileSize * 1024,
+          lowestQuality: 60,
+        }) :
+        new ZipFilesPlugin({
+          outputPath: path.join(outputPath, "../"),
+          filename: `${bundleName}.zip`
+        })
     );
   }
 
