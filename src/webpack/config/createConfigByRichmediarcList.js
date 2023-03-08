@@ -6,7 +6,7 @@ const draft07 = require('ajv/lib/refs/json-schema-draft-07.json');
 const createConfig = require('./createConfig');
 const isGoogleSpreadsheetUrl = require('../../util/isGoogleSpreadsheetUrl');
 const getNameFromLocation = require('../../util/getNameFromLocation');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+const {GoogleSpreadsheet} = require('google-spreadsheet');
 
 const schema = require('../../schema/richmediarc.schema.json');
 
@@ -14,11 +14,11 @@ const schema = require('../../schema/richmediarc.schema.json');
  *
  * @param {string} richmediaConfigLocation
  * @param {any} richmediaConfig
- * @param buildTarget
+ * @param outputDir
  * @return {{filepathHtml: string, filepathJs: string, filepathRichmediaRC: string, outputPath: string}}
  */
-function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig, buildTarget = './build') {
-  const ajv = new Ajv({ allErrors: true });
+function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig, outputDir) {
+  const ajv = new Ajv({allErrors: true});
   const validate = ajv.compile(schema);
   const valid = validate(richmediaConfig);
 
@@ -39,7 +39,7 @@ function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig, 
   }
 
   const outputPath = path.resolve(
-    path.join(`${buildTarget}`, getNameFromLocation(richmediaConfigLocation)),
+    path.join(`${outputDir}`, getNameFromLocation(richmediaConfigLocation)),
   );
   const richmediarcFilepath = path.resolve(richmediaConfigLocation);
 
@@ -54,12 +54,12 @@ function validateSchemaAndCreatePaths(richmediaConfigLocation, richmediaConfig, 
  * @param {Array<{location, data}>} richmediarcList
  * @param {string} mode
  * @param stats
- * @param buildTarget
+ * @param outputDir
  * @return {Promise<any[]>}
  */
-async function createConfigByRichmediarcList(richmediarcList, { mode, stats, buildTarget = './build' }) {
+async function createConfigByRichmediarcList(richmediarcList, {mode, stats, outputDir}) {
   const promiseList = richmediarcList.map(
-    ({ location, data }) => {
+    ({location, data}) => {
       /**
        * const {
        *   filepathHtml,
@@ -70,7 +70,7 @@ async function createConfigByRichmediarcList(richmediarcList, { mode, stats, bui
        * } = validateSchemaAndCreatePaths(location, data);
        */
       const webpackConfig = createConfig({
-        ...validateSchemaAndCreatePaths(location, data, buildTarget),
+        ...validateSchemaAndCreatePaths(location, data, outputDir),
         richmediarc: data,
         options: {
           mode,

@@ -1,7 +1,7 @@
 // import styles from "./Previews.module.scss";
 import React from "react";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { Chip, Tab, Tooltip, Divider, Card, CardMedia, CardContent, IconButton, Box, Typography } from "@mui/material";
+import {useState, useMemo, useEffect, useRef} from "react";
+import {Chip, Tab, Tooltip, Divider, Card, CardMedia, CardContent, IconButton, Box, Typography} from "@mui/material";
 
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
@@ -18,7 +18,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 export const AdPreview = (props) => {
-  const { ad, maxFileSize = 150 } = props;
+  const {ad, maxFileSize = 150} = props;
 
   const [mediaType, setMediaType] = useState("iframe");
   const [mediaSource, setMediaSource] = useState(ad.output.html.url);
@@ -47,27 +47,27 @@ export const AdPreview = (props) => {
   }, [activeConfigTab]);
 
   return (
-    <Card sx={{ maxWidth: ad.width, height: "fit-content" }}>
-      <Typography sx={{ padding: "0px 10px", margin: "10px 0", wordBreak: "break-all" }} align="center" variant="body2">
+    <Card sx={{minWidth: `${ad.width}px`, maxWidth: `${ad.width}px`, height: "fit-content"}}>
+      <Typography sx={{padding: "0px 10px", margin: "10px 0", wordBreak: "break-all"}} align="center" variant="body2">
         {ad.bundleName}
       </Typography>
       <TabContext value={activeConfigTab}>
-        <Box sx={{ borderColor: "divider" }}>
+        <Box sx={{borderColor: "divider"}}>
           <TabList variant="fullWidth" onChange={(event, newValue) => setActiveConfigTab(newValue)}>
-            <Tab wrapped sx={{ minWidth: "50px" }} label="html" value="html,iframe" />
+            <Tab wrapped sx={{minWidth: "50px"}} label="html" value="html,iframe" />
             {extensionTypes.map((item) => {
               const [extension, type] = item.split(",");
-              if (ad.output[extension]) return <Tab key={item} disabled={!ad.output[extension]?.url} icon={extensionIcons[extension]} sx={{ minWidth: "50px" }} value={item} />;
+              if (ad.output[extension]) return <Tab key={item} disabled={!ad.output[extension]?.url} icon={extensionIcons[extension]} sx={{minWidth: "50px"}} value={item} />;
             })}
           </TabList>
         </Box>
       </TabContext>
 
-      <CardMedia ref={adPreviewCard} component={mediaType} style={{ width: ad.width, height: ad.height }} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
+      <CardMedia ref={adPreviewCard} component={mediaType} style={{width: ad.width, height: ad.height}} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
       <CardContent>
         <Box>
           <Box marginBottom="20px">
-            <Typography sx={{ marginBottom: "10px" }} noWrap align="left" variant="body2">
+            <Typography sx={{marginBottom: "10px"}} noWrap align="left" variant="body2">
               Bundle size:
             </Typography>
             <Tooltip title="Bundle size">
@@ -88,7 +88,7 @@ export const AdPreview = (props) => {
           </Box>*/}
         </Box>
 
-        <Divider light sx={{ margin: "20px 0" }} />
+        <Divider light sx={{margin: "20px 0"}} />
 
         <Box display="flex" flexWrap="wrap" justifyContent="space-between">
           <Box>

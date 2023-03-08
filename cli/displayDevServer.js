@@ -11,20 +11,26 @@ console.log(`Welcome to the ${chalk.green.bold(`Display.Monks Development Server
 
 program
   .version(packageJson.version)
-  .option('-g, --glob <data>', 'Globbing pattern like "-p ./src/**/.richmediarc"')
+  .option('-g, --glob <data>', 'Globbing pattern like "-p ./src/**/.richmediarc"', "./**/.richmediarc*")
   .option('-ss, --stats', 'Show stats when building')
   .option('-c, --choices <data>', 'predetermined settings')
-  .option('-m, --mode <data>', 'development or production')
-  .option('-o, --outputDir <data>', 'output dir')
-
+  .option('-m, --mode <data>', 'development or production', 'development')
+  .option('-o, --outputDir <data>', 'output dir', './build')
+  .option('--skipBuild', 'skip compiling ads phase', false)
+  .option('--skipPreview', 'skip preview building phase', false)
   .parse(process.argv);
 
 const options = program.opts();
 
-displayDevServer({
-  mode: options.mode,
-  glob: options.glob,
-  stats: options.stats,
-  buildTarget: options.outputDir,
-  choices: options.choices ? JSON.parse(base64.decode(options.choices)) : null,
-}).then(r => console.log(`${chalk.green('✔')} done`));
+(async () => {
+
+  await displayDevServer({
+    ...options,
+    choices: options.choices ? JSON.parse(base64.decode(options.choices)) : null,
+  })
+
+  console.log(`${chalk.green('✔')} done`);
+
+})();
+
+
