@@ -1,6 +1,6 @@
 {
   "name": "@mediamonks/display-dev-server",
-  "version": "11.0.8",
+  "version": "11.0.9",
   "description": "This is the Display.Monks development server, which handles previewing and compiling ads via webpack.",
   "scripts": {
     "preview-dev": "cd ./src/preview && npm run dev"
