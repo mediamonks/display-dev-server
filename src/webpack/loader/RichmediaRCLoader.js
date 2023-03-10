@@ -59,6 +59,9 @@ module.exports = function RichmediaRCLoader(data) {
       });
     }
 
+    // remove contentSource / API key if it exists
+    if (data?.settings?.contentSource) delete data.settings.contentSource;
+
     data = JSON.stringify(data)
       .replace(/\u2028/g, '\\u2028')
       .replace(/\u2029/g, '\\u2029');
