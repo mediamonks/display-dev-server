@@ -267,7 +267,8 @@ module.exports = function createConfig({
               },
             ];
 
-            if (optimizations.image) {
+            if (optimizations.image && !richmediarc.settings.optimizeToFileSize) {
+              // don't optimize images if optimizeToFileSize is set to true
               imageLoadersArray.push({
                 loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
                 options: {}
