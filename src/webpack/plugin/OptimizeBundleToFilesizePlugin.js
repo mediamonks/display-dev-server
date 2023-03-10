@@ -15,6 +15,8 @@ module.exports = class OptimizeBundleToFilesizePlugin {
       const {outputPath, filename, maxFileSize, lowestQuality} = this.options;
       const srcDir = compilation.compiler.outputPath;
 
+
+
       await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
         if (quality <= lowestQuality) quality = lowestQuality;
         // console.log(`creating bundle with ${quality} quality level...`)
@@ -33,11 +35,11 @@ module.exports = class OptimizeBundleToFilesizePlugin {
           const optimizedResult = await Promise.all(inputFiles.map(async file => {
             return new Promise(async resolve => {
               const result = await (async () => {
-                if (['.jpg', '.png'].includes(path.extname(file))) {
+                if (['.jpg', '.png', '.jpeg'].includes(path.extname(file))) {
                   const content = await fs.promises.readFile(path.resolve(srcDir, file));
-                  const optimizedContentBuffer = path.extname(file) === '.jpg' ?
-                    await sharp(content).jpeg({quality}).toBuffer() :
-                    await sharp(content).png({quality, effort: 10}).toBuffer();
+                  const optimizedContentBuffer = path.extname(file) === '.png' ?
+                    await sharp(content).png({quality, effort: 10}).toBuffer() :
+                    await sharp(content).jpeg({quality}).toBuffer()
 
                   archive.append(optimizedContentBuffer, {name: file});
                   return {
