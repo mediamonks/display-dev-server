@@ -40,7 +40,6 @@ module.exports = async function buildPreview(outputDir) {
       let dimensions;
 
       if (adMeta.getAttribute('name') === 'ad.size') {
-        console.log(`its a IAB ad`)
         dimensions = parsed.querySelector('meta[name="ad.size"]').getAttribute('content').split(',').reduce((acc, attr) => {
           const keyVal = attr.split('=');
           return {
