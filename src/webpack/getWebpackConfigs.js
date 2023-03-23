@@ -10,6 +10,53 @@ const saveChoicesInPackageJson = require("../util/saveChoicesInPackageJson");
 const findRichmediaRC = require("../util/findRichmediaRC");
 const parsePlaceholdersInObject = require("../util/parsePlaceholdersInObject");
 const expandWithSpreadsheetData = require("../util/expandWithSpreadsheetData");
+const isExternalURL = require("../util/isExternalURL");
+
+const axios = require('axios');
+const mime = require('mime');
+const {v4: uuidv4} = require('uuid');
+
+
+// download external images and turn them into local dependencies
+const convertExternalImageUrlsToLocalPaths = async (data) => {
+  await Promise.all(Object.entries(data.content).map(obj => {
+    return new Promise(async resolve => {
+      if (isExternalURL(obj[1])) {
+
+        const originalImageFile = await axios({
+          url: obj[1],
+          method: 'GET',
+          responseType: 'stream',
+        });
+
+        const contentType = originalImageFile.headers['content-type'];
+        const extension = mime.getExtension(contentType);
+
+        if (['png', 'jpeg', 'jpg', 'svg'].includes(extension)) {
+          fs.mkdirpSync(path.resolve(process.cwd(), '_temp'));
+          const downloadPath = path.resolve(process.cwd(), '_temp', `${uuidv4()}.${extension}`);
+
+          await new Promise((resolve) => {
+            const writer = fs.createWriteStream(downloadPath);
+            originalImageFile.data.pipe(writer);
+            writer.on('finish', resolve);
+          });
+
+          data.content[obj[0]] = downloadPath;
+          resolve();
+
+        } else {
+          resolve();
+        }
+      } else {
+        resolve();
+      }
+    })
+  }))
+  return data;
+}
+
+
 
 module.exports = async function (options) {
   // {mode = "development", glob = "./**/.richmediarc*", choices = null, stats = null, outputDir = "./build", configOverride = {}}
@@ -159,6 +206,14 @@ module.exports = async function (options) {
     }
   });
 
+  // deal with external images in configs
+  await Promise.all(configsResult.map(config => {
+    return new Promise(async resolve => {
+      config.data = await convertExternalImageUrlsToLocalPaths(config.data);
+      resolve();
+    })
+  }))
+
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
     stats: false,
@@ -175,5 +230,4 @@ module.exports = async function (options) {
   return {
     result, choices
   }
-
 };
