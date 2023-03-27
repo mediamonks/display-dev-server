@@ -13,6 +13,6 @@ module.exports = async function (options) {
     await devServer(webpackConfigs.result, webpackConfigs.choices.openLocation);
   } else {
     if (!skipBuild) await buildFiles(webpackConfigs.result, outputDir);
-    if (!skipPreview) await buildPreview(outputDir);
+    if (!skipPreview) await buildPreview(outputDir, webpackConfigs?.result || {});
   }
 };

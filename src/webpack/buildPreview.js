@@ -22,7 +22,11 @@ const getFilesizeInBytes = (filename) => {
   return fileSizeInBytes;
 };
 
-module.exports = async function buildPreview(outputDir) {
+module.exports = async function buildPreview(outputDir, configs) {
+
+  const maxFileSize = configs[0]?.settings?.data?.settings?.maxFileSize || 150;
+  // console.log()
+
   // get list of all files (zips, jpg, etc) in output dir
   const filesInOutputDir = await fs.promises.readdir(outputDir);
 
@@ -121,7 +125,12 @@ module.exports = async function buildPreview(outputDir) {
   }, [])
 
 
+  console.log(allAds);
+
+
+
   const adsList = {
+    maxFileSize: maxFileSize,
     ads: allAds
   };
 
