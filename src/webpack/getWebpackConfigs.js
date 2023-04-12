@@ -4,6 +4,7 @@ const globPromise = require("glob-promise");
 const Spinner = require("cli-spinner").Spinner;
 const inquirer = require("inquirer");
 const path = require("path");
+const leafs = require('../util/leafs')
 
 const createConfigByRichmediarcList = require("./config/createConfigByRichmediarcList");
 const saveChoicesInPackageJson = require("../util/saveChoicesInPackageJson");
@@ -19,40 +20,89 @@ const {v4: uuidv4} = require('uuid');
 
 // download external images and turn them into local dependencies
 const convertExternalImageUrlsToLocalPaths = async (data) => {
-  await Promise.all(Object.entries(data.content).map(obj => {
-    return new Promise(async resolve => {
-      if (isExternalURL(obj[1])) {
 
-        const originalImageFile = await axios({
-          url: obj[1],
-          method: 'GET',
-          responseType: 'stream',
-        });
+  const all = [];
+  leafs(data, async (value, obj, name) => {
 
-        const contentType = originalImageFile.headers['content-type'];
-        const extension = mime.getExtension(contentType);
+    if (isExternalURL(value)) {
+      const isGDrive = value.includes('https://drive.google.com/file/d/') || value.includes('https://drive.google.com/open?id=');
 
-        if (['png', 'jpeg', 'jpg', 'svg'].includes(extension)) {
+      if (isGDrive) {
+        all.push(new Promise(async resolve => {
+          const apiKey = 'AIzaSyBlsOAt1FU-uwER9NUSQHckWp76VOlTUPQ';
+          const id = value.includes('https://drive.google.com/file/d/') ? value.split('/')[5] : value.replace('https://drive.google.com/open?id=', '').split('&')[0];
+
+          const params = {
+            url: `https://www.googleapis.com/drive/v3/files/${id}`,
+            method: 'GET',
+            params: {
+              key: apiKey
+            }
+          }
+
+          const fileData = await axios(params);
           fs.mkdirpSync(path.resolve(process.cwd(), '_temp'));
-          const downloadPath = path.resolve(process.cwd(), '_temp', `${uuidv4()}.${extension}`);
+          const downloadPath = path.resolve(process.cwd(), '_temp', fileData.data.name);
+
+          params.responseType = 'stream';
+          params.params.alt = 'media';
+          const result = await axios(params);
 
           await new Promise((resolve) => {
             const writer = fs.createWriteStream(downloadPath);
-            originalImageFile.data.pipe(writer);
+            result.data.pipe(writer);
             writer.on('finish', resolve);
           });
 
-          data.content[obj[0]] = downloadPath;
+          obj[name] = downloadPath;
           resolve();
-
-        } else {
-          resolve();
-        }
+        }))
       } else {
-        resolve();
+
+        all.push(new Promise(async resolve => {
+
+          const originalImageFile = await axios({
+            url: value,
+            method: 'GET',
+            responseType: 'stream',
+          });
+
+          const contentType = originalImageFile.headers['content-type'];
+          const extension = mime.getExtension(contentType);
+
+          if (['png', 'jpeg', 'jpg', 'svg'].includes(extension)) {
+
+            const originalImageFile = await axios({
+              url: value,
+              method: 'GET',
+              responseType: 'stream',
+            });
+
+
+            fs.mkdirpSync(path.resolve(process.cwd(), '_temp'));
+            const downloadPath = path.resolve(process.cwd(), '_temp', `image.${extension}`);
+
+            await new Promise((resolve) => {
+              const writer = fs.createWriteStream(downloadPath);
+              originalImageFile.data.pipe(writer);
+              writer.on('finish', resolve);
+            });
+
+            obj[name] = downloadPath;
+            console.log('image downloaded')
+            resolve();
+
+          } else {
+            console.log('not a image')
+            resolve();
+          }
+        }))
       }
-    })
-  }))
+    }
+  });
+
+  await Promise.all(all);
+
   return data;
 }
 
@@ -91,6 +141,9 @@ module.exports = async function (options) {
     }
   });
 
+  console.log('Config before spreadsheet')
+  console.log(configs[0].data.content.images)
+
   configs = await expandWithSpreadsheetData(configs, mode);
 
   // parse placeholders for everything
@@ -99,6 +152,9 @@ module.exports = async function (options) {
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });
+
+  console.log('Config after spreadsheet')
+  console.log(configs[0].data.content.images)
 
   const questions = [];
 
@@ -206,6 +262,12 @@ module.exports = async function (options) {
     }
   });
 
+
+  console.log(configsResult[0].data.content.images.backgrounds)
+
+
+  fs.writeFileSync('/tmp/ad.json', JSON.stringify(configsResult[0].data, null, 2));
+
   // deal with external images in configs
   await Promise.all(configsResult.map(config => {
     return new Promise(async resolve => {
@@ -213,6 +275,8 @@ module.exports = async function (options) {
       resolve();
     })
   }))
+
+  console.log(configsResult[0].data.content.images.backgrounds)
 
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
