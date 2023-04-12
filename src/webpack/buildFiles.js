@@ -13,8 +13,6 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
   progressBar.start(result.length, 0);
   let buildResult = [];
 
-  ufs.use(fs).use(memFs);
-
   function webpackRun(config) {
     return new Promise((resolve) => {
       const compiler = webpack(config.webpack);
