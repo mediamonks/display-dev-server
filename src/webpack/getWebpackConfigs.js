@@ -29,7 +29,6 @@ const convertExternalImageUrlsToLocalPaths = async (data) => {
 
       if (isGDrive) {
         all.push(new Promise(async resolve => {
-          const apiKey = 'AIzaSyBlsOAt1FU-uwER9NUSQHckWp76VOlTUPQ';
           const id = value.includes('https://drive.google.com/file/d/') ? value.split('/')[5] : value.replace('https://drive.google.com/open?id=', '').split('&')[0];
 
           const params = {
