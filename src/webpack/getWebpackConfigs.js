@@ -4,108 +4,12 @@ const globPromise = require("glob-promise");
 const Spinner = require("cli-spinner").Spinner;
 const inquirer = require("inquirer");
 const path = require("path");
-const leafs = require('../util/leafs')
 
 const createConfigByRichmediarcList = require("./config/createConfigByRichmediarcList");
 const saveChoicesInPackageJson = require("../util/saveChoicesInPackageJson");
 const findRichmediaRC = require("../util/findRichmediaRC");
 const parsePlaceholdersInObject = require("../util/parsePlaceholdersInObject");
 const expandWithSpreadsheetData = require("../util/expandWithSpreadsheetData");
-const isExternalURL = require("../util/isExternalURL");
-
-const axios = require('axios');
-const mime = require('mime');
-const {v4: uuidv4} = require('uuid');
-
-
-// download external images and turn them into local dependencies
-const convertExternalImageUrlsToLocalPaths = async (data) => {
-
-  const all = [];
-  leafs(data, async (value, obj, name) => {
-
-    if (isExternalURL(value)) {
-      const isGDrive = value.includes('https://drive.google.com/file/d/') || value.includes('https://drive.google.com/open?id=');
-
-      if (isGDrive) {
-        all.push(new Promise(async resolve => {
-          const id = value.includes('https://drive.google.com/file/d/') ? value.split('/')[5] : value.replace('https://drive.google.com/open?id=', '').split('&')[0];
-
-          const params = {
-            url: `https://www.googleapis.com/drive/v3/files/${id}`,
-            method: 'GET',
-            params: {
-              key: apiKey
-            }
-          }
-
-          const fileData = await axios(params);
-          fs.mkdirpSync(path.resolve(process.cwd(), '_temp'));
-          const downloadPath = path.resolve(process.cwd(), '_temp', fileData.data.name);
-
-          params.responseType = 'stream';
-          params.params.alt = 'media';
-          const result = await axios(params);
-
-          await new Promise((resolve) => {
-            const writer = fs.createWriteStream(downloadPath);
-            result.data.pipe(writer);
-            writer.on('finish', resolve);
-          });
-
-          obj[name] = downloadPath;
-          resolve();
-        }))
-      } else {
-
-        all.push(new Promise(async resolve => {
-
-          const originalImageFile = await axios({
-            url: value,
-            method: 'GET',
-            responseType: 'stream',
-          });
-
-          const contentType = originalImageFile.headers['content-type'];
-          const extension = mime.getExtension(contentType);
-
-          if (['png', 'jpeg', 'jpg', 'svg'].includes(extension)) {
-
-            const originalImageFile = await axios({
-              url: value,
-              method: 'GET',
-              responseType: 'stream',
-            });
-
-
-            fs.mkdirpSync(path.resolve(process.cwd(), '_temp'));
-            const downloadPath = path.resolve(process.cwd(), '_temp', `image.${extension}`);
-
-            await new Promise((resolve) => {
-              const writer = fs.createWriteStream(downloadPath);
-              originalImageFile.data.pipe(writer);
-              writer.on('finish', resolve);
-            });
-
-            obj[name] = downloadPath;
-            console.log('image downloaded')
-            resolve();
-
-          } else {
-            console.log('not a image')
-            resolve();
-          }
-        }))
-      }
-    }
-  });
-
-  await Promise.all(all);
-
-  return data;
-}
-
-
 
 module.exports = async function (options) {
   // {mode = "development", glob = "./**/.richmediarc*", choices = null, stats = null, outputDir = "./build", configOverride = {}}
@@ -140,9 +44,6 @@ module.exports = async function (options) {
     }
   });
 
-  console.log('Config before spreadsheet')
-  console.log(configs[0].data.content.images)
-
   configs = await expandWithSpreadsheetData(configs, mode);
 
   // parse placeholders for everything
@@ -151,9 +52,6 @@ module.exports = async function (options) {
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });
-
-  console.log('Config after spreadsheet')
-  console.log(configs[0].data.content.images)
 
   const questions = [];
 
@@ -261,22 +159,6 @@ module.exports = async function (options) {
     }
   });
 
-
-  console.log(configsResult[0].data.content.images.backgrounds)
-
-
-  fs.writeFileSync('/tmp/ad.json', JSON.stringify(configsResult[0].data, null, 2));
-
-  // deal with external images in configs
-  await Promise.all(configsResult.map(config => {
-    return new Promise(async resolve => {
-      config.data = await convertExternalImageUrlsToLocalPaths(config.data);
-      resolve();
-    })
-  }))
-
-  console.log(configsResult[0].data.content.images.backgrounds)
-
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
     stats: false,
@@ -293,4 +175,5 @@ module.exports = async function (options) {
   return {
     result, choices
   }
+
 };

@@ -3,9 +3,22 @@ const path = require("path");
 
 const chalk = require("chalk");
 const webpack = require("webpack");
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
+const archiver = require("archiver");
+// const globPromise = require("glob-promise");
 const cliProgress = require("cli-progress");
 
+// const getTemplate = require("../util/getPreviewTemplate");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
+const getNameFromLocation = require("../util/getNameFromLocation");
+// const previewWebackConfig = require("../preview/webpack.config");
+// const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
+
+const getFilesizeInBytes = (filename) => {
+  var stats = fs.statSync(filename);
+  var fileSizeInBytes = stats.size;
+  return fileSizeInBytes;
+};
 
 module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
   const startTime = new Date().getTime();
@@ -15,8 +28,7 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
 
   function webpackRun(config) {
     return new Promise((resolve) => {
-      const compiler = webpack(config.webpack);
-      compiler.run((err, stats) => {
+      webpack(config.webpack).run((err, stats) => {
         if (err) {
           console.error(err.stack || err);
           if (err.details) {
@@ -72,11 +84,76 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
   console.log("Removing temp .richmediarc...");
   removeTempRichmediaRc(result);
 
-  const tmpDirPath = path.resolve(process.cwd(), '_temp');
-  if (fs.pathExistsSync(tmpDirPath)) {
-    await fs.emptyDir(tmpDirPath)
-    await fs.rmdir(tmpDirPath)
-  }
+  // // // render backup images
+  // // if (result[0].settings.data.settings.displayAdsRecorder) {
+  // //   const locations = result.map((result) => {
+  // //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
+  // //     const location = `${outputDir}/${name}/index.html`;
+  // //     return location;
+  // //   });
+  // //   await displayAdsRecorder({
+  // //     targetDir: outputDir,
+  // //     adSelection: {
+  // //       location: locations,
+  // //       ...result[0].settings.data.settings.displayAdsRecorder,
+  // //     },
+  // //   });
+  // // }
+
+  // console.log("copying preview files...");
+  // // copy preview folder
+  // fs.copySync(path.join(__dirname, `../preview/dist`), outputDir, {
+  //   overwrite: true,
+  // });
+
+  // // create the ads.json
+  // const adsList = {
+  //   maxFileSize: result[0].settings.data.settings.maxFileSize || 150,
+  //   ads: result.map((result) => {
+  //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
+  //     const adObj = {
+  //       width: result.settings.data.settings.size.width,
+  //       height: result.settings.data.settings.size.height,
+  //       bundleName: name,
+  //       output: {
+  //         html: {
+  //           url: `${name}/index.html`,
+  //           optimizations: result.settings.data.settings.optimizations,
+  //         },
+  //         zip: {
+  //           url: `${name}.zip`,
+  //           size: getFilesizeInBytes(`./${outputDir}/${name}.zip`),
+  //         },
+  //       },
+  //     };
+
+  //     if (result.settings.data.settings.displayAdsRecorder) {
+  //       result.settings.data.settings.displayAdsRecorder.output.forEach((ext) => {
+  //         adObj.output[ext] = {
+  //           url: `${name}.${ext}`,
+  //         };
+  //       });
+  //     }
+
+  //     return adObj;
+  //   }),
+  // };
+
+  // // write the result to ads.json in the preview dir
+  // fs.outputFileSync(`${outputDir}/data/ads.json`, JSON.stringify(adsList, null, 2));
+
+  // // write the zip file containing all zips
+  // await new Promise((resolve) => {
+  //   const output = fs.createWriteStream(outputDir + "/all.zip");
+  //   output.on("close", resolve);
+  //   const archive = archiver("zip", {
+  //     zlib: {level: 9}, // Sets the compression level.
+  //   });
+  //   archive.pipe(output);
+  //   adsList.ads.forEach((ad) => archive.file(path.resolve(outputDir, ad.output.zip.url), {name: ad.output.zip.url}));
+  //   archive.finalize();
+  // });
+
 
   return {
     outputDir: path.resolve(outputDir),
