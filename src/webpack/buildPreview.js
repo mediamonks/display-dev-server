@@ -22,10 +22,22 @@ const getFilesizeInBytes = (filename) => {
   return fileSizeInBytes;
 };
 
-module.exports = async function buildPreview(outputDir, configs) {
-
-  const maxFileSize = configs[0]?.settings?.data?.settings?.maxFileSize || 150;
-  // console.log()
+module.exports = async function buildPreview(outputDir) {
+  // // render backup images
+  // if (result[0].settings.data.settings.displayAdsRecorder) {
+  //   const locations = result.map((result) => {
+  //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
+  //     const location = `${outputDir}/${name}/index.html`;
+  //     return location;
+  //   });
+  //   await displayAdsRecorder({
+  //     targetDir: outputDir,
+  //     adSelection: {
+  //       location: locations,
+  //       ...result[0].settings.data.settings.displayAdsRecorder,
+  //     },
+  //   });
+  // }
 
   // get list of all files (zips, jpg, etc) in output dir
   const filesInOutputDir = await fs.promises.readdir(outputDir);
@@ -33,55 +45,23 @@ module.exports = async function buildPreview(outputDir, configs) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
-  const allAds = await allIndexHtmlFiles.reduce(async (acc, filename) => {
-    const asyncAcc = await acc;
-
+  const allAds = allIndexHtmlFiles.reduce((acc, filename) => {
     const rawData = fs.readFileSync(filename, "utf8");
     const parsed = htmlParser.parse(rawData);
-    const adMeta = parsed.querySelector('meta[name="generator"]') || parsed.querySelector('meta[name="ad.size"]');
 
-    if (adMeta) {
-      let dimensions;
-
-      if (adMeta.getAttribute('name') === 'ad.size') {
-        dimensions = parsed.querySelector('meta[name="ad.size"]').getAttribute('content').split(',').reduce((acc, attr) => {
-          const keyVal = attr.split('=');
-          return {
-            ...acc,
-            [keyVal[0]]: keyVal[1]
-          }
-        }, {});
-      } else {
-        // [dimensions] = filename.match(/[0-9]+x[0-9]+/i);
-        const [dimensionsString] = filename.match(/[0-9]+x[0-9]+/i);
-        dimensions = {
-          width: dimensionsString.split('x')[0],
-          height: dimensionsString.split('x')[1]
+    if (parsed.querySelectorAll('meta[name="ad.size"]').length > 0) {
+      const dimensions = parsed.querySelector('meta[name="ad.size"]').getAttribute('content').split(',').reduce((acc, attr) => {
+        const keyVal = attr.split('=');
+        return {
+          ...acc,
+          [keyVal[0]]: keyVal[1]
         }
-      }
+      }, {});
 
       const bundleName = path.basename(path.dirname(filename));
       const bundleParentDir = path.resolve(path.dirname(filename), '../');
-
-      // check if bundlename.zip exists, otherwise zip and create it
-      if (fs.existsSync(path.resolve(bundleParentDir, `${bundleName}.zip`))) {
-        // zip already exists
-      } else {
-        // need to create a bundle zip
-        await new Promise((resolve) => {
-          const output = fs.createWriteStream(path.join(bundleParentDir, `${bundleName}.zip`));
-          output.on("close", resolve);
-          const archive = archiver("zip", {zlib: {level: 9}});
-          archive.pipe(output);
-          fs.readdirSync(path.dirname(filename)).forEach((file) => archive.file(path.resolve(path.dirname(filename), file), {name: file}));
-          archive.finalize();
-        });
-      }
-
-      // now read all files in that dir, including the zip files
       const filesInParentDir = fs.readdirSync(bundleParentDir);
 
-      // now map all the additional outputs
       const additionalOutputs = filesInParentDir.reduce((acc, file) => {
         const fileStats = fs.statSync(path.resolve(bundleParentDir, file));
         if (fileStats.isFile() && file.includes(bundleName)) {
@@ -106,7 +86,7 @@ module.exports = async function buildPreview(outputDir, configs) {
 
 
       return [
-        ...asyncAcc,
+        ...acc,
         {
           bundleName,
           ...dimensions,
@@ -119,21 +99,16 @@ module.exports = async function buildPreview(outputDir, configs) {
         }
       ]
     } else {
-      return asyncAcc;
+      return acc;
     }
   }, [])
 
 
-  console.log(allAds);
-
-
-
   const adsList = {
-    maxFileSize: maxFileSize,
     ads: allAds
   };
 
-  console.log(`found ${allAds.length} ads for previews`)
+  console.log(`found ${allAds.length} for previews.`)
 
   // copy preview folder
   console.log("copying preview files...");
@@ -142,10 +117,12 @@ module.exports = async function buildPreview(outputDir, configs) {
   });
 
   // write the result to ads.json in the preview dir
-  console.log(`writing ${outputDir}/data/ads.json...`)
+  console.log(`creating ${outputDir}/data/ads.json`)
   fs.outputFileSync(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
 
   // write the zip file containing all zips
+
+  // console.log(adsList.ads)
   if (adsList.ads.filter(ad => ad.output.zip).length > 0) {
     await new Promise((resolve) => {
       const output = fs.createWriteStream(outputDir + "/all.zip");
@@ -158,4 +135,9 @@ module.exports = async function buildPreview(outputDir, configs) {
       archive.finalize();
     });
   }
+
+  // return {
+  //   outputDir: path.resolve(outputDir),
+  //   ads: buildResult,
+  // };
 };

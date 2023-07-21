@@ -7,21 +7,18 @@ module.exports = async function (content, map, meta) {
 
   const getOptimizedFile = async (file) => {
     const fileExt = path.extname(file)
-
-    if (fileExt === ".jpg" || fileExt === '.jpeg') {
-      return await sharp(content).jpeg({
-        quality: 80,
-        mozjpeg: true,
-      }).toBuffer();
+    switch (fileExt) {
+      case '.jpg':
+        return await sharp(content).jpeg({
+          quality: 80,
+          mozjpeg: true,
+        }).toBuffer();
+      case '.png':
+        return await sharp(content).png({
+          quality: 80,
+          effort: 10,
+        }).toBuffer();
     }
-
-    if (fileExt === ".png") {
-      return await sharp(content).png({
-        quality: 80,
-        effort: 10,
-      }).toBuffer();
-    }
-
   }
 
   const optimized = await getOptimizedFile(this.resourcePath);

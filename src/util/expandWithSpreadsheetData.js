@@ -1,14 +1,12 @@
 const isGoogleSpreadsheetUrl = require('./isGoogleSpreadsheetUrl');
 const getGoogleSheetIdFromUrl = require('./getGoogleSheetIdFromUrl');
-const {GoogleSpreadsheet} = require('google-spreadsheet');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 const chalk = require('chalk');
 const extendObject = require('./extendObject');
 const createObjectFromJSONPath = require('./createObjectFromJSONPath');
 const fs = require('fs')
 const crypto = require('crypto')
 const getDataFromGoogleSpreadsheet = require("./getDataFromGoogleSpreadsheet");
-const isExternalURL = require("./isExternalURL");
-const path = require('path');
 
 const cacheSpreadSheets = {};
 const cacheSheets = {};
@@ -58,7 +56,7 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
   };
 
   for (let i = 0; i < configs.length; i++) {
-    const {data, location} = configs[i];
+    const { data, location } = configs[i];
 
     if (data && data.settings && data.settings.contentSource) {
       const contentSource = data.settings.contentSource;
@@ -84,17 +82,6 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
         let staticRowObject = {};
         for (const key in staticRow) {
           if (staticRow.hasOwnProperty(key)) {
-            const filepath = path.resolve(location);
-            const dirname = path.dirname(filepath);
-
-            if (typeof staticRow[key] === 'string'
-              && !isExternalURL(staticRow[key])
-              && !path.isAbsolute(staticRow[key])
-              && fs.existsSync(path.resolve(dirname, staticRow[key]))
-              && staticRow[key] !== '') {
-              staticRow[key] = path.resolve(dirname, staticRow[key]);
-            }
-
             let obj = createObjectFromJSONPath(key, staticRow[key]);
             extendObject(staticRowObject, obj);
           }
@@ -141,7 +128,7 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
         newConfigList.push(newObj);
       });
     } else {
-      newConfigList.push({data, location});
+      newConfigList.push({ data, location });
     }
   }
 

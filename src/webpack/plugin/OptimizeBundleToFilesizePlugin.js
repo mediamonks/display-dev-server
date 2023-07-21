@@ -38,7 +38,7 @@ module.exports = class OptimizeBundleToFilesizePlugin {
         // otherwise continue with the optimization loop...
         await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
           if (quality <= lowestQuality) quality = lowestQuality;
-          console.log(`creating bundle with ${quality} quality level...`);
+          console.log(`\n\n\n\n\n\n\n\n\n\n\ncreating bundle with ${quality} quality level...`)
 
           const zippedBundle = await new Promise(async resolve => {
             const output = fs.createWriteStream(path.resolve(outputPath, filename));
