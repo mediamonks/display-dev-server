@@ -90,7 +90,7 @@ module.exports = async function buildPreview(result, outputDir) {
         {
           bundleName,
           ...dimensions,
-          maxFileSize: result[i].settings.data.settings.maxFileSize,
+          maxFileSize: result[i]?.settings?.data?.settings?.maxFileSize,
           output: {
             html: {
               url: path.relative(outputDir, filename).replace(/\\/g, "/")
