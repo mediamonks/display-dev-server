@@ -105,6 +105,7 @@ module.exports = async function buildPreview(outputDir) {
 
 
   const adsList = {
+    timestamp: Date.now(),
     ads: allAds
   };
 

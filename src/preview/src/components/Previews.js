@@ -172,7 +172,7 @@ export default function Previews({ data }) {
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
           <Typography align="left" variant="h5" component="div">
-            Preview
+            Preview from {(new Date(data.timestamp)).toLocaleString()}
           </Typography>
 
           {/*<img src={"logo.png"}></img>*/}
