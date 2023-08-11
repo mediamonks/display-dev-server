@@ -22,7 +22,7 @@ const getFilesizeInBytes = (filename) => {
   return fileSizeInBytes;
 };
 
-module.exports = async function buildPreview(outputDir) {
+module.exports = async function buildPreview(result, outputDir) {
   // // render backup images
   // if (result[0].settings.data.settings.displayAdsRecorder) {
   //   const locations = result.map((result) => {
@@ -45,7 +45,7 @@ module.exports = async function buildPreview(outputDir) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
-  const allAds = allIndexHtmlFiles.reduce((acc, filename) => {
+  const allAds = allIndexHtmlFiles.reduce((acc, filename, i) => {
     const rawData = fs.readFileSync(filename, "utf8");
     const parsed = htmlParser.parse(rawData);
 
@@ -90,6 +90,7 @@ module.exports = async function buildPreview(outputDir) {
         {
           bundleName,
           ...dimensions,
+          maxFileSize: result[i].settings.data.settings.maxFileSize,
           output: {
             html: {
               url: path.relative(outputDir, filename).replace(/\\/g, "/")
