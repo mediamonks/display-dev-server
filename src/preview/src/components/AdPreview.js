@@ -111,7 +111,7 @@ export const AdPreview = (props) => {
           <Box>
             <Box display="flex" flexWrap="wrap">
               {Object.keys(ad.output).map((extension) => {
-                if (ad.output[extension])
+                if (ad.output[extension] && extension != 'html')
                   return (
                     <Tooltip key={extension} title={`Download ${extension.toUpperCase()} ${!ad.output[extension]?.url ? "(loading)" : ""}`}>
                       <span>
