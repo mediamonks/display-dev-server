@@ -3,7 +3,7 @@ import styles from "./Previews.module.scss";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { ListSubheader, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { ListSubheader, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput, Tooltip } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 
 import { AdPreview } from "./AdPreview";
@@ -171,9 +171,11 @@ export default function Previews({ data }) {
     <>
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
-          <Typography align="left" variant="h5" component="div">
-            Preview from {(new Date(data.timestamp)).toLocaleString()}
-          </Typography>
+          <Tooltip title={(new Date(data.timestamp)).toLocaleString()}>
+            <Typography align="left" variant="h5" component="div">
+              Preview
+            </Typography>
+          </Tooltip>
 
           {/*<img src={"logo.png"}></img>*/}
 
