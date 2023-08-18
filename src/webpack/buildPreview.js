@@ -12,7 +12,6 @@ const cliProgress = require("cli-progress");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
 // const previewWebackConfig = require("../preview/webpack.config");
-// const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
 const htmlParser = require("node-html-parser");
 
 
@@ -23,25 +22,6 @@ const getFilesizeInBytes = (filename) => {
 };
 
 module.exports = async function buildPreview(result, outputDir) {
-  // // render backup images
-  // if (result[0].settings.data.settings.displayAdsRecorder) {
-  //   const locations = result.map((result) => {
-  //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
-  //     const location = `${outputDir}/${name}/index.html`;
-  //     return location;
-  //   });
-  //   await displayAdsRecorder({
-  //     targetDir: outputDir,
-  //     adSelection: {
-  //       location: locations,
-  //       ...result[0].settings.data.settings.displayAdsRecorder,
-  //     },
-  //   });
-  // }
-
-  // get list of all files (zips, jpg, etc) in output dir
-  const filesInOutputDir = await fs.promises.readdir(outputDir);
-
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
@@ -84,13 +64,12 @@ module.exports = async function buildPreview(result, outputDir) {
         };
       }, {})
 
-
       return [
         ...acc,
         {
           bundleName,
           ...dimensions,
-          maxFileSize: result[i]?.settings?.data?.settings?.maxFileSize,
+          maxFileSize: result && result[i].settings.data.settings.maxFileSize,
           output: {
             html: {
               url: path.relative(outputDir, filename).replace(/\\/g, "/")
@@ -103,7 +82,6 @@ module.exports = async function buildPreview(result, outputDir) {
       return acc;
     }
   }, [])
-
 
   const adsList = {
     timestamp: Date.now(),
@@ -137,9 +115,4 @@ module.exports = async function buildPreview(result, outputDir) {
       archive.finalize();
     });
   }
-
-  // return {
-  //   outputDir: path.resolve(outputDir),
-  //   ads: buildResult,
-  // };
 };
