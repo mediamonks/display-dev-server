@@ -214,7 +214,7 @@ export default function Previews({ data }) {
       </AppBar>
 
       <div className={styles.previews}>
-        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools} key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
+        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools}  key={ad.bundleName} ad={ad} maxFileSize={ad.maxFileSize} timestamp={data.timestamp} />)}
         {pageAds.length < 1 && "No ads found with the current combination of filters"}
       </div>
     </>
