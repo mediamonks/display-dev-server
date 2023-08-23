@@ -25,6 +25,9 @@ module.exports = async function buildPreview(result, outputDir) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
+  allIndexHtmlFiles.sort()
+  result && result.sort((a, b) =>  a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+
   const allAds = allIndexHtmlFiles.reduce((acc, filename, i) => {
     const rawData = fs.readFileSync(filename, "utf8");
     const parsed = htmlParser.parse(rawData);
