@@ -63,7 +63,7 @@ export const AdPreview = (props) => {
         </Box>
       </TabContext>
 
-      <CardMedia ref={adPreviewCard} component={mediaType} style={{width: ad.width, height: ad.height}} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
+      <CardMedia ref={adPreviewCard} component={mediaType} scrolling="no" style={{width: ad.width, height: ad.height}} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
       <CardContent>
         <Box>
           <Box marginBottom="20px">
