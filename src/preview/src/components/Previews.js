@@ -171,7 +171,7 @@ export default function Previews({ data }) {
               multiple
               value={getSelectedFilters()}
               onChange={handleChangeFilter}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+              input={<OutlinedInput id="select-multiple-chip" label="Filters" />}
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => (
