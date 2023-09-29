@@ -43,6 +43,7 @@ export const AdPreview = (props) => {
 
     // have to use onload in order to set events to the right element (React render thing)
     ifr.onload = () => {
+      if (!ifr.contentWindow) return
       ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimation(e.detail), false)
       ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
     }

@@ -3,7 +3,8 @@
   "version": "11.0.11",
   "description": "This is the Display.Monks development server, which handles previewing and compiling ads via webpack.",
   "scripts": {
-    "preview-dev": "cd ./src/preview && npm run dev"
+    "preview-dev": "cd ./src/preview && npm run dev",
+    "preview-build": "cd ./src/preview && npm run build"
   },
   "engines": {
     "node": ">= 16",
