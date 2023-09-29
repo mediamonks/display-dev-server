@@ -27,7 +27,6 @@ export const AdPreview = (props) => {
   const [activeConfigTab, setActiveConfigTab] = useState("html,iframe");
 
   const [animation, setAnimation] = useState();
-  const [reload, setReload] = useState(false);
 
   const adPreviewCard = useRef();
   
@@ -47,7 +46,7 @@ export const AdPreview = (props) => {
       ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimation(e.detail), false)
       ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
     }
-  }, [reload, mediaSource])
+  }, [mediaSource])
 
   // create devtools box with animation
   useEffect(() => {
@@ -56,6 +55,7 @@ export const AdPreview = (props) => {
     animation.pause(0);
     const tl = gsap.timeline();
     tl.to(animation, { duration: animation.totalDuration(), totalProgress: 1, ease: Linear.easeNone });
+    gsDevContainer.current && (gsDevContainer.current.innerHTML = '')
     GSDevTools.create({
       container: gsDevContainer.current,
       animation: tl,
@@ -139,7 +139,6 @@ export const AdPreview = (props) => {
               <IconButton
                 onClick={(e) => {
                   activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = ad.output.html.url) : setActiveConfigTab("html,iframe");
-                  setReload(v => !v);
                 }}
                 color="primary"
               >
