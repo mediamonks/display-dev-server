@@ -99,6 +99,16 @@ export default function Previews({ data }) {
     setSearchParams(collectFilters)
     setPage(0);
   }, [filters]);
+  
+  useEffect(() => {
+    if (gsdevtools !== "true") return
+    window.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented) return;
+      if (e.key === " ") {
+        e.preventDefault();
+      }
+    })
+  }, [])
 
   const getSelectedFilters = () => {
     // returns flat array of selected filters i.e. ["en","300x400"] (the input element needs this as a value)
