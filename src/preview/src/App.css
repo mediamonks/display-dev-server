@@ -105,7 +105,7 @@
 }
 
 /* all */
-@container (min-width: 100px) {
+@container (min-width: 125px) {
   .gs-dev-tools.minimal .rewind,
   .gs-dev-tools.minimal .loop,
   .gs-dev-tools.minimal .play-pause {
@@ -121,7 +121,7 @@
   }
 
   /* 160x600 */
-  @container (max-width: 150px) {
+  @container (max-width: 265px) {
     .gs-dev-tools .gs-bottom {
       height: 64px !important;
     }
@@ -146,7 +146,7 @@
 }
 
 /* 120x600 */
-@container (max-width: 100px) {
+@container (max-width: 124px) {
   .gs-dev-tools .gs-bottom {
     height: 48px !important;
   }
