@@ -81,6 +81,8 @@ const getLabelFromFilterGroup = (filterGroup) => {
 
 export default function Previews({ data }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  const gsdevtools = useMemo(() => searchParams.get('gsdevtools'), []);
 
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
@@ -90,9 +92,11 @@ export default function Previews({ data }) {
 
   useEffect(() => {
     setAds(getAdsListFromFilters(data.ads, filters));
-    setSearchParams({
-      filter: decodeURI(composeSearchParamsFromFilters(filters)),
-    });
+    const filter = decodeURI(composeSearchParamsFromFilters(filters))
+    const collectFilters = {}
+    filter && (collectFilters.filter = filter)
+    gsdevtools && (collectFilters.gsdevtools = gsdevtools)
+    setSearchParams(collectFilters)
     setPage(0);
   }, [filters]);
 
@@ -200,7 +204,7 @@ export default function Previews({ data }) {
       </AppBar>
 
       <div className={styles.previews}>
-        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
+        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools} key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
         {pageAds.length < 1 && "No ads found with the current combination of filters"}
       </div>
     </>
