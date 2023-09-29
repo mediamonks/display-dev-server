@@ -116,6 +116,9 @@
   .gs-dev-tools.minimal .play-pause {
     height: 24px !important;
   }
+  .gs-dev-tools .time-container {
+    font-size: 17px !important;
+  }
 
   /* 160x600 */
   @container (max-width: 150px) {
@@ -137,7 +140,7 @@
       bottom: 5px;
     }
     .gs-dev-tools .time-container {
-      font-size: 16px !important;
+      font-size: 14px !important;
     }
   }
 }
@@ -154,7 +157,7 @@
     bottom: 5px;
   }
   .gs-dev-tools .time-container {
-    font-size: 10px !important;
+    font-size: 9px !important;
   }
   .gs-dev-tools.minimal .rewind,
   .gs-dev-tools.minimal .loop,
