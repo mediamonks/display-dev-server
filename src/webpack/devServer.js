@@ -15,7 +15,6 @@ const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
 const getDataFromGoogleSpreadsheet = require('../util/getDataFromGoogleSpreadsheet');
 const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
-const getTemplate = require('../util/getPreviewTemplate');
 const getNameFromLocation = require('../util/getNameFromLocation');
 
 /**
@@ -27,13 +26,12 @@ module.exports = async function devServer(configs, openLocation = true) {
   const webpackConfigList = configs.map(({ webpack }) => webpack);
   const settingsList = configs.map(({ settings }) => settings);
   const port = await portfinder.getPortPromise();
-  const template = await getTemplate();
 
   const httpLocation = `http://localhost:${port}`;
 
   if (openLocation) {
     // opener
-    open(httpLocation);
+    open(`${httpLocation}?gsdevtools=true`);
   }
 
   console.log(`${chalk.blue('i')} Server running. Please go to ${httpLocation}
@@ -70,41 +68,27 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       }),
     );
 
-    app.use('/static', express.static(path.join(__dirname, '../data/static')));
+    app.use('/', express.static(path.join(__dirname, '../preview/dist')));
   });
 
-  app.get('/', (req, res) => {
-    const templateConfig = {
-      banner: settingsList.map(value => {
-        const name = getNameFromLocation(value.location);
-        let width = value.data.settings.size.width;
-        let height = value.data.settings.size.height;
-        let title = name;
-        const isDevelopment = true;
-
-        if (value.data.settings.expandable) {
-          width = value.data.settings.expandable.width;
-          height = value.data.settings.expandable.height;
-          title += `_EXP_${width}x${height}`;
-        }
-
+  app.get('/data/ads.json', (req, res) => {
+    res.json({
+      isGoogleSpreadsheetBanner: typeof configs[0].settings.data.settings.contentSource !== 'undefined',
+      ads: settingsList.map(e => {
+        const bundleName = getNameFromLocation(e.location)
         return {
-          src: `./${name}/`,
-          name,
-          title,
-          width,
-          height,
-          isDevelopment,
-        };
-      }),
-      query: req.query,
-      settings: {
-        isGoogleSpreadsheetBanner: typeof configs[0].settings.data.settings.contentSource !== 'undefined'
-      },
-    };
-
-    res.send(template(templateConfig));
-  });
+          url: `${httpLocation}/${bundleName}/index.html`,
+          ...e.data.settings.size,
+          bundleName,
+          output: {
+            html: {
+              url: `${httpLocation}/${bundleName}/index.html`,
+            },
+          },
+        }
+      })
+    })
+  })
 
   app.get("/reload_dynamic_data", async function (req, res) {
     const contentSource = configs[0].settings.data.settings.contentSource;
