@@ -3,8 +3,9 @@ import styles from "./Previews.module.scss";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { ListSubheader, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { ListSubheader, Tooltip, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
+import CachedIcon from '@mui/icons-material/Cached';
 
 import { AdPreview } from "./AdPreview";
 
@@ -152,6 +153,12 @@ export default function Previews({ data }) {
     window.open("all.zip");
   };
 
+  const handleReloadDynamicData = async e => {
+    const res = await fetch('reload_dynamic_data')
+    if (res.status === 200)
+      location.reload()
+  }
+
   // handle pages
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -171,11 +178,20 @@ export default function Previews({ data }) {
     <>
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
-          <Typography align="left" variant="h5" component="div">
-            Preview
-          </Typography>
-
-          {/*<img src={"logo.png"}></img>*/}
+          <Box sx={{ display: 'flex', gap: '10px' }}>
+            {
+              data.isGoogleSpreadsheetBanner
+              ? <Tooltip title="Reload dynamic data">
+                  <Button onClick={handleReloadDynamicData} color="inherit">
+                    <CachedIcon />
+                  </Button>
+                </Tooltip>
+              : <></>
+            }
+            <Typography align="left" variant="h5" component="div">
+              Preview
+            </Typography>
+          </Box>
 
           <FormControl sx={{ m: 1, minWidth: 150, maxWidth: "40%" }}>
             <InputLabel id="demo-multiple-chip-label">Filters</InputLabel>
