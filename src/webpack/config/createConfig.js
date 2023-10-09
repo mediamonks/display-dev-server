@@ -357,8 +357,8 @@ module.exports = function createConfig({
     );
   }
 
-  if (richmediarc.settings.type === "flashtalking") {
-    console.log("found flashtalking ad");
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "flashtalking") {
+    console.log('found flashtalking ad')
 
     const outputString = `FT.manifest({
       "filename": "index.html",
@@ -376,8 +376,8 @@ module.exports = function createConfig({
     );
   }
 
-  if (richmediarc.settings.type === "adform") {
-    let clickTags = richmediarc.settings.clickTags || { clickTAG: "http://www.adform.com" };
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "adform") {
+    let clickTags = richmediarc.settings.clickTags || {clickTAG: "http://www.adform.com"};
     let obj = {
       version: "1.0",
       title: richmediarc.settings.bundleName || bundleName,
