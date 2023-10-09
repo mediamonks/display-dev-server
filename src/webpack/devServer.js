@@ -75,14 +75,16 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     res.json({
       isGoogleSpreadsheetBanner: typeof configs[0].settings.data.settings.contentSource !== 'undefined',
       ads: settingsList.map(e => {
-        const bundleName = getNameFromLocation(e.location)
+        const assetName = getNameFromLocation(e.location)
+        const bundleName = e.data.settings.bundleName || getNameFromLocation(e.location)
+        const url = `${httpLocation}/${assetName}/index.html`
         return {
-          url: `${httpLocation}/${bundleName}/index.html`,
+          url,
           ...e.data.settings.size,
           bundleName,
           output: {
             html: {
-              url: `${httpLocation}/${bundleName}/index.html`,
+              url,
             },
           },
         }
