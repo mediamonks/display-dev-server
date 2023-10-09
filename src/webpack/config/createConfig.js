@@ -45,7 +45,7 @@ module.exports = function createConfig({
     stats: false,
   },
 }) {
-  const devtool = false //mode === DevEnum.PRODUCTION ? false : "inline-source-map"; // 7% improvement on dev times if false
+  const devtool = mode === DevEnum.PRODUCTION ? false : "inline-source-map"; // 7% improvement on dev times if false
   const entry = [];
 
   let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name]" : "[name]_[contenthash]";
