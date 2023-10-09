@@ -122,14 +122,14 @@ module.exports = function createConfig({
           use: function () {
             let loaderArray = [];
 
-            // if (mode === DevEnum.PRODUCTION && richmediarc.settings.optimizations.js) {
-            //   loaderArray.push({
-            //     loader: "esbuild-loader",
-            //     options: {
-            //       target: 'es2015'
-            //     },
-            //   });
-            // }
+            if (mode === DevEnum.PRODUCTION && richmediarc.settings.optimizations.js) {
+              loaderArray.push({
+                loader: "esbuild-loader",
+                options: {
+                  target: 'es2015'
+                },
+              });
+            }
 
             loaderArray.push({
               loader: path.resolve(path.join(__dirname, "../loader/CustomJSLoader.js")),
