@@ -67,9 +67,9 @@ ${chalk.grey.bold('-------------------------------------------------------')}
         path: `/${name}/${hmrPath}`,
       }),
     );
-
-    app.use('/', express.static(path.join(__dirname, '../preview/dist')));
   });
+
+  app.use('/', express.static(path.join(__dirname, '../preview/dist')));
 
   app.get('/data/ads.json', (req, res) => {
     res.json({
