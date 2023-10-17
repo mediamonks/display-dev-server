@@ -146,6 +146,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       // next 4 lines is reading existing richmediarc from the disk, updating the content object, and then writing the new file to disk again
       const configFile = fs.readFileSync(config.settings.location, {encoding:'utf8', flag:'r'})
       const configFileJson = JSON.parse(configFile);
+      content = JSON.parse(JSON.stringify(content))
 
       if (!util.isDeepStrictEqual(configFileJson.content, content)) { //compare 'new' content with old content. If anything has changed, write a new file
         configFileJson.content = content;
