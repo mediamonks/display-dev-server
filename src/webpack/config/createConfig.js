@@ -126,7 +126,7 @@ module.exports = function createConfig({
               loaderArray.push({
                 loader: "esbuild-loader",
                 options: {
-                  target: 'es2015'
+                  target: "es2015",
                 },
               });
             }
@@ -358,7 +358,7 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "flashtalking") {
-    console.log('found flashtalking ad')
+    console.log("found flashtalking ad");
 
     const outputString = `FT.manifest({
       "filename": "index.html",
@@ -377,7 +377,7 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "adform") {
-    let clickTags = richmediarc.settings.clickTags || {clickTAG: "http://www.adform.com"};
+    let clickTags = richmediarc.settings.clickTags || { clickTAG: "http://www.adform.com" };
     let obj = {
       version: "1.0",
       title: richmediarc.settings.bundleName || bundleName,
