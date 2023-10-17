@@ -17,14 +17,52 @@ import ClearIcon from "@mui/icons-material/Clear";
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
+gsap.registerPlugin(GSDevTools);
+
 export const AdPreview = (props) => {
-  const {ad, maxFileSize = 150} = props;
+  const {ad, gsdevtools, maxFileSize = 150} = props;
 
   const [mediaType, setMediaType] = useState("iframe");
   const [mediaSource, setMediaSource] = useState(ad.output.html.url);
   const [activeConfigTab, setActiveConfigTab] = useState("html,iframe");
 
+  const [animation, setAnimation] = useState();
+
   const adPreviewCard = useRef();
+  
+  const gsDevContainer = useRef();
+
+  // add gsdevtools listeners
+  useEffect(() => {
+    if (gsdevtools !== "true") return;
+
+    gsDevContainer.current && (gsDevContainer.current.innerHTML = '')
+
+    const ifr = adPreviewCard.current
+
+    // have to use onload in order to set events to the right element (React render thing)
+    ifr.onload = () => {
+      if (!ifr.contentWindow) return
+      ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimation(e.detail), false)
+      ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
+    }
+  }, [mediaSource])
+
+  // create devtools box with animation
+  useEffect(() => {
+    if (!animation) return
+
+    animation.pause(0);
+    const tl = gsap.timeline();
+    tl.to(animation, { duration: animation.totalDuration(), totalProgress: 1, ease: Linear.easeNone });
+    gsDevContainer.current && (gsDevContainer.current.innerHTML = '')
+    GSDevTools.create({
+      container: gsDevContainer.current,
+      animation: tl,
+      visibility: "visible",
+      globalSync: false
+    });
+  }, [animation])
 
   const extensionTypes = ["jpg,img", "mp4,video", "gif,img"];
   const extensionIcons = {
@@ -65,11 +103,16 @@ export const AdPreview = (props) => {
 
       <CardMedia ref={adPreviewCard} component={mediaType} scrolling="no" style={{width: ad.width, height: ad.height}} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
       <CardContent>
+        {
+          gsdevtools === "true" && animation && activeConfigTab.split(",")[0] === "html"
+          ? <>
+              <Box ref={gsDevContainer}></Box>
+              <Divider light sx={{margin: "20px 0"}} />
+            </>
+          : <></>
+        }
         <Box>
           <Box marginBottom="20px">
-            <Typography sx={{marginBottom: "10px"}} noWrap align="left" variant="body2">
-              Bundle size:
-            </Typography>
             <Tooltip title="Bundle size">
               <Chip icon={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? <DoneIcon /> : <ClearIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
             </Tooltip>

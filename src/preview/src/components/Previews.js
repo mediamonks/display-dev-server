@@ -81,6 +81,8 @@ const getLabelFromFilterGroup = (filterGroup) => {
 
 export default function Previews({ data }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  const gsdevtools = useMemo(() => searchParams.get('gsdevtools'), []);
 
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
@@ -90,11 +92,23 @@ export default function Previews({ data }) {
 
   useEffect(() => {
     setAds(getAdsListFromFilters(data.ads, filters));
-    setSearchParams({
-      filter: decodeURI(composeSearchParamsFromFilters(filters)),
-    });
+    const filter = decodeURI(composeSearchParamsFromFilters(filters))
+    const collectFilters = {}
+    filter && (collectFilters.filter = filter)
+    gsdevtools && (collectFilters.gsdevtools = gsdevtools)
+    setSearchParams(collectFilters)
     setPage(0);
   }, [filters]);
+  
+  useEffect(() => {
+    if (gsdevtools !== "true") return
+    window.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented) return;
+      if (e.key === " ") {
+        e.preventDefault();
+      }
+    })
+  }, [])
 
   const getSelectedFilters = () => {
     // returns flat array of selected filters i.e. ["en","300x400"] (the input element needs this as a value)
@@ -200,7 +214,7 @@ export default function Previews({ data }) {
       </AppBar>
 
       <div className={styles.previews}>
-        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
+        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools} key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
         {pageAds.length < 1 && "No ads found with the current combination of filters"}
       </div>
     </>
