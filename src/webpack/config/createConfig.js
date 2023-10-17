@@ -358,6 +358,7 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "flashtalking") {
+
     console.log("found flashtalking ad");
 
     const outputString = `FT.manifest({
