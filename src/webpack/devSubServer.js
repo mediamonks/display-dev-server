@@ -19,7 +19,7 @@ module.exports = async function devSubServer({configs, options, port}, cb) {
 
   const app = express();
 
-  webpackConfigList.forEach((config, index) => {
+  await Promise.all(webpackConfigList.map((config, index) => {
     const hmrPath = '__webpack_hmr';
     const name = getNameFromLocation(settingsList[index].location);
 
@@ -31,20 +31,22 @@ module.exports = async function devSubServer({configs, options, port}, cb) {
       hotUpdateMainFilename: '.hot/.hot-update.json',
     };
 
-    const compiler = webpack(config, () => {});
+    return new Promise(res => {
+      const compiler = webpack(config, res);
 
-    app.use(
-      webpackDevMiddleware(compiler, {
-        publicPath: `/${name}/`,
-      }),
-    );
+      app.use(
+        webpackDevMiddleware(compiler, {
+          publicPath: `/${name}/`,
+        }),
+      );
 
-    app.use(
-      webpackHotMiddleware(compiler, {
-        path: `/${name}/${hmrPath}`,
-      }),
-    );
-  });
+      app.use(
+        webpackHotMiddleware(compiler, {
+          path: `/${name}/${hmrPath}`,
+        }),
+      );
+    })
+  }));
 
   app.listen(port, () => {});
   cb();
