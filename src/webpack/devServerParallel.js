@@ -59,7 +59,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
   // if we have empty chunks (less than N_SUBSERVERS banners)
   .filter(e => e.length)
   // map to promises
-  .map(async (chunk, i) => {
+  .map((chunk, i) => {
     // delete row since it's an object with constructor and we can't carry it to the thread
     chunk = chunk.map(({row, ...config}) => config)
 
