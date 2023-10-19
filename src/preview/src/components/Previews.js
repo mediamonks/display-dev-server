@@ -3,8 +3,7 @@ import styles from "./Previews.module.scss";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-
-import { ListSubheader, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput, Tooltip } from "@mui/material";
+import { ListSubheader, Tooltip, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CachedIcon from '@mui/icons-material/Cached';
 
