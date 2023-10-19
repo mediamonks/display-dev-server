@@ -113,28 +113,18 @@ export const AdPreview = (props) => {
             </>
           : <></>
         }
-        <Box>
-          <Box marginBottom="20px">
-            <Tooltip title="Bundle size">
-              <Chip icon={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? <DoneIcon /> : <ClearIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
-            </Tooltip>
-          </Box>
-          {/*<Box>
-            <Typography sx={{ marginBottom: "10px" }} variant="body2">
-              Optimizations:
-            </Typography>
-            <Tooltip title="Optimizations">
-              <Box display="flex" flexWrap="wrap" gap="5px">
-                <Chip icon={ad.output.html.optimizations.image ? <DoneIcon /> : <ClearIcon />} label="Images" />
-                <Chip icon={<DoneIcon />} label="Fonts" />
-                <Chip icon={ad.output.html.optimizations.js ? <DoneIcon /> : <ClearIcon />} label="Code" />
+        {
+          ad.output?.zip?.size
+          ? <>
+              <Box marginBottom="20px">
+                <Tooltip title="Bundle size">
+                  <Chip icon={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? <DoneIcon /> : <ClearIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
+                </Tooltip>
               </Box>
-            </Tooltip>
-          </Box>*/}
-        </Box>
-
-        <Divider light sx={{margin: "20px 0"}} />
-
+              <Divider light sx={{margin: "20px 0"}} />
+            </>
+          : <></>
+        }
         <Box display="flex" flexWrap="wrap" justifyContent="space-between">
           <Box>
             <Tooltip title="Reload">

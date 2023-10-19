@@ -45,14 +45,8 @@ module.exports = function createConfig({
     stats: false,
   },
 }) {
-  let devtool = false;
+  const devtool = mode === DevEnum.PRODUCTION ? false : "inline-source-map"; // 7% improvement on dev times if false
   const entry = [];
-
-  if (mode === DevEnum.PRODUCTION) {
-    devtool = false;
-  } else if (mode === DevEnum.DEVELOPMENT) {
-    devtool = "inline-source-map";
-  }
 
   let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name]" : "[name]_[contenthash]";
   let optimizations = getOptimisationsFromConfig(richmediarc);
@@ -128,7 +122,7 @@ module.exports = function createConfig({
           use: function () {
             let loaderArray = [];
 
-            if (richmediarc.settings.optimizations.js) {
+            if (mode === DevEnum.PRODUCTION && richmediarc.settings.optimizations.js) {
               loaderArray.push({
                 loader: "esbuild-loader",
                 options: {
@@ -181,7 +175,7 @@ module.exports = function createConfig({
             {
               loader: "html-loader",
               options: {
-                minimize: optimizations.html,
+                minimize: mode === DevEnum.PRODUCTION && optimizations.html,
                 esModule: false,
               },
             },
@@ -267,7 +261,7 @@ module.exports = function createConfig({
               },
             ];
 
-            if (optimizations.image && !richmediarc.settings.optimizeToFileSize) {
+            if (mode === DevEnum.PRODUCTION && (optimizations.image && !richmediarc.settings.optimizeToFileSize)) {
               // don't optimize images if optimizeToFileSize is set to true
               imageLoadersArray.push({
                 loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
@@ -330,7 +324,7 @@ module.exports = function createConfig({
     plugins: [
       new HtmlWebpackPlugin({
         template: richmediarc.settings.entry.html,
-        minify: optimizations.html,
+        minify: mode === DevEnum.PRODUCTION && optimizations.html,
         filename: "./index.html",
       }),
       new HtmlWebpackInlineSVGPlugin({
@@ -363,7 +357,8 @@ module.exports = function createConfig({
     );
   }
 
-  if (richmediarc.settings.type === "flashtalking") {
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "flashtalking") {
+
     console.log("found flashtalking ad");
 
     const outputString = `FT.manifest({
@@ -382,7 +377,7 @@ module.exports = function createConfig({
     );
   }
 
-  if (richmediarc.settings.type === "adform") {
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "adform") {
     let clickTags = richmediarc.settings.clickTags || { clickTAG: "http://www.adform.com" };
     let obj = {
       version: "1.0",
@@ -410,17 +405,18 @@ module.exports = function createConfig({
   }
 
   config.optimization = {
-    minimize: true,
+    minimize: mode === DevEnum.PRODUCTION,
     minimizer: [],
   };
 
-  if (optimizations.js) {
+  if (mode === DevEnum.PRODUCTION && optimizations.js) {
     config.optimization.splitChunks = {
       chunks: "async",
     };
 
     config.optimization.minimizer.push(
       new TerserPlugin({
+        // minify: TerserPlugin.esbuildMinify,
         extractComments: false,
       })
     );
