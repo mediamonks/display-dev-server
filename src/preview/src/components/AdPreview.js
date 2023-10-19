@@ -20,10 +20,12 @@ import LoadingButton from "@mui/lab/LoadingButton";
 gsap.registerPlugin(GSDevTools);
 
 export const AdPreview = (props) => {
-  const {ad, gsdevtools, maxFileSize = 150} = props;
+  const {ad, gsdevtools, timestamp, maxFileSize = 150} = props;
+
+  const cachedHTML = `${ad.output.html.url}?r=${timestamp}`
 
   const [mediaType, setMediaType] = useState("iframe");
-  const [mediaSource, setMediaSource] = useState(ad.output.html.url);
+  const [mediaSource, setMediaSource] = useState(cachedHTML);
   const [activeConfigTab, setActiveConfigTab] = useState("html,iframe");
 
   const [animation, setAnimation] = useState();
@@ -78,7 +80,7 @@ export const AdPreview = (props) => {
     setMediaType(mediaType);
 
     if (type === "html") {
-      setMediaSource(ad.output.html.url);
+      setMediaSource(cachedHTML);
     } else {
       setMediaSource(ad.output[type].url);
     }
@@ -138,7 +140,7 @@ export const AdPreview = (props) => {
             <Tooltip title="Reload">
               <IconButton
                 onClick={(e) => {
-                  activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = ad.output.html.url) : setActiveConfigTab("html,iframe");
+                  activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = cachedHTML) : setActiveConfigTab("html,iframe");
                 }}
                 color="primary"
               >
