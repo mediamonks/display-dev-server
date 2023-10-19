@@ -19,6 +19,6 @@ module.exports = async function (options) {
       if (parallel) await buildFilesParallel(webpackConfigs.result, options);
       else          await buildFiles(webpackConfigs.result, outputDir);
     }
-    if (!skipPreview) await buildPreview(outputDir);
+    if (!skipPreview) await buildPreview(webpackConfigs?.result, outputDir);
   }
 };
