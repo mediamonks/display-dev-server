@@ -186,9 +186,11 @@ export default function Previews({ data }) {
                 </Tooltip>
               : <></>
             }
-            <Typography align="left" variant="h5" component="div">
-              Preview
-            </Typography>
+            <Tooltip title={(new Date(data.timestamp)).toLocaleString()}>
+              <Typography align="left" variant="h5" component="div">
+                Preview
+              </Typography>
+            </Tooltip>
           </Box>
 
           <FormControl sx={{ m: 1, minWidth: 150, maxWidth: "40%" }}>
