@@ -137,8 +137,6 @@ export default function Previews({ data }) {
     // set each filter's selected value based on the value from the event
     updatedFilters.flat().forEach((filter) => {
       if (filter.value === value) {
-        console.log("found the one to be deleted");
-        console.log(filter);
         filter.selected = false;
       }
     });
@@ -149,7 +147,7 @@ export default function Previews({ data }) {
   // handle button(s)
 
   const handleDownloadZips = (event) => {
-    console.log(event);
+    // console.log(event);
     window.open("all.zip");
   };
 
