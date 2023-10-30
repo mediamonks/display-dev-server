@@ -40,9 +40,14 @@ module.exports = async function devServer(configs, openLocation = true, options)
 
   const httpLocation = `http://localhost:${port}`;
 
-  console.log(`${chalk.blue('i')} Server running. Please go to ${httpLocation}
+  console.log(`
+${chalk.blue('i')} ${openLocation
+  ? `Server ${httpLocation} will open automatically once everything is ready. This might take a while.`
+  : `Server ${httpLocation} running. It might take a while to load.`
+}
+${chalk.yellow('!')} Preview GSDevTools don't work on parallel. More info here: https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
 ${chalk.grey.bold('-------------------------------------------------------')}
-`);
+  `);
 
   const app = express();
 
