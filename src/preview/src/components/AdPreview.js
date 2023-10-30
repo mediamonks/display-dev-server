@@ -12,6 +12,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import MovieIcon from "@mui/icons-material/Movie";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import FolderZipIcon from "@mui/icons-material/FolderZip";
+import FolderIcon from "@mui/icons-material/FolderOpen";
 import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 
@@ -125,12 +126,23 @@ export const AdPreview = (props) => {
           : <></>
         }
         {
-          ad.output?.zip?.size
+          ad.output?.zip?.size || ad.output?.unzip?.size
           ? <>
-              <Box marginBottom="20px">
-                <Tooltip title="Bundle size">
-                  <Chip icon={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? <DoneIcon /> : <ClearIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
-                </Tooltip>
+              <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px">
+                {
+                  ad.output?.zip?.size
+                  ? <Tooltip title="Bundle size">
+                      <Chip icon={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? <DoneIcon /> : <ClearIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
+                    </Tooltip>
+                  : <></>
+                }
+                {
+                  ad.output?.unzip?.size
+                  ? <Tooltip title="UnZIP size">
+                      <Chip icon={<FolderIcon />} label={`${Math.round(ad.output.unzip.size / 1024)} KB`} color={"info"} />
+                    </Tooltip>
+                  : <></>
+                }
               </Box>
               <Divider light sx={{margin: "20px 0"}} />
             </>
@@ -157,7 +169,7 @@ export const AdPreview = (props) => {
           <Box>
             <Box display="flex" flexWrap="wrap">
               {Object.keys(ad.output).map((extension) => {
-                if (ad.output[extension] && extension != 'html')
+                if (ad.output[extension] && ad.output[extension].url && extension != 'html')
                   return (
                     <Tooltip key={extension} title={`Download ${extension.toUpperCase()} ${!ad.output[extension]?.url ? "(loading)" : ""}`}>
                       <span>

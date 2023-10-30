@@ -22,6 +22,12 @@
         "zip": {
           "url": "https://richmedia-previews-s3bucket-tu6a9uv81tss.s3.amazonaws.com/ao-price-comms-v/CENTRAL_MINI_BANN_U25-ICE_ALWAYS_ON_V1_-_NA_160X600_NA_ENG_PERF.zip",
           "size": 81516
+        },
+        "unzip": {
+          "size": 90804
+        },
+        "jpg": {
+          "url": "https://d34hktllpa7k5r.cloudfront.net/backups/2e573203-39f8-4a0e-a117-0c68e5b10279.png"
         }
       }
     },
