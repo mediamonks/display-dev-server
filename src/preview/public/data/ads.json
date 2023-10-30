@@ -23,6 +23,9 @@
           "url": "https://d34hktllpa7k5r.cloudfront.net/ads/a954ae8bf3ca88fc4a752adfa159c103da5479ff/en_friendsfamily_ill_160x600.zip",
           "size": 81516
         },
+        "unzip": {
+          "size": 90804
+        },
         "jpg": {
           "url": "https://d34hktllpa7k5r.cloudfront.net/backups/2e573203-39f8-4a0e-a117-0c68e5b10279.png"
         }

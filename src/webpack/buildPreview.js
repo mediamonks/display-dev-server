@@ -48,7 +48,13 @@ module.exports = async function buildPreview(result, outputDir) {
             ...acc,
             ...additionalOutputObj
           }
-
+        } else if (file === bundleName) {
+          return {
+            ...acc,
+            unzip: {
+              size: sizeSync(path.resolve(bundleParentDir, file))
+            }
+          }
         } else {
           return acc;
         };
@@ -106,3 +112,12 @@ module.exports = async function buildPreview(result, outputDir) {
     });
   }
 };
+
+function sizeSync(p) {
+  const stat = fs.statSync(p);
+  if (stat.isFile())
+    return stat.size;
+  else if (stat.isDirectory())
+    return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0);
+  else return 0; // can't take size of a stream/symlink/socket/etc
+}
