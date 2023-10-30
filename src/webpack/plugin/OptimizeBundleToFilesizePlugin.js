@@ -12,8 +12,77 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 
   apply(compiler) {
     compiler.hooks.afterEmit.tapPromise('OptimizeBundleToFilesizePlugin', async compilation => {
-      const {outputPath, filename, maxFileSize, lowestQuality} = this.options;
+      const {outputPath, filename, maxFileSize, maxFileSizeFor, lowestQuality} = this.options;
       const srcDir = compilation.compiler.outputPath;
+
+      if (maxFileSizeFor == 'folder') {
+        const folderSize = sizeSync(path.resolve(srcDir))
+
+        if (folderSize <= maxFileSize) {
+          console.log('looks like the bundle is already small enough, does not need additional optimization')
+        } else {
+          const inputFiles = fs.readdirSync(path.resolve(srcDir))
+
+          const filesData = await Promise.all(
+            inputFiles
+            .filter(file => ['.jpg', '.png', '.jpeg'].includes(path.extname(file)))
+            .map(file => {
+              return new Promise(async res => {
+                const data = await fs.promises.readFile(path.resolve(srcDir, file))
+                res({
+                  name: file,
+                  data
+                })
+              })
+            })
+          )
+
+          // otherwise continue with the optimization loop...
+          await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
+            if (quality <= lowestQuality) quality = lowestQuality;
+            console.log(`creating bundle with ${quality} quality level...`)
+
+            await Promise.all(
+              filesData
+              .map(file => {
+                return new Promise(async res => {
+                  const content = file.data;
+                  const optimizedContentBuffer = path.extname(file.name) === '.png' ?
+                    await sharp(content).png({quality, effort: 10}).toBuffer() :
+                    await sharp(content).jpeg({quality}).toBuffer()
+
+                  await fs.promises.writeFile(path.resolve(srcDir, file.name), optimizedContentBuffer);
+
+                  res()
+                })
+              })
+            )
+  
+            const folderSize = sizeSync(path.resolve(srcDir));
+
+            if (folderSize > maxFileSize && quality > lowestQuality) {
+              await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality -= 5)
+            }
+          })(srcDir, outputPath, filename, maxFileSize, 100);
+        }
+
+        // and finally create zip
+        await new Promise(async resolve => {
+          const output = fs.createWriteStream(path.resolve(outputPath, filename));
+          output.on("close", () => {
+            resolve(path.resolve(outputPath, filename));
+          });
+          const archive = archiver("zip", {zlib: {level: 9}});
+          archive.pipe(output);
+          const inputFiles = await fs.promises.readdir(path.resolve(srcDir))
+          inputFiles.forEach(file => {
+            archive.file(path.resolve(srcDir, file), {name: file})
+          })
+          archive.finalize();
+        })
+
+        return
+      }
 
       // build a zip first and see if it's under maxFileSize
       const zippedBundle = await new Promise(async resolve => {
@@ -97,3 +166,12 @@ module.exports = class OptimizeBundleToFilesizePlugin {
     });
   }
 };
+
+function sizeSync(p) {
+  const stat = fs.statSync(p);
+  if (stat.isFile())
+    return stat.size;
+  else if (stat.isDirectory())
+    return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0);
+  else return 0; // can't take size of a stream/symlink/socket/etc
+}
