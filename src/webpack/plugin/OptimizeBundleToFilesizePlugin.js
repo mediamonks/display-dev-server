@@ -12,10 +12,10 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 
   apply(compiler) {
     compiler.hooks.afterEmit.tapPromise('OptimizeBundleToFilesizePlugin', async compilation => {
-      const {outputPath, filename, maxFileSize, maxFileSizeFor, lowestQuality} = this.options;
+      const {outputPath, filename, maxFileSize, optimizeUncompressed, lowestQuality} = this.options;
       const srcDir = compilation.compiler.outputPath;
 
-      if (maxFileSizeFor == 'folder') {
+      if (optimizeUncompressed) {
         const folderSize = sizeSync(path.resolve(srcDir))
 
         if (folderSize <= maxFileSize) {

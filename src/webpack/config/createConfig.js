@@ -433,7 +433,7 @@ module.exports = function createConfig({
             outputPath: path.join(outputPath, "../"),
             filename: `${bundleName}.zip`,
             maxFileSize: richmediarc.settings.maxFileSize * 1024,
-            maxFileSizeFor: richmediarc.settings.maxFileSizeFor,
+            optimizeUncompressed: richmediarc.settings.optimizeUncompressed,
             lowestQuality: richmediarc.settings.lowestImageQuality || 60,
           })
         : new ZipFilesPlugin({
