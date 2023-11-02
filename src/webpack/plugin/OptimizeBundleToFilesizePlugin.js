@@ -16,9 +16,9 @@ module.exports = class OptimizeBundleToFilesizePlugin {
       const srcDir = compilation.compiler.outputPath;
 
       if (optimizeUncompressed) {
-        const folderSize = await size(path.resolve(srcDir))
+        const folderSizeInit = await size(path.resolve(srcDir))
 
-        if (folderSize <= maxFileSize) {
+        if (folderSizeInit <= maxFileSize) {
           console.log('looks like the bundle is already small enough, does not need additional optimization')
         } else {
           const inputFiles = await fs.readdir(path.resolve(srcDir))
@@ -37,27 +37,39 @@ module.exports = class OptimizeBundleToFilesizePlugin {
             })
           )
 
+          const filesDataTotalSize = filesData.reduce((a, f) => a + f.data.length, 0)
+
+          const baseSize = folderSizeInit - filesDataTotalSize
+
           // otherwise continue with the optimization loop...
           await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
             if (quality <= lowestQuality) quality = lowestQuality;
             console.log(`\n\n\n\n\n\n\n\n\n\n\ncreating bundle with ${quality} quality level...`)
 
-            await Promise.all(
+            const optimizedFilesData = await Promise.all(
               filesData
               .map(async file => {
-                const content = file.data;
                 const optimizedContentBuffer = path.extname(file.name) === '.png' ?
-                  await sharp(content).png({quality, effort: 10}).toBuffer() :
-                  await sharp(content).jpeg({quality}).toBuffer()
+                  await sharp(file.data).png({quality, effort: 10}).toBuffer() :
+                  await sharp(file.data).jpeg({quality}).toBuffer()
 
-                await fs.promises.writeFile(path.resolve(srcDir, file.name), optimizedContentBuffer);
+                return {
+                  name: file.name,
+                  data: optimizedContentBuffer
+                }
               })
             )
-  
-            const folderSize = await size(path.resolve(srcDir));
+
+            const optimizedFilesDataTotalSize = optimizedFilesData.reduce((a, f) => a + f.data.length, 0)
+
+            const folderSize = baseSize + optimizedFilesDataTotalSize
 
             if (folderSize > maxFileSize && quality > lowestQuality) {
               await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality -= 5)
+            } else {
+              await Promise.all(optimizedFilesData.map(async file => {
+                await fs.promises.writeFile(path.resolve(srcDir, file.name), file.data);
+              }))
             }
           })(srcDir, outputPath, filename, maxFileSize, 100);
         }
