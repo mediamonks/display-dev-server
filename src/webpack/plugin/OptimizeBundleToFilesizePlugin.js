@@ -44,17 +44,13 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 
             await Promise.all(
               filesData
-              .map(file => {
-                return new Promise(async res => {
-                  const content = file.data;
-                  const optimizedContentBuffer = path.extname(file.name) === '.png' ?
-                    await sharp(content).png({quality, effort: 10}).toBuffer() :
-                    await sharp(content).jpeg({quality}).toBuffer()
+              .map(async file => {
+                const content = file.data;
+                const optimizedContentBuffer = path.extname(file.name) === '.png' ?
+                  await sharp(content).png({quality, effort: 10}).toBuffer() :
+                  await sharp(content).jpeg({quality}).toBuffer()
 
-                  await fs.promises.writeFile(path.resolve(srcDir, file.name), optimizedContentBuffer);
-
-                  res()
-                })
+                await fs.promises.writeFile(path.resolve(srcDir, file.name), optimizedContentBuffer);
               })
             )
   
