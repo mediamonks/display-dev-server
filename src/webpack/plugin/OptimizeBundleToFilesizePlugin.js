@@ -16,12 +16,12 @@ module.exports = class OptimizeBundleToFilesizePlugin {
       const srcDir = compilation.compiler.outputPath;
 
       if (optimizeUncompressed) {
-        const folderSize = sizeSync(path.resolve(srcDir))
+        const folderSize = await size(path.resolve(srcDir))
 
         if (folderSize <= maxFileSize) {
           console.log('looks like the bundle is already small enough, does not need additional optimization')
         } else {
-          const inputFiles = fs.readdirSync(path.resolve(srcDir))
+          const inputFiles = await fs.readdir(path.resolve(srcDir))
 
           const filesData = await Promise.all(
             inputFiles
@@ -58,7 +58,7 @@ module.exports = class OptimizeBundleToFilesizePlugin {
               })
             )
   
-            const folderSize = sizeSync(path.resolve(srcDir));
+            const folderSize = await size(path.resolve(srcDir));
 
             if (folderSize > maxFileSize && quality > lowestQuality) {
               await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality -= 5)
@@ -99,7 +99,7 @@ module.exports = class OptimizeBundleToFilesizePlugin {
         archive.finalize();
       })
 
-      const zippedBundleSize = fs.statSync(zippedBundle).size;
+      const zippedBundleSize = await fs.stat(zippedBundle).size;
 
       if (zippedBundleSize <= maxFileSize) {
         console.log('looks like the bundle is already small enough, does not need additional optimization')
@@ -118,7 +118,7 @@ module.exports = class OptimizeBundleToFilesizePlugin {
             const archive = archiver("zip", {zlib: {level: 9}});
             archive.pipe(output);
 
-            const inputFiles = fs.readdirSync(path.resolve(srcDir))
+            const inputFiles = await fs.readdir(path.resolve(srcDir))
 
             const optimizedResult = await Promise.all(inputFiles.map(async file => {
               return new Promise(async resolve => {
@@ -175,6 +175,24 @@ function sizeSync(p) {
 
   if (stat.isDirectory())
     return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0)
+
+  return 0; // can't take size of a stream/symlink/socket/etc
+}
+
+async function size(p) {
+  const stat = await fs.stat(p)
+
+  if (stat.isFile())
+    return stat.size
+
+  if (stat.isDirectory()) {
+    const dir = await fs.readdir(p)
+    return dir.reduce(async (a, e) => {
+      a = await a // reduce async hack
+      const s = await size(path.join(p, e))
+      return a + s
+    }, Promise.resolve(0))
+  }
 
   return 0; // can't take size of a stream/symlink/socket/etc
 }
