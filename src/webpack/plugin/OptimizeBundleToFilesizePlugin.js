@@ -168,10 +168,13 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 };
 
 function sizeSync(p) {
-  const stat = fs.statSync(p);
+  const stat = fs.statSync(p)
+
   if (stat.isFile())
-    return stat.size;
-  else if (stat.isDirectory())
-    return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0);
-  else return 0; // can't take size of a stream/symlink/socket/etc
+    return stat.size
+
+  if (stat.isDirectory())
+    return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0)
+
+  return 0; // can't take size of a stream/symlink/socket/etc
 }
