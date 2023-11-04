@@ -7,7 +7,7 @@
       "zip": "https://d34hktllpa7k5r.cloudfront.net/ads/a954ae8bf3ca88fc4a752adfa159c103da5479ff/en_friendsfamily_ill_160x600.zip",
       "width": 160,
       "height": 600,
-      "maxFileSize": 60,
+      "maxFileSize": 85,
       "bundleName": "en_friendsfamily_ill_160x600",
       "output": {
         "html": {
