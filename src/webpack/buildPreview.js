@@ -15,11 +15,36 @@ module.exports = async function buildPreview(result, outputDir) {
     result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
   }
 
-  const allAds = allIndexHtmlFiles.reduce((acc, filename, i) => {
-    const rawData = fs.readFileSync(filename, "utf8");
-    const parsed = htmlParser.parse(rawData);
+  // collect all fs data
+  const parentDirsCache = {}
 
-    if (parsed.querySelectorAll('meta[name="ad.size"]').length > 0) {
+  await Promise.all(
+    allIndexHtmlFiles
+    .map(filename => path.resolve(path.dirname(filename), '../'))
+    .filter((x, i, a) => a.indexOf(x) == i)
+    .map(async parentDir => {
+      const filesInParentDir = await fs.readdir(parentDir)
+      const fileStatsInParentDir = await Promise.all(
+        filesInParentDir.map(async file => {
+          return await fs.stat(path.resolve(parentDir, file))
+        })
+      )
+      parentDirsCache[parentDir] = {
+        files: filesInParentDir,
+        stats: fileStatsInParentDir
+      }
+    })
+  )
+
+  const allAds = (await Promise.all(
+    allIndexHtmlFiles.map(async (filename, i) => {
+      const rawData = await fs.readFile(filename, "utf8");
+      const parsed = htmlParser.parse(rawData);
+
+      if (!parsed.querySelectorAll('meta[name="ad.size"]').length) {
+        return undefined;
+      }
+
       const dimensions = parsed.querySelector('meta[name="ad.size"]').getAttribute('content').split(',').reduce((acc, attr) => {
         const keyVal = attr.split('=');
         return {
@@ -30,54 +55,52 @@ module.exports = async function buildPreview(result, outputDir) {
 
       const bundleName = path.basename(path.dirname(filename));
       const bundleParentDir = path.resolve(path.dirname(filename), '../');
-      const filesInParentDir = fs.readdirSync(bundleParentDir);
+      const { files, stats } = parentDirsCache[bundleParentDir]
+      const filesInParentDir = files;
 
-      const additionalOutputs = filesInParentDir.reduce((acc, file) => {
-        const fileStats = fs.statSync(path.resolve(bundleParentDir, file));
-        if (fileStats.isFile() && file.includes(bundleName)) {
-          const fileType = path.extname(file).split('.')[1];
-          const additionalOutputObj = {
-            [fileType]: {
-              // url: file,
-              url: path.relative(outputDir, path.resolve(bundleParentDir, file)).replace(/\\/g, "/"),
-              size: fileStats.size
+      const additionalOutputs = (await Promise.all(
+        filesInParentDir.map(async (file, i) => {
+          const fileStats = stats[i];
+
+          if (fileStats.isFile() && file.includes(bundleName)) {
+            const fileType = path.extname(file).split('.')[1];
+            return {
+              [fileType]: {
+                // url: file,
+                url: path.relative(outputDir, path.resolve(bundleParentDir, file)).replace(/\\/g, "/"),
+                size: fileStats.size
+              }
             }
           }
 
-          return {
-            ...acc,
-            ...additionalOutputObj
-          }
-        } else if (file === bundleName) {
-          return {
-            ...acc,
-            unzip: {
-              size: sizeSync(path.resolve(bundleParentDir, file))
+          if (file === bundleName) {
+            return {
+              unzip: {
+                size: await size(path.resolve(bundleParentDir, file))
+              }
             }
           }
-        } else {
-          return acc;
-        };
-      }, {})
 
-      return [
-        ...acc,
-        {
-          bundleName,
-          ...dimensions,
-          maxFileSize: result && result[i].settings.data.settings.maxFileSize,
-          output: {
-            html: {
-              url: path.relative(outputDir, filename).replace(/\\/g, "/")
-            },
-            ...additionalOutputs
+          return undefined
+        })
+      ))
+      .filter(output => output != undefined)
+      .reduce((a, v) => ({ ...a, ...v }), {}) // array to object
+
+      return {
+        bundleName,
+        ...dimensions,
+        maxFileSize: result && result[i].settings.data.settings.maxFileSize,
+        output: {
+          html: {
+            url: path.relative(outputDir, filename).replace(/\\/g, "/")
           },
-        }
-      ]
-    } else {
-      return acc;
-    }
-  }, [])
+          ...additionalOutputs
+        },
+      }
+    })
+  ))
+  .filter(ad => ad != undefined)
 
   const adsList = {
     timestamp: Date.now(),
@@ -88,18 +111,19 @@ module.exports = async function buildPreview(result, outputDir) {
 
   // copy preview folder
   console.log("copying preview files...");
-  fs.copySync(path.join(__dirname, `../preview/dist`), outputDir, {
+  await fs.copy(path.join(__dirname, `../preview/dist`), outputDir, {
     overwrite: true,
   });
 
   // write the result to ads.json in the preview dir
   console.log(`creating ${outputDir}/data/ads.json`)
-  fs.outputFileSync(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
+  await fs.outputFile(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
 
   // write the zip file containing all zips
 
   // console.log(adsList.ads)
   if (adsList.ads.filter(ad => ad.output.zip).length > 0) {
+    console.log(`creating all.zip`)
     await new Promise((resolve) => {
       const output = fs.createWriteStream(outputDir + "/all.zip");
       output.on("close", resolve);
@@ -120,4 +144,22 @@ function sizeSync(p) {
   else if (stat.isDirectory())
     return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0);
   else return 0; // can't take size of a stream/symlink/socket/etc
+}
+
+async function size(p) {
+  const stat = await fs.stat(p)
+
+  if (stat.isFile())
+    return stat.size
+
+  if (stat.isDirectory()) {
+    const dir = await fs.readdir(p)
+    return dir.reduce(async (a, e) => {
+      a = await a // reduce async hack
+      const s = await size(path.join(p, e))
+      return a + s
+    }, Promise.resolve(0))
+  }
+
+  return 0; // can't take size of a stream/symlink/socket/etc
 }
