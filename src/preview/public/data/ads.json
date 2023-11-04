@@ -7,7 +7,7 @@
       "zip": "https://richmedia-previews-s3bucket-tu6a9uv81tss.s3.amazonaws.com/ao-price-comms-v/CENTRAL_MINI_BANN_U25-ICE_ALWAYS_ON_V1_-_NA_160X600_NA_ENG_PERF.zip",
       "width": 160,
       "height": 600,
-      "maxFileSize": 60,
+      "maxFileSize": 85,
       "bundleName": "en_friendsfamily_ill_160x600",
       "output": {
         "html": {

@@ -361,28 +361,6 @@ eval("\n\nvar _interopRequireDefault = __webpack_require__(/*! @babel/runtime/he
 
 /***/ }),
 
-/***/ "./node_modules/@mui/icons-material/Clear.js":
-/*!***************************************************!*\
-  !*** ./node_modules/@mui/icons-material/Clear.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-eval("\n\nvar _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ \"./node_modules/@babel/runtime/helpers/interopRequireDefault.js\");\nObject.defineProperty(exports, \"__esModule\", ({\n  value: true\n}));\nexports[\"default\"] = void 0;\nvar _createSvgIcon = _interopRequireDefault(__webpack_require__(/*! ./utils/createSvgIcon */ \"./node_modules/@mui/icons-material/utils/createSvgIcon.js\"));\nvar _jsxRuntime = __webpack_require__(/*! react/jsx-runtime */ \"./node_modules/react/jsx-runtime.js\");\nvar _default = (0, _createSvgIcon.default)( /*#__PURE__*/(0, _jsxRuntime.jsx)(\"path\", {\n  d: \"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"\n}), 'Clear');\nexports[\"default\"] = _default;\n\n//# sourceURL=webpack://display-dev-server-preview/./node_modules/@mui/icons-material/Clear.js?");
-
-/***/ }),
-
-/***/ "./node_modules/@mui/icons-material/Done.js":
-/*!**************************************************!*\
-  !*** ./node_modules/@mui/icons-material/Done.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-eval("\n\nvar _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ \"./node_modules/@babel/runtime/helpers/interopRequireDefault.js\");\nObject.defineProperty(exports, \"__esModule\", ({\n  value: true\n}));\nexports[\"default\"] = void 0;\nvar _createSvgIcon = _interopRequireDefault(__webpack_require__(/*! ./utils/createSvgIcon */ \"./node_modules/@mui/icons-material/utils/createSvgIcon.js\"));\nvar _jsxRuntime = __webpack_require__(/*! react/jsx-runtime */ \"./node_modules/react/jsx-runtime.js\");\nvar _default = (0, _createSvgIcon.default)( /*#__PURE__*/(0, _jsxRuntime.jsx)(\"path\", {\n  d: \"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z\"\n}), 'Done');\nexports[\"default\"] = _default;\n\n//# sourceURL=webpack://display-dev-server-preview/./node_modules/@mui/icons-material/Done.js?");
-
-/***/ }),
-
 /***/ "./node_modules/@mui/icons-material/FolderOpen.js":
 /*!********************************************************!*\
   !*** ./node_modules/@mui/icons-material/FolderOpen.js ***!
