@@ -1,21 +1,12 @@
-const isGoogleSpreadsheetUrl = require('./isGoogleSpreadsheetUrl');
-const getGoogleSheetIdFromUrl = require('./getGoogleSheetIdFromUrl');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
 const chalk = require('chalk');
 const extendObject = require('./extendObject');
 const createObjectFromJSONPath = require('./createObjectFromJSONPath');
-const fs = require('fs')
 const crypto = require('crypto')
 const getDataFromGoogleSpreadsheet = require("./getDataFromGoogleSpreadsheet");
-
-const cacheSpreadSheets = {};
-const cacheSheets = {};
 
 module.exports = async function expandWithSpreadsheetData(configs, mode) {
   // add support for google sheets.
   // detect if contentSource is available in
-  const newConfigList = [];
-  let spreadsheetData = {};
 
   const hasSameLocation = location => {
     for (let i = 0; i < newConfigList.length; i++) {
@@ -54,26 +45,21 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
 
     return `${location}.row_${index}`;
   };
+  
+  const cacheSpreadSheets = {};
 
-  for (let i = 0; i < configs.length; i++) {
-    const { data, location } = configs[i];
+  // fetch and pre-process
+  await Promise.all(
+    configs
+    .map(config => config.data?.settings?.contentSource)
+    .filter(contentSource => contentSource !== undefined)
+    .map(({ url, tabName, apiKey }) => JSON.stringify({ url, tabName, apiKey }))
+    .filter((x, i, a) => a.indexOf(x) == i) // unique
+    .map(JSON.parse)
+    .map(async contentSource => {
+      const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource)
 
-    if (data && data.settings && data.settings.contentSource) {
-      const contentSource = data.settings.contentSource;
-
-      //check if spreadsheetData already exists
-      if (!spreadsheetData.hasOwnProperty('contentSource')) {
-        spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource);
-        spreadsheetData.contentSource = contentSource;
-      } else {
-        if (contentSource.url !== spreadsheetData.contentSource.url || contentSource.tabName !== spreadsheetData.contentSource.tabName) {
-          console.log(`${chalk.green('!')} Next spreadsheet has different URL / tabName. Refreshing data.`);
-          spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource);
-          spreadsheetData.contentSource = contentSource;
-        }
-      }
-
-      spreadsheetData.rows.forEach((row, index) => {
+      const staticRowObjects = spreadsheetData.rows.map(row => {
         const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {
           prev[name] = row[name];
           return prev;
@@ -87,50 +73,74 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
           }
         }
 
-        // check if the row data passes the filter. return if not
-        if (contentSource.filter) {
-          const filters = [];
-          if (contentSource.filter instanceof Array) {
-            filters.push(...contentSource.filter);
-          } else {
-            filters.push(contentSource.filter);
-          }
+        return staticRowObject
+      })
 
-          // for loop so i can break or return immediately
-          for (let j = 0; j < filters.length; j++) {
-            const filter = filters[j];
-            for (const key in filter) {
-              if (filter.hasOwnProperty(key) && staticRowObject[key] && staticRowObject[key] !== filter[key]) {
-                return;
-              }
+      cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey } = contentSource)] = {
+        spreadsheetData,
+        staticRowObjects
+      }
+    })
+  )
+
+  const newConfigList = [];
+
+  // filter and push
+  configs.forEach(config => {
+    const { data, location } = config;
+    const contentSource = data?.settings?.contentSource;
+
+    if (!contentSource) {
+      return newConfigList.push({ data, location });
+    }
+
+    const { url, tabName, apiKey } = contentSource
+    const { spreadsheetData, staticRowObjects } = cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey })]
+
+    spreadsheetData.rows.forEach((row, index) => {
+      const staticRowObject = staticRowObjects[index]
+
+      // check if the row data passes the filter. return if not
+      if (contentSource.filter) {
+        const filters = [];
+        if (contentSource.filter instanceof Array) {
+          filters.push(...contentSource.filter);
+        } else {
+          filters.push(contentSource.filter);
+        }
+
+        // for loop so i can break or return immediately
+        for (let j = 0; j < filters.length; j++) {
+          const filter = filters[j];
+          for (const key in filter) {
+            if (filter.hasOwnProperty(key) && staticRowObject[key] && staticRowObject[key] !== filter[key]) {
+              return;
             }
           }
         }
+      }
 
-        let content = extendObject({}, (data.content || {}), staticRowObject)
+      const content = extendObject({}, (data.content || {}), staticRowObject)
 
-        let uniqueLocation = getUniqueLocation(location, contentSource, row, index);
-        const uniqueHash = crypto.randomBytes(20).toString('hex');
+      const uniqueLocation = getUniqueLocation(location, contentSource, row, index);
+      const uniqueHash = crypto.randomBytes(20).toString('hex');
 
-        let newObj = {
-          data: {
-            ...JSON.parse(JSON.stringify(data)),
-            content,
-            uniqueHash
-          },
-          location: uniqueLocation,
-          willBeDeletedAfterServerCloses: true,
-          row,
-          uniqueHash,
-          mode
-        };
+      let newObj = {
+        data: {
+          ...JSON.parse(JSON.stringify(data)),
+          content,
+          uniqueHash
+        },
+        location: uniqueLocation,
+        willBeDeletedAfterServerCloses: true,
+        row,
+        uniqueHash,
+        mode
+      };
 
-        newConfigList.push(newObj);
-      });
-    } else {
-      newConfigList.push({ data, location });
-    }
-  }
+      newConfigList.push(newObj);
+    });
+  })
 
   console.log(`${chalk.green('✔')} adding ${newConfigList.length} items for development`);
 

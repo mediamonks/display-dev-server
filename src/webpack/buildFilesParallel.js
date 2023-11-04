@@ -35,7 +35,7 @@ module.exports = async function buildFiles(result, options) {
 
   // final clean up
   console.log("Removing temp .richmediarc...");
-  removeTempRichmediaRc(result);
+  await removeTempRichmediaRc(result);
 
   return {
     outputDir: path.resolve(options.outputDir),

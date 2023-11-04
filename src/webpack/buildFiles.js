@@ -82,7 +82,7 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
 
   // final clean up
   console.log("Removing temp .richmediarc...");
-  removeTempRichmediaRc(result);
+  await removeTempRichmediaRc(result);
 
   // // // render backup images
   // // if (result[0].settings.data.settings.displayAdsRecorder) {
@@ -153,7 +153,6 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
   //   adsList.ads.forEach((ad) => archive.file(path.resolve(outputDir, ad.output.zip.url), {name: ad.output.zip.url}));
   //   archive.finalize();
   // });
-
 
   return {
     outputDir: path.resolve(outputDir),
