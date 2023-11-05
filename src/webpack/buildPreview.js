@@ -97,15 +97,11 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
       return {
         bundleName,
         ...dimensions,
-        maxFileSize: result
-          ? result[bundleName]
-            ? result[bundleName].settings.data.settings.maxFileSize
-            : undefined
+        maxFileSize: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.maxFileSize
           : undefined,
-        quality: result
-          ? result[bundleName]
-            ? result[bundleName].quality || (result[i].settings.data.settings?.optimizations?.image && 80) || 100
-            : undefined
+        quality: (result && result[bundleName])
+          ? result[bundleName].quality || (result[bundleName].settings.data.settings?.optimizations?.image && 80) || 100
           : undefined,
         output: {
           html: {
