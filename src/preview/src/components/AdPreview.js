@@ -123,14 +123,14 @@ export const AdPreview = (props) => {
                   {
                     ad.output?.zip?.size
                     ? <Tooltip title="Compressed size">
-                        <Chip icon={<FolderZipIcon />} label={`${Math.round(ad.output.zip.size / 1024)} KB`} color={Math.round(ad.output.zip.size / 1024) <= maxFileSize ? "success" : "error"} />
+                        <Chip icon={<FolderZipIcon />} label={`${Math.floor(ad.output.zip.size / 1024)} KB`} color={ad.output.zip.size / 1024 <= maxFileSize ? "success" : "error"} />
                       </Tooltip>
                     : <></>
                   }
                   {
                     ad.output?.unzip?.size
                     ? <Tooltip title="Uncompressed size">
-                        <Chip icon={<FolderIcon />} label={`${Math.round(ad.output.unzip.size / 1024)} KB`} color={Math.round(ad.output.unzip.size / 1024) <= maxFileSize ? "success" : "error"} />
+                        <Chip icon={<FolderIcon />} label={`${Math.floor(ad.output.unzip.size / 1024)} KB`} color={ad.output.unzip.size / 1024 <= maxFileSize ? "success" : "error"} />
                       </Tooltip>
                     : <></>
                   }

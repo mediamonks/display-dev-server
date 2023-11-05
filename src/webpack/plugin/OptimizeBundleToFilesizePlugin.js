@@ -43,8 +43,8 @@ module.exports = class OptimizeBundleToFilesizePlugin {
           const baseSize = folderSizeInit - filesDataTotalSize
 
           // otherwise continue with the optimization loop...
-          await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
-            if (quality <= lowestQuality) quality = lowestQuality;
+          await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, hq, lq) {
+            const quality = Math.floor((hq + lq) / 2)
             // console.log(`\n\n\n\n\n\n\n\n\n\n\ncreating bundle with ${quality} quality level...`)
 
             const optimizedFilesData = await Promise.all(
@@ -65,16 +65,21 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 
             const folderSize = baseSize + optimizedFilesDataTotalSize
 
-            if (folderSize > maxFileSize && quality > lowestQuality) {
-              await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality -= 5)
-            } else {
+            if (hq - lq < 2) {
               await Promise.all(optimizedFilesData.map(async file => {
                 await fs.promises.writeFile(path.resolve(srcDir, file.name), file.data);
               }))
               
               compilation.quality = quality
+              return
             }
-          })(srcDir, outputPath, filename, maxFileSize, 100);
+
+            if (folderSize > maxFileSize) {
+              await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality, lq)
+            } else {
+              await optimizeToSize(srcDir, outputPath, filename, maxFileSize, hq, quality)
+            }
+          })(srcDir, outputPath, filename, maxFileSize, 100, lowestQuality);
         }
 
         // and finally create zip
@@ -117,8 +122,8 @@ module.exports = class OptimizeBundleToFilesizePlugin {
         compilation.quality = 100
       } else {
         // otherwise continue with the optimization loop...
-        await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality = 100) {
-          if (quality <= lowestQuality) quality = lowestQuality;
+        await (async function optimizeToSize(srcDir, outputPath, filename, maxFileSize, hq, lq) {
+          const quality = Math.floor((hq + lq) / 2)
           // console.log(`\n\n\n\n\n\n\n\n\n\n\ncreating bundle with ${quality} quality level...`)
 
           const zippedBundle = await new Promise(async resolve => {
@@ -160,22 +165,22 @@ module.exports = class OptimizeBundleToFilesizePlugin {
 
           const zippedBundleSize = fs.statSync(zippedBundle.filename).size;
 
-          if (zippedBundleSize < maxFileSize || quality <= lowestQuality) {
-            await Promise.all(zippedBundle.files.filter(file => file.buffer).map(file => {
-              return new Promise(async resolve => {
-                await fs.promises.writeFile(path.resolve(srcDir, file.name), file.buffer);
-                resolve();
-              })
+          if (hq - lq < 2) {
+            await Promise.all(zippedBundle.files.filter(file => file.buffer).map(async file => {
+              await fs.promises.writeFile(path.resolve(srcDir, file.name), file.buffer);
             }))
-
+            
             compilation.quality = quality
 
-            return zippedBundle.filename;
-
-          } else {
-            await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality -= 5)
+            return
           }
-        })(srcDir, outputPath, filename, maxFileSize, 100);
+
+          if (zippedBundleSize > maxFileSize) {
+            await optimizeToSize(srcDir, outputPath, filename, maxFileSize, quality, lq)
+          } else {
+            await optimizeToSize(srcDir, outputPath, filename, maxFileSize, hq, quality)
+          }
+        })(srcDir, outputPath, filename, maxFileSize, 100, lowestQuality);
       }
     });
   }
