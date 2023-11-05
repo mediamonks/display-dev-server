@@ -15,10 +15,11 @@ module.exports = async function (options) {
     if (parallel) await devServerParallel(webpackConfigs.result, webpackConfigs.choices.openLocation, options);
     else          await devServer(webpackConfigs.result, webpackConfigs.choices.openLocation);
   } else {
+    let qualities
     if (!skipBuild) {
-      if (parallel) await buildFilesParallel(webpackConfigs.result, options);
-      else          await buildFiles(webpackConfigs.result, outputDir);
+      if (parallel) qualities = await buildFilesParallel(webpackConfigs.result, options);
+      else          qualities = await buildFiles(webpackConfigs.result, outputDir);
     }
-    if (!skipPreview) await buildPreview(webpackConfigs?.result, outputDir);
+    if (!skipPreview) await buildPreview(webpackConfigs?.result, qualities?.ads, outputDir);
   }
 };

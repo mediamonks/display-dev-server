@@ -52,7 +52,7 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
             console.log(chalk.green(item.message));
           });
         }
-        resolve(config);
+        resolve(stats.compilation.quality);
       });
     });
   }

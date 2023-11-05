@@ -20,11 +20,11 @@ module.exports = async function buildFiles(result, options) {
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   progressBar.start(result.length, 0);
 
-  await Promise.all(result.map((result) => {
+  const qualities = await Promise.all(result.map((result) => {
     delete result.settings.row
-    return new Promise(res => webpackRun({ config: result.settings, options }, () => {
+    return new Promise(res => webpackRun({ config: result.settings, options }, (quality) => {
       progressBar.increment()
-      res()
+      res(quality)
     }));
   }));
 
@@ -39,5 +39,6 @@ module.exports = async function buildFiles(result, options) {
 
   return {
     outputDir: path.resolve(options.outputDir),
+    ads: qualities,
   };
 };
