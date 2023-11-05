@@ -5,13 +5,16 @@ const globPromise = require("glob-promise");
 const getNameFromLocation = require("../util/getNameFromLocation");
 const htmlParser = require("node-html-parser");
 
-module.exports = async function buildPreview(result, outputDir) {
+module.exports = async function buildPreview(result, qualities, outputDir) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
   allIndexHtmlFiles.sort()
   if (result) {
-    result.forEach(e => e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location))
+    result.forEach((e, i) => {
+      e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location)
+      e.quality = qualities[i]
+    })
     result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
   }
 
@@ -90,7 +93,10 @@ module.exports = async function buildPreview(result, outputDir) {
       return {
         bundleName,
         ...dimensions,
-        maxFileSize: result && result[i].settings.data.settings.maxFileSize,
+        maxFileSize: result ? result[i].settings.data.settings.maxFileSize : undefined,
+        quality: result
+          ? result[i].quality || (result[i].settings.data.settings?.optimizations?.image && 80) || 100
+          : undefined,
         output: {
           html: {
             url: path.relative(outputDir, filename).replace(/\\/g, "/")
@@ -154,11 +160,9 @@ async function size(p) {
 
   if (stat.isDirectory()) {
     const dir = await fs.readdir(p)
-    return dir.reduce(async (a, e) => {
-      a = await a // reduce async hack
-      const s = await size(path.join(p, e))
-      return a + s
-    }, Promise.resolve(0))
+    return (await Promise.all(
+      dir.map(async e => await size(path.join(p, e)))
+    )).reduce((a, e) => a + e, 0)
   }
 
   return 0; // can't take size of a stream/symlink/socket/etc

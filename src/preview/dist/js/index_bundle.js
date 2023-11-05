@@ -350,6 +350,17 @@ eval("\n\nvar _interopRequireDefault = __webpack_require__(/*! @babel/runtime/he
 
 /***/ }),
 
+/***/ "./node_modules/@mui/icons-material/CameraEnhance.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/@mui/icons-material/CameraEnhance.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+eval("\n\nvar _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ \"./node_modules/@babel/runtime/helpers/interopRequireDefault.js\");\nObject.defineProperty(exports, \"__esModule\", ({\n  value: true\n}));\nexports[\"default\"] = void 0;\nvar _createSvgIcon = _interopRequireDefault(__webpack_require__(/*! ./utils/createSvgIcon */ \"./node_modules/@mui/icons-material/utils/createSvgIcon.js\"));\nvar _jsxRuntime = __webpack_require__(/*! react/jsx-runtime */ \"./node_modules/react/jsx-runtime.js\");\nvar _default = (0, _createSvgIcon.default)([/*#__PURE__*/(0, _jsxRuntime.jsx)(\"path\", {\n  d: \"M9 3 7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z\"\n}, \"0\"), /*#__PURE__*/(0, _jsxRuntime.jsx)(\"path\", {\n  d: \"m12 17 1.25-2.75L16 13l-2.75-1.25L12 9l-1.25 2.75L8 13l2.75 1.25z\"\n}, \"1\")], 'CameraEnhance');\nexports[\"default\"] = _default;\n\n//# sourceURL=webpack://display-dev-server-preview/./node_modules/@mui/icons-material/CameraEnhance.js?");
+
+/***/ }),
+
 /***/ "./node_modules/@mui/icons-material/Cancel.js":
 /*!****************************************************!*\
   !*** ./node_modules/@mui/icons-material/Cancel.js ***!

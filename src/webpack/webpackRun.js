@@ -32,6 +32,6 @@ module.exports = async function ({ config, options }, cb) {
       });
     }
 
-    cb();
+    cb(stats.compilation.quality);
   });
 }
