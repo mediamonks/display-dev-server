@@ -15,7 +15,11 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
       e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location)
       e.quality = qualities[i]
     })
-    result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+    // result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+    result = result.reduce((acc, result) => {
+      acc[result.settings.data.settings.bundleName] = result
+      return acc
+    }, {})
   }
 
   // collect all fs data
@@ -93,9 +97,15 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
       return {
         bundleName,
         ...dimensions,
-        maxFileSize: result ? result[i].settings.data.settings.maxFileSize : undefined,
+        maxFileSize: result
+          ? result[bundleName]
+            ? result[bundleName].settings.data.settings.maxFileSize
+            : undefined
+          : undefined,
         quality: result
-          ? result[i].quality || (result[i].settings.data.settings?.optimizations?.image && 80) || 100
+          ? result[bundleName]
+            ? result[bundleName].quality || (result[i].settings.data.settings?.optimizations?.image && 80) || 100
+            : undefined
           : undefined,
         output: {
           html: {
