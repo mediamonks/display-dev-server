@@ -26,11 +26,11 @@ module.exports = async function ({ config, options }, cb) {
       });
     }
 
-    if (stats.hasWarnings()) {
-      info.warnings.forEach((item) => {
-        console.log(chalk.green(item.message));
-      });
-    }
+    // if (stats.hasWarnings()) {
+    //   info.warnings.forEach((item) => {
+    //     console.log(chalk.green(item.message));
+    //   });
+    // }
 
     cb(stats.compilation.quality);
   });

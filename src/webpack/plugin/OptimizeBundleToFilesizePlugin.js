@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const archiver = require('archiver')
 const sharp = require('sharp');
+const chalk = require('chalk');
 
 module.exports = class OptimizeBundleToFilesizePlugin {
   constructor(options) {
@@ -69,6 +70,13 @@ module.exports = class OptimizeBundleToFilesizePlugin {
               await Promise.all(optimizedFilesData.map(async file => {
                 await fs.promises.writeFile(path.resolve(srcDir, file.name), file.data);
               }))
+
+              if (quality == lowestQuality) {
+                console.log(chalk.red(
+`\nCan't optimize ${filename} to ${maxFileSize/1024}KB with ${lowestQuality} lowest quality.
+Best result is: ${(folderSize/1024).toFixed(1)} KB.
+Consider lowering lowestImageQuality or compressing assets using external utilities.`));
+              }
               
               compilation.quality = quality
               return
@@ -163,13 +171,20 @@ module.exports = class OptimizeBundleToFilesizePlugin {
             archive.finalize();
           })
 
-          const zippedBundleSize = fs.statSync(zippedBundle.filename).size;
+          const zippedBundleSize = await fs.stat(zippedBundle.filename).size;
 
           if (hq - lq < 2) {
             await Promise.all(zippedBundle.files.filter(file => file.buffer).map(async file => {
               await fs.promises.writeFile(path.resolve(srcDir, file.name), file.buffer);
             }))
-            
+
+            if (quality == lowestQuality) {
+              console.log(chalk.red(
+`\nCan't optimize ${filename} to ${maxFileSize/1024}KB with ${lowestQuality} lowest quality.
+Best result is: ${(zippedBundleSize/1024).toFixed(1)} KB.
+Consider lowering lowestImageQuality or compressing assets using external utilities.`));
+            }
+
             compilation.quality = quality
 
             return

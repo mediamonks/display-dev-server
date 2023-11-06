@@ -47,11 +47,11 @@ module.exports = async function buildFiles(result, outputDir, chunkSize = 10) {
           });
         }
 
-        if (stats.hasWarnings()) {
-          info.warnings.forEach((item) => {
-            console.log(chalk.green(item.message));
-          });
-        }
+        // if (stats.hasWarnings()) {
+        //   info.warnings.forEach((item) => {
+        //     console.log(chalk.green(item.message));
+        //   });
+        // }
         resolve(stats.compilation.quality);
       });
     });
