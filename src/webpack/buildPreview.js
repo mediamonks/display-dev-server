@@ -9,7 +9,6 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
-  allIndexHtmlFiles.sort()
   if (result) {
     result.forEach((e, i) => {
       e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location)
