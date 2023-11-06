@@ -89,7 +89,7 @@ export const AdPreview = (props) => {
   }, [activeConfigTab]);
 
   return (
-    <Card sx={{minWidth: `${ad.width}px`, maxWidth: `${ad.width}px`, height: "fit-content"}}>
+    <Card sx={{minWidth: `${ad.width}px`, maxWidth: `${ad.width}px`, height: "fit-content"}} className="card">
       <Typography sx={{padding: "0px 10px", margin: "10px 0", wordBreak: "break-all"}} align="center" variant="body2">
         {ad.bundleName}
       </Typography>
@@ -129,26 +129,24 @@ export const AdPreview = (props) => {
         {
           ad.output?.zip?.size || ad.output?.unzip?.size || ad.quality
           ? <>
-              <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-between">
-                <Box display="flex" flexWrap="wrap" gap="10px">
-                  {
-                    ad.output?.zip?.size
-                    ? <Tooltip title="Compressed size">
-                        <Chip icon={<FolderZipIcon />} label={`${Math.floor(ad.output.zip.size / 1024)} KB`} color={ad.output.zip.size / 1024 <= maxFileSize ? "success" : "error"} />
-                      </Tooltip>
-                    : <></>
-                  }
-                  {
-                    ad.output?.unzip?.size
-                    ? <Tooltip title="Uncompressed size">
-                        <Chip icon={<FolderIcon />} label={`${Math.floor(ad.output.unzip.size / 1024)} KB`} color={ad.output.unzip.size / 1024 <= maxFileSize ? "success" : "error"} />
-                      </Tooltip>
-                    : <></>
-                  }
-                  </Box>
+              <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-evenly" className="chips">
+                {
+                  ad.output?.zip?.size
+                  ? <Tooltip title={`Compressed size: ${(ad.output.zip.size / 1024).toFixed(1)} KB`}>
+                      <Chip icon={<FolderZipIcon />} label={`${Math.floor(ad.output.zip.size / 1024)} KB`} color={ad.output.zip.size / 1024 <= maxFileSize ? "success" : "error"} />
+                    </Tooltip>
+                  : <></>
+                }
+                {
+                  ad.output?.unzip?.size
+                  ? <Tooltip title={`Uncompressed size: ${(ad.output.unzip.size / 1024).toFixed(1)} KB`}>
+                      <Chip icon={<FolderIcon />} label={`${Math.floor(ad.output.unzip.size / 1024)} KB`} color={ad.output.unzip.size / 1024 <= maxFileSize ? "success" : "error"} />
+                    </Tooltip>
+                  : <></>
+                }
                 {
                   ad.quality
-                  ? <Tooltip title="Quality">
+                  ? <Tooltip title="Quality" className="quality">
                       <Chip icon={<Quality />} label={`${ad.quality}`} color={ad.quality > 85 ? "success" : ad.quality > 70 ? "warning" : "error"} />
                     </Tooltip>
                   : <></>
