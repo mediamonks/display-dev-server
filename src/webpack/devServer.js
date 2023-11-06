@@ -34,9 +34,13 @@ module.exports = async function devServer(configs, openLocation = true) {
     open(`${httpLocation}?gsdevtools=true`);
   }
 
-  console.log(`${chalk.blue('i')} Server running. Please go to ${httpLocation}
+  console.log(`
+${chalk.blue('i')} ${openLocation
+  ? `Server ${httpLocation} is running and will open automatically. It might take a while to load.`
+  : `Server ${httpLocation} is running. It might take a while to load.`
+}
 ${chalk.grey.bold('-------------------------------------------------------')}
-`);
+  `);
 
   const app = express();
 
