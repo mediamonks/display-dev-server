@@ -146,26 +146,6 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
       const staticRowObject = staticRowObjects[index]
 
-      // filter out everything that is not needed.
-      if (contentSource.filter) {
-        const filters = [];
-        if (contentSource.filter instanceof Array) {
-          filters.push(...contentSource.filter);
-        } else {
-          filters.push(contentSource.filter);
-        }
-
-        // for loop so i can break or return immediately
-        for (let j = 0; j < filters.length; j++) {
-          const filter = filters[j];
-          for (const key in filter) {
-            if (filter.hasOwnProperty(key) && staticRowObject[key] && staticRowObject[key] !== filter[key]) {
-              return;
-            }
-          }
-        }
-      }
-
       // new content object with updated content from sheet
       let content = extendObject({}, (config.settings.data.content || {}), staticRowObject)
 
