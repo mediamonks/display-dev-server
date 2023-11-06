@@ -106,35 +106,65 @@ ${chalk.grey.bold('-------------------------------------------------------')}
   })
 
   app.get("/reload_dynamic_data", async function (req, res) {
-    const contentSource = configs[0].settings.data.settings.contentSource;
-    const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource);
+    const cacheSpreadSheets = {};
 
-    configs.forEach(config => {
-      let row = spreadsheetData.rows[config.settings.row.rowNumber-2]; //for example, row number 2 is array element 0
-
-      const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {
-        prev[name] = row[name];
-        return prev;
-      }, {});
-
-      let staticRowObject = {};
-      for (const key in staticRow) {
-        if (staticRow.hasOwnProperty(key)) {
-          let obj = createObjectFromJSONPath(key, staticRow[key]);
-          extendObject(staticRowObject, obj);
+    // fetch and pre-process
+    await Promise.all(
+      configs
+      .map(config => config.settings?.data?.settings?.contentSource)
+      .filter(contentSource => contentSource !== undefined)
+      .map(({ url, tabName, apiKey }) => JSON.stringify({ url, tabName, apiKey }))
+      .filter((x, i, a) => a.indexOf(x) == i) // unique
+      .map(JSON.parse)
+      .map(async contentSource => {
+        const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource)
+  
+        const staticRowObjects = spreadsheetData.rows.map(row => {
+          const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {
+            prev[name] = row[name];
+            return prev;
+          }, {});
+  
+          let staticRowObject = {};
+          for (const key in staticRow) {
+            if (staticRow.hasOwnProperty(key)) {
+              let obj = createObjectFromJSONPath(key, staticRow[key]);
+              extendObject(staticRowObject, obj);
+            }
+          }
+  
+          return staticRowObject
+        })
+  
+        cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey } = contentSource)] = {
+          spreadsheetData,
+          staticRowObjects
         }
-      }
+      })
+    )
+
+    await Promise.all(configs.map(async config => {
+      const { data } = config.settings;
+
+      const contentSource = data.settings.contentSource;
+
+      const { url, tabName, apiKey } = contentSource
+      const { staticRowObjects } = cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey })]
+
+      const index = config.settings.row.rowNumber - 2 //for example, row number 2 is array element 0
+
+      const staticRowObject = staticRowObjects[index]
 
       // filter out everything that is not needed.
-      if (config.settings.data.settings.contentSource.filter) {
+      if (contentSource.filter) {
         const filters = [];
-        if (config.settings.data.settings.contentSource.filter instanceof Array) {
-          filters.push(...config.settings.data.settings.contentSource.filter);
+        if (contentSource.filter instanceof Array) {
+          filters.push(...contentSource.filter);
         } else {
-          filters.push(config.settings.data.settings.contentSource.filter);
+          filters.push(contentSource.filter);
         }
 
-        // for loop so i can break or return emmediatly
+        // for loop so i can break or return immediately
         for (let j = 0; j < filters.length; j++) {
           const filter = filters[j];
           for (const key in filter) {
@@ -149,15 +179,15 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       let content = extendObject({}, (config.settings.data.content || {}), staticRowObject)
 
       // next 4 lines is reading existing richmediarc from the disk, updating the content object, and then writing the new file to disk again
-      const configFile = fs.readFileSync(config.settings.location, {encoding:'utf8', flag:'r'})
+      const configFile = await fs.readFile(config.settings.location, {encoding:'utf8', flag:'r'})
       const configFileJson = JSON.parse(configFile);
       content = JSON.parse(JSON.stringify(content))
 
       if (!util.isDeepStrictEqual(configFileJson.content, content)) { //compare 'new' content with old content. If anything has changed, write a new file
         configFileJson.content = content;
-        fs.writeFileSync(config.settings.location, Buffer.from(JSON.stringify(configFileJson)));
+        await fs.writeFile(config.settings.location, Buffer.from(JSON.stringify(configFileJson)));
       }
-    })
+    }))
 
     res.send('ok');
   });
