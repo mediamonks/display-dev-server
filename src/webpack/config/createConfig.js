@@ -338,9 +338,7 @@ module.exports = function createConfig({
         "node_modules/richmediaconfig": `module.exports = "DUDE"`,
       }),
     ],
-    stats: {
-      colors: true,
-    },
+    stats: 'errors-warnings',
     devtool,
   };
 
