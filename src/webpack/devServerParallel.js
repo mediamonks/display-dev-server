@@ -9,7 +9,7 @@ const open = require('open');
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
 const getDataFromGoogleSpreadsheet = require('../util/getDataFromGoogleSpreadsheet');
-const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
+const removeTempRichmediaRcSync = require('../util/removeTempRichmediaRcSync');
 
 const getNameFromLocation = require('../util/getNameFromLocation');
 
@@ -166,7 +166,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
   process.stdin.resume(); //so the program will not close instantly
 
   function exitHandler(options, exitCode) {
-    if (options.cleanup) removeTempRichmediaRc(configs);
+    if (options.cleanup) removeTempRichmediaRcSync(configs);
     if (exitCode || exitCode === 0) console.log(exitCode);
     if (options.exit) process.exit();
   }
