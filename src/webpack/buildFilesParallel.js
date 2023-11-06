@@ -28,7 +28,7 @@ module.exports = async function buildFiles(result, options) {
     }));
   }));
 
-  workerFarm.end(webpackRun)
+  await new Promise(res => workerFarm.end(webpackRun, res))
 
   progressBar.stop();
   console.log(`built in ${new Date().getTime() - startTime}ms`);
