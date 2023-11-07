@@ -134,7 +134,7 @@ export const AdPreview = (props) => {
                   : <></>
                 }
                 {
-                  ad.quality
+                  ad.quality && gsdevtools === "true"
                   ? <Tooltip title="Asset quality" className="quality">
                       <Chip icon={<Quality />} label={`${ad.quality}`} color={ad.quality > 85 ? "success" : ad.quality > 70 ? "warning" : "error"} />
                     </Tooltip>
