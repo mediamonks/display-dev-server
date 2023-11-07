@@ -192,6 +192,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     if (options.cleanup) removeTempRichmediaRcSync(configs);
     if (exitCode || exitCode === 0) console.log(exitCode);
     if (options.exit) process.exit();
+    workerFarm.end(devSubServer)
   }
 
   //do something when app is closing
