@@ -5,6 +5,7 @@ const portfinder = require('portfinder');
 const util = require('util');
 const chalk = require('chalk');
 const open = require('open');
+const cliProgress = require("cli-progress");
 
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
@@ -28,12 +29,22 @@ module.exports = async function devServer(configs, openLocation = true, options)
   const settingsList = configs.map(({ settings }) => settings);
   const port = await portfinder.getPortPromise();
   
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progressBar.start(configs.length, 0);
+  
   const devSubServer = workerFarm(
     {
       maxRetries: 0,
       autoStart: true,
       maxConcurrentCallsPerWorker: 1,
-      maxConcurrentWorkers: N_SUBSERVERS
+      maxConcurrentWorkers: N_SUBSERVERS,
+      onChild: (subprocess) => {
+        subprocess.on('message', (message) => {
+          if (message == 'increment') {
+            progressBar.increment()
+          }
+        })
+      }
     },
     require.resolve('./devSubServer')
   );
@@ -79,6 +90,8 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
     return new Promise(res => devSubServer({configs: chunk, options, port}, res))
   }));
+
+  progressBar.stop();
   
   app.use('/', express.static(path.join(__dirname, '../preview/dist')));
   

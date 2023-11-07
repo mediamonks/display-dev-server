@@ -19,7 +19,10 @@ module.exports = async function devSubServer({configs, options, port}, cb) {
 
   const app = express();
 
-  await Promise.all(webpackConfigList.map((config, index) => {
+  // for loop to make webpacks run 1 at a time, we're anyway in parallel
+  for (let index = 0; index < webpackConfigList.length; index++) {
+    const config = webpackConfigList[index]
+
     const hmrPath = '__webpack_hmr';
     const name = getNameFromLocation(settingsList[index].location);
 
@@ -31,7 +34,7 @@ module.exports = async function devSubServer({configs, options, port}, cb) {
       hotUpdateMainFilename: '.hot/.hot-update.json',
     };
 
-    return new Promise(res => {
+    await new Promise(res => {
       const compiler = webpack(config, res);
 
       app.use(
@@ -46,7 +49,9 @@ module.exports = async function devSubServer({configs, options, port}, cb) {
         }),
       );
     })
-  }));
+
+    process.send('increment')
+  }
 
   app.listen(port, () => {});
   cb();
