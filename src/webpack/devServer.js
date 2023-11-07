@@ -80,7 +80,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
   app.use('/', express.static(path.join(__dirname, '../preview/dist')));
 
-  openLocation && open(httpLocation);
+  openLocation && open(`${httpLocation}?gsdevtools=true`);
 
   app.get('/data/ads.json', (req, res) => {
     res.json({
