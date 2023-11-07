@@ -9,6 +9,7 @@ const portfinder = require('portfinder');
 const util = require('util');
 const chalk = require('chalk');
 const open = require('open');
+const cliProgress = require("cli-progress");
 
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
@@ -26,13 +27,11 @@ module.exports = async function devServer(configs, openLocation = true) {
   const webpackConfigList = configs.map(({ webpack }) => webpack);
   const settingsList = configs.map(({ settings }) => settings);
   const port = await portfinder.getPortPromise();
+  
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progressBar.start(configs.length, 0);
 
   const httpLocation = `http://localhost:${port}`;
-
-  if (openLocation) {
-    // opener
-    open(`${httpLocation}?gsdevtools=true`);
-  }
 
   console.log(`
 ${chalk.blue('i')} ${openLocation
@@ -44,7 +43,9 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
   const app = express();
 
-  webpackConfigList.forEach((config, index) => {
+  for (let index = 0; index < webpackConfigList.length; index++) {
+    const config = webpackConfigList[index]
+
     const hmrPath = '__webpack_hmr';
     const name = getNameFromLocation(settingsList[index].location);
 
@@ -56,24 +57,30 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       hotUpdateMainFilename: '.hot/.hot-update.json',
     };
 
-    const compiler = webpack(config, function(result) {
-      console.log(result)
-    });
+    await new Promise(res => {
+      const compiler = webpack(config, res);
 
-    app.use(
-      webpackDevMiddleware(compiler, {
-        publicPath: `/${name}/`,
-      }),
-    );
+      app.use(
+        webpackDevMiddleware(compiler, {
+          publicPath: `/${name}/`,
+        }),
+      );
 
-    app.use(
-      webpackHotMiddleware(compiler, {
-        path: `/${name}/${hmrPath}`,
-      }),
-    );
-  });
+      app.use(
+        webpackHotMiddleware(compiler, {
+          path: `/${name}/${hmrPath}`,
+        }),
+      );
+    })
+
+    progressBar.increment()
+  }
+
+  progressBar.stop();
 
   app.use('/', express.static(path.join(__dirname, '../preview/dist')));
+
+  openLocation && open(httpLocation);
 
   app.get('/data/ads.json', (req, res) => {
     res.json({
