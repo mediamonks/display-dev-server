@@ -4,8 +4,11 @@ const archiver = require("archiver");
 const globPromise = require("glob-promise");
 const getNameFromLocation = require("../util/getNameFromLocation");
 const htmlParser = require("node-html-parser");
+const chalk = require("chalk");
 
 module.exports = async function buildPreview(result, qualities, outputDir) {
+  const start = Date.now()
+  
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
@@ -131,8 +134,6 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
   await fs.outputFile(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
 
   // write the zip file containing all zips
-
-  // console.log(adsList.ads)
   if (adsList.ads.filter(ad => ad.output.zip).length > 0) {
     console.log(`creating all.zip`)
     await new Promise((resolve) => {
@@ -146,6 +147,8 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
       archive.finalize();
     });
   }
+
+  console.log(chalk.green(`Preview built in ${Date.now() - start}ms`));
 };
 
 function sizeSync(p) {

@@ -23,6 +23,7 @@ const workerFarm = require('worker-farm');
  * @param {{}} options
  */
 module.exports = async function devServer(configs, openLocation = true, options) {
+  const start = Date.now()
 
   const N_SUBSERVERS = options.parallel === true ? 4 : options.parallel
 
@@ -184,6 +185,8 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
     res.send('ok');
   });
+
+  console.log(chalk.green(`Built all banners for dev in ${Date.now() - start}ms`));
 
   // eslint-disable-next-line
   process.stdin.resume(); //so the program will not close instantly

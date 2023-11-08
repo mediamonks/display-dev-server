@@ -24,6 +24,8 @@ const getNameFromLocation = require('../util/getNameFromLocation');
  * @param {boolean} openLocation
  */
 module.exports = async function devServer(configs, openLocation = true) {
+  const start = Date.now()
+
   const webpackConfigList = configs.map(({ webpack }) => webpack);
   const settingsList = configs.map(({ settings }) => settings);
   const port = await portfinder.getPortPromise();
@@ -170,8 +172,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     res.send('ok');
   });
 
-  // notr sure if this does anything
-  // app.post('/api/upload', (req, res) => {});
+  console.log(chalk.green(`Built all banners for dev in ${Date.now() - start}ms`));
 
   // eslint-disable-next-line
   process.stdin.resume();//so the program will not close instantly

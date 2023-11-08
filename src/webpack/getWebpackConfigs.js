@@ -12,6 +12,8 @@ const parsePlaceholdersInObject = require("../util/parsePlaceholdersInObject");
 const expandWithSpreadsheetData = require("../util/expandWithSpreadsheetData");
 
 module.exports = async function (options) {
+  const start = Date.now()
+
   // {mode = "development", glob = "./**/.richmediarc*", choices = null, stats = null, outputDir = "./build", configOverride = {}}
   let {mode, glob, choices, stats, outputDir} = options;
   console.log(`${chalk.blue("i")} Searching for configs`);
@@ -52,6 +54,8 @@ module.exports = async function (options) {
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });
+  
+  console.log(chalk.green(`Prepared ${configs.length} configs in ${Date.now() - start}ms`));
 
   const questions = [];
 
@@ -122,6 +126,8 @@ module.exports = async function (options) {
     choices = answers;
   }
 
+  const start2 = Date.now()
+
   if (choices.emptyBuildDir) {
     await fs.emptyDir(outputDir);
   }
@@ -171,6 +177,8 @@ module.exports = async function (options) {
       settings: configsResult[index],
     };
   });
+
+  console.log(chalk.green(`${result.length} webpack configs prepared in ${Date.now() - start2}ms`));
 
   return {
     result, choices
