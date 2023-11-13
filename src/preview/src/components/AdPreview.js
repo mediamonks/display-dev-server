@@ -93,7 +93,18 @@ export const AdPreview = (props) => {
       </Typography>
       <TabContext value={activeConfigTab}>
         <Box sx={{borderColor: "divider"}}>
-          <TabList variant="fullWidth" onChange={(event, newValue) => setActiveConfigTab(newValue)}>
+          <TabList
+            variant="fullWidth"
+            onChange={(event, newValue) => setActiveConfigTab(newValue)}
+            TabIndicatorProps={
+              extensionTypes.filter(item => {
+                const [extension, type] = item.split(",");
+                return ad.output[extension];
+              }).length
+              ? {}
+              : { style:{ display: 'none' } }
+            }
+          >
             <Tab wrapped sx={{minWidth: "50px"}} label="html" value="html,iframe" />
             {extensionTypes.map((item) => {
               const [extension, type] = item.split(",");
