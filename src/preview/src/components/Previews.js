@@ -88,8 +88,12 @@ export default function Previews({ data }) {
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
 
-  const [page, setPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [page, setPage] = useState(+searchParams.get('page') || 0);
+  const [itemsPerPage, setItemsPerPage] = useState(+searchParams.get('perpage') || 10);
+
+  useEffect(() => {
+    setPage(0)
+  }, [filters, itemsPerPage]);
 
   useEffect(() => {
     setAds(getAdsListFromFilters(data.ads, filters));
@@ -97,9 +101,10 @@ export default function Previews({ data }) {
     const collectFilters = {}
     filter && (collectFilters.filter = filter)
     gsdevtools && (collectFilters.gsdevtools = gsdevtools)
+    page && (collectFilters.page = page)
+    itemsPerPage && (collectFilters.perpage = itemsPerPage)
     setSearchParams(collectFilters)
-    setPage(0);
-  }, [filters]);
+  }, [filters, page, itemsPerPage]);
   
   useEffect(() => {
     if (gsdevtools !== "true") return
@@ -164,7 +169,6 @@ export default function Previews({ data }) {
 
   const handleChangeRowsPerPage = (event) => {
     setItemsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const pageAds = useMemo(() => {
