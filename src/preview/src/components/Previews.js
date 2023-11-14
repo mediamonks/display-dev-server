@@ -92,10 +92,6 @@ export default function Previews({ data }) {
   const [itemsPerPage, setItemsPerPage] = useState(+searchParams.get('perpage') || 10);
 
   useEffect(() => {
-    setPage(0)
-  }, [filters, itemsPerPage]);
-
-  useEffect(() => {
     setAds(getAdsListFromFilters(data.ads, filters));
     const filter = decodeURI(composeSearchParamsFromFilters(filters))
     const collectFilters = {}
@@ -134,6 +130,7 @@ export default function Previews({ data }) {
     });
 
     setFilters(updatedFilters);
+    setPage(0);
   };
 
   function handleFilterDelete(e, value) {
@@ -147,6 +144,7 @@ export default function Previews({ data }) {
     });
 
     setFilters(updatedFilters);
+    setPage(0);
   }
 
   // handle button(s)
@@ -169,6 +167,7 @@ export default function Previews({ data }) {
 
   const handleChangeRowsPerPage = (event) => {
     setItemsPerPage(parseInt(event.target.value, 10));
+    setPage(0)
   };
 
   const pageAds = useMemo(() => {
