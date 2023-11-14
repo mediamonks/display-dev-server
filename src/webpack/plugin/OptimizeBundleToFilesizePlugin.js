@@ -123,7 +123,7 @@ Consider lowering lowestImageQuality or compressing assets using external utilit
         archive.finalize();
       })
 
-      const zippedBundleSize = await fs.stat(zippedBundle).size;
+      const zippedBundleSize = (await fs.stat(zippedBundle)).size;
 
       if (zippedBundleSize <= maxFileSize) {
         // console.log('looks like the bundle is already small enough, does not need additional optimization')
@@ -171,7 +171,7 @@ Consider lowering lowestImageQuality or compressing assets using external utilit
             archive.finalize();
           })
 
-          const zippedBundleSize = await fs.stat(zippedBundle.filename).size;
+          const zippedBundleSize = (await fs.stat(zippedBundle.filename)).size;
 
           if (hq - lq < 2) {
             await Promise.all(zippedBundle.files.filter(file => file.buffer).map(async file => {
