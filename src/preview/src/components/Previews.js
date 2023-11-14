@@ -223,7 +223,7 @@ export default function Previews({ data }) {
                 ])}
             </Select>
           </FormControl>
-          <TablePagination labelRowsPerPage="Ads per page:" component="div" count={ads.length} page={page} onPageChange={handleChangePage} rowsPerPage={itemsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} />
+          <TablePagination labelRowsPerPage="Ads per page:" component="div" count={ads.length} page={ads.length ? page : 0} onPageChange={handleChangePage} rowsPerPage={itemsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} />
           <Button onClick={handleDownloadZips} color="inherit">
             Download Zips
           </Button>
