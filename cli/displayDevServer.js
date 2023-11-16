@@ -18,6 +18,7 @@ program
   .option('-o, --outputDir <data>', 'output dir', './build')
   .option('--skipBuild', 'skip compiling ads phase', false)
   .option('--skipPreview', 'skip preview building phase', false)
+  .option('-p, --parallel [data]', 'run webpack in parallel')
   .parse(process.argv);
 
 const options = program.opts();

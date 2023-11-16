@@ -418,6 +418,7 @@ module.exports = function createConfig({
       new TerserPlugin({
         // minify: TerserPlugin.esbuildMinify,
         extractComments: false,
+        parallel: false,
       })
     );
   }

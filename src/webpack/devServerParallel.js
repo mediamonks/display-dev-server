@@ -1,10 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
-const webpack = require('webpack');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const webpackDevMiddleware = require('webpack-dev-middleware');
 const express = require('express');
-// const handlebars = require('handlebars');
 const portfinder = require('portfinder');
 const util = require('util');
 const chalk = require('chalk');
@@ -17,63 +13,76 @@ const removeTempRichmediaRc = require('../util/removeTempRichmediaRc');
 
 const getNameFromLocation = require('../util/getNameFromLocation');
 
+const workerFarm = require('worker-farm');
+
 /**
  *
  * @param {Array<{webpack: *, settings: {location, data}}>} configs
  * @param {boolean} openLocation
+ * @param {{}} options
  */
-module.exports = async function devServer(configs, openLocation = true) {
-  const webpackConfigList = configs.map(({ webpack }) => webpack);
+module.exports = async function devServer(configs, openLocation = true, options) {
+
+  const N_SUBSERVERS = options.parallel === true ? 4 : options.parallel
+
   const settingsList = configs.map(({ settings }) => settings);
   const port = await portfinder.getPortPromise();
+  
+  const devSubServer = workerFarm(
+    {
+      maxRetries: 0,
+      autoStart: true,
+      maxConcurrentCallsPerWorker: 1,
+      maxConcurrentWorkers: N_SUBSERVERS
+    },
+    require.resolve('./devSubServer')
+  );
 
   const httpLocation = `http://localhost:${port}`;
 
-  if (openLocation) {
-    // opener
-    open(`${httpLocation}?gsdevtools=true`);
-  }
-
   console.log(`
 ${chalk.blue('i')} ${openLocation
-  ? `Server ${httpLocation} is running and will open automatically. It might take a while to load.`
-  : `Server ${httpLocation} is running. It might take a while to load.`
+  ? `Server ${httpLocation} will open automatically once everything is ready. This might take a while.`
+  : `Server ${httpLocation} running. It might take a while to load.`
 }
+${chalk.yellow('!')} Preview GSDevTools don't work on parallel. More info here: https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy
 ${chalk.grey.bold('-------------------------------------------------------')}
   `);
 
   const app = express();
 
-  webpackConfigList.forEach((config, index) => {
-    const hmrPath = '__webpack_hmr';
-    const name = getNameFromLocation(settingsList[index].location);
+  app.listen(port, () => {});
 
-    config.mode = 'development';
+  const ports = await new Promise(res => portfinder.getPorts(N_SUBSERVERS, {}, (err, ports) => res(ports)))
 
-    config.output = {
-      ...config.output,
-      hotUpdateChunkFilename: '.hot/.hot-update.js',
-      hotUpdateMainFilename: '.hot/.hot-update.json',
-    };
+  await Promise.all(settingsList
+  // spread work evenly into chunks
+  .reduce((acc, v, i) => {
+    acc[i % N_SUBSERVERS].push(v)
+    return acc
+  }, Array.from({length: N_SUBSERVERS}, () => []))
+  // if we have empty chunks (less than N_SUBSERVERS banners)
+  .filter(e => e.length)
+  // map to promises
+  .map((chunk, i) => {
+    // delete row since it's an object with constructor and we can't carry it to the thread
+    chunk = chunk.map(({row, ...config}) => config)
 
-    const compiler = webpack(config, function(result) {
-      console.log(result)
-    });
+    const port = ports[i]
 
-    app.use(
-      webpackDevMiddleware(compiler, {
-        publicPath: `/${name}/`,
-      }),
-    );
+    chunk.forEach(config => {
+      const name = getNameFromLocation(config.location);
+      app.use(`/${name}/`, (req, res, next) => {
+        res.redirect(`http://localhost:${port}/${name}/`)
+      })
+    })
 
-    app.use(
-      webpackHotMiddleware(compiler, {
-        path: `/${name}/${hmrPath}`,
-      }),
-    );
-  });
-
+    return new Promise(res => devSubServer({configs: chunk, options, port}, res))
+  }));
+  
   app.use('/', express.static(path.join(__dirname, '../preview/dist')));
+  
+  openLocation && open(httpLocation);
 
   app.get('/data/ads.json', (req, res) => {
     res.json({
@@ -153,11 +162,8 @@ ${chalk.grey.bold('-------------------------------------------------------')}
     res.send('ok');
   });
 
-  // notr sure if this does anything
-  // app.post('/api/upload', (req, res) => {});
-
   // eslint-disable-next-line
-  process.stdin.resume();//so the program will not close instantly
+  process.stdin.resume(); //so the program will not close instantly
 
   function exitHandler(options, exitCode) {
     if (options.cleanup) removeTempRichmediaRc(configs);
@@ -177,6 +183,4 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
   //catches uncaught exceptions
   process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
-
-  app.listen(port, () => {});
 };

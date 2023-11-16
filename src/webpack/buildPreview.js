@@ -1,32 +1,19 @@
 const fs = require("fs-extra");
 const path = require("path");
-
-const chalk = require("chalk");
-const webpack = require("webpack");
-// const HtmlWebpackPlugin = require("html-webpack-plugin");
 const archiver = require("archiver");
 const globPromise = require("glob-promise");
-const cliProgress = require("cli-progress");
-
-// const getTemplate = require("../util/getPreviewTemplate");
-const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
-// const previewWebackConfig = require("../preview/webpack.config");
 const htmlParser = require("node-html-parser");
-
-
-const getFilesizeInBytes = (filename) => {
-  var stats = fs.statSync(filename);
-  var fileSizeInBytes = stats.size;
-  return fileSizeInBytes;
-};
 
 module.exports = async function buildPreview(result, outputDir) {
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
   allIndexHtmlFiles.sort()
-  result && result.sort((a, b) =>  a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+  if (result) {
+    result.forEach(e => e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location))
+    result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+  }
 
   const allAds = allIndexHtmlFiles.reduce((acc, filename, i) => {
     const rawData = fs.readFileSync(filename, "utf8");
