@@ -1,11 +1,12 @@
 const path = require("path");
 const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
-
 const cliProgress = require("cli-progress");
-
+const chalk = require("chalk");
 const workerFarm = require('worker-farm');
 
 module.exports = async function buildFiles(result, options) {
+  const start = Date.now();
+
   const webpackRun = workerFarm(
     {
       autoStart: true,
@@ -16,28 +17,28 @@ module.exports = async function buildFiles(result, options) {
     require.resolve('./webpackRun')
   );
   
-  const startTime = new Date().getTime();
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   progressBar.start(result.length, 0);
 
-  await Promise.all(result.map((result) => {
+  const qualities = await Promise.all(result.map((result) => {
     delete result.settings.row
-    return new Promise(res => webpackRun({ config: result.settings, options }, () => {
+    return new Promise(res => webpackRun({ config: result.settings, options }, (quality) => {
       progressBar.increment()
-      res()
+      res(quality)
     }));
   }));
 
-  workerFarm.end(webpackRun)
+  await new Promise(res => workerFarm.end(webpackRun, res))
 
   progressBar.stop();
-  console.log(`built in ${new Date().getTime() - startTime}ms`);
+  console.log(chalk.green(`Built in ${Date.now() - start}ms`));
 
   // final clean up
   console.log("Removing temp .richmediarc...");
-  removeTempRichmediaRc(result);
+  await removeTempRichmediaRc(result);
 
   return {
     outputDir: path.resolve(options.outputDir),
+    ads: qualities,
   };
 };

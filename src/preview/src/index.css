@@ -13,3 +13,19 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.card {
+  container-type: inline-size;
+}
+
+@container (min-width: 360px) {
+  .chips {
+    position: relative;
+    justify-content: unset !important;
+
+    .quality {
+      position: absolute;
+      right: 0;
+    }
+  }
+}
