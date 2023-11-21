@@ -83,9 +83,11 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
           }
 
           if (file === bundleName) {
-            return {
-              unzip: {
-                size: await size(path.resolve(bundleParentDir, file))
+            if (result && result[bundleName] && result[bundleName].settings.data.settings.optimizeUncompressed) {
+              return {
+                unzip: {
+                  size: await size(path.resolve(bundleParentDir, file))
+                }
               }
             }
           }
