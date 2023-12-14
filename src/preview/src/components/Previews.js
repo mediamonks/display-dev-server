@@ -98,7 +98,7 @@ export default function Previews({ data }) {
     filter && (collectFilters.filter = filter)
     gsdevtools && (collectFilters.gsdevtools = gsdevtools)
     page && (collectFilters.page = page)
-    itemsPerPage && (collectFilters.perpage = itemsPerPage)
+    itemsPerPage && itemsPerPage != 10 && (collectFilters.perpage = itemsPerPage)
     setSearchParams(collectFilters)
   }, [filters, page, itemsPerPage]);
   
