@@ -461,6 +461,7 @@ class HtmlWebpackInlineSVGPlugin {
           params: {
             overrides: {
               cleanupIds: false,
+              mergePaths:false,
             },
           },
         },
