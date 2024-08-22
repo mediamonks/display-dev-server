@@ -30,7 +30,8 @@ module.exports = function getRichmediaRCSync(filepath, onDependecy = () => {}) {
     if (typeof value === 'string'
       && !isExternalURL(value)
       && !path.isAbsolute(value)
-      && fs.existsSync(path.resolve(dirname, value)))
+      && fs.existsSync(path.resolve(dirname, value))
+      && value !== '')
     {
       obj[name] = path.resolve(dirname, value);
     }

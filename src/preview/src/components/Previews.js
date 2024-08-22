@@ -3,8 +3,9 @@ import styles from "./Previews.module.scss";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { ListSubheader, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { ListSubheader, Tooltip, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
+import CachedIcon from '@mui/icons-material/Cached';
 
 import { AdPreview } from "./AdPreview";
 
@@ -81,20 +82,35 @@ const getLabelFromFilterGroup = (filterGroup) => {
 
 export default function Previews({ data }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  const gsdevtools = useMemo(() => searchParams.get('gsdevtools'), []);
 
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
 
-  const [page, setPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [page, setPage] = useState(+searchParams.get('page') || 0);
+  const [itemsPerPage, setItemsPerPage] = useState(+searchParams.get('perpage') || 10);
 
   useEffect(() => {
     setAds(getAdsListFromFilters(data.ads, filters));
-    setSearchParams({
-      filter: decodeURI(composeSearchParamsFromFilters(filters)),
-    });
-    setPage(0);
-  }, [filters]);
+    const filter = decodeURI(composeSearchParamsFromFilters(filters))
+    const collectFilters = {}
+    filter && (collectFilters.filter = filter)
+    gsdevtools && (collectFilters.gsdevtools = gsdevtools)
+    page && (collectFilters.page = page)
+    itemsPerPage && itemsPerPage != 10 && (collectFilters.perpage = itemsPerPage)
+    setSearchParams(collectFilters)
+  }, [filters, page, itemsPerPage]);
+  
+  useEffect(() => {
+    if (gsdevtools !== "true") return
+    window.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented) return;
+      if (e.key === " ") {
+        e.preventDefault();
+      }
+    })
+  }, [])
 
   const getSelectedFilters = () => {
     // returns flat array of selected filters i.e. ["en","300x400"] (the input element needs this as a value)
@@ -114,6 +130,7 @@ export default function Previews({ data }) {
     });
 
     setFilters(updatedFilters);
+    setPage(0);
   };
 
   function handleFilterDelete(e, value) {
@@ -122,21 +139,26 @@ export default function Previews({ data }) {
     // set each filter's selected value based on the value from the event
     updatedFilters.flat().forEach((filter) => {
       if (filter.value === value) {
-        console.log("found the one to be deleted");
-        console.log(filter);
         filter.selected = false;
       }
     });
 
     setFilters(updatedFilters);
+    setPage(0);
   }
 
   // handle button(s)
 
   const handleDownloadZips = (event) => {
-    console.log(event);
+    // console.log(event);
     window.open("all.zip");
   };
+
+  const handleReloadDynamicData = async e => {
+    const res = await fetch('reload_dynamic_data')
+    if (res.status === 200)
+      location.reload()
+  }
 
   // handle pages
   const handleChangePage = (event, newPage) => {
@@ -145,7 +167,7 @@ export default function Previews({ data }) {
 
   const handleChangeRowsPerPage = (event) => {
     setItemsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0)
   };
 
   const pageAds = useMemo(() => {
@@ -157,11 +179,22 @@ export default function Previews({ data }) {
     <>
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
-          <Typography align="left" variant="h5" component="div">
-            Preview
-          </Typography>
-
-          {/*<img src={"logo.png"}></img>*/}
+          <Box sx={{ display: 'flex', gap: '10px' }}>
+            {
+              data.isGoogleSpreadsheetBanner
+              ? <Tooltip title="Reload dynamic data">
+                  <Button onClick={handleReloadDynamicData} color="inherit">
+                    <CachedIcon />
+                  </Button>
+                </Tooltip>
+              : <></>
+            }
+            <Tooltip title={(new Date(data.timestamp)).toLocaleString()}>
+              <Typography align="left" variant="h5" component="div">
+                Preview
+              </Typography>
+            </Tooltip>
+          </Box>
 
           <FormControl sx={{ m: 1, minWidth: 150, maxWidth: "40%" }}>
             <InputLabel id="demo-multiple-chip-label">Filters</InputLabel>
@@ -171,7 +204,7 @@ export default function Previews({ data }) {
               multiple
               value={getSelectedFilters()}
               onChange={handleChangeFilter}
-              input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+              input={<OutlinedInput id="select-multiple-chip" label="Filters" />}
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => (
@@ -192,7 +225,7 @@ export default function Previews({ data }) {
                 ])}
             </Select>
           </FormControl>
-          <TablePagination labelRowsPerPage="Ads per page:" component="div" count={ads.length} page={page} onPageChange={handleChangePage} rowsPerPage={itemsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} />
+          <TablePagination labelRowsPerPage="Ads per page:" component="div" count={ads.length} page={ads.length ? page : 0} onPageChange={handleChangePage} rowsPerPage={itemsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} />
           <Button onClick={handleDownloadZips} color="inherit">
             Download Zips
           </Button>
@@ -200,7 +233,7 @@ export default function Previews({ data }) {
       </AppBar>
 
       <div className={styles.previews}>
-        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview key={ad.bundleName} ad={ad} maxFileSize={data.maxFileSize} />)}
+        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools}  key={ad.bundleName} ad={ad} maxFileSize={ad.maxFileSize} timestamp={data.timestamp} />)}
         {pageAds.length < 1 && "No ads found with the current combination of filters"}
       </div>
     </>

@@ -9,7 +9,7 @@ const sanitizeFilename = require("sanitize-filename");
 
 const WriteFilePlugin = require("../plugin/WriteFilePlugin");
 const ZipFilesPlugin = require("../plugin/ZipFilesPlugin");
-const OptimizeBundleToFilesizePlugin = require('../plugin/OptimizeBundleToFilesizePlugin');
+const OptimizeBundleToFilesizePlugin = require("../plugin/OptimizeBundleToFilesizePlugin");
 const CopyFilesPlugin = require("../plugin/CopyFilesPlugin");
 const HtmlWebpackInlineSVGPlugin = require("../plugin/HtmlWebpackInlineSVGPlugin");
 
@@ -40,19 +40,13 @@ module.exports = function createConfig({
   richmediarcFilepath,
   outputPath,
 
-  options: {mode = DevEnum.DEVELOPMENT, stats = false} = {
+  options: { mode = DevEnum.DEVELOPMENT, stats = false } = {
     mode: DevEnum.DEVELOPMENT,
     stats: false,
   },
 }) {
-  let devtool = false;
+  const devtool = mode === DevEnum.PRODUCTION ? false : "inline-source-map"; // 7% improvement on dev times if false
   const entry = [];
-
-  if (mode === DevEnum.PRODUCTION) {
-    devtool = false;
-  } else if (mode === DevEnum.DEVELOPMENT) {
-    devtool = "inline-source-map";
-  }
 
   let namedHashing = richmediarc.settings.useOriginalFileNames ? "[name]" : "[name]_[contenthash]";
   let optimizations = getOptimisationsFromConfig(richmediarc);
@@ -128,11 +122,11 @@ module.exports = function createConfig({
           use: function () {
             let loaderArray = [];
 
-            if (richmediarc.settings.optimizations.js) {
+            if (mode === DevEnum.PRODUCTION && richmediarc.settings.optimizations.js) {
               loaderArray.push({
                 loader: "esbuild-loader",
                 options: {
-                  target: 'es2015'
+                  target: "es2015",
                 },
               });
             }
@@ -181,7 +175,7 @@ module.exports = function createConfig({
             {
               loader: "html-loader",
               options: {
-                minimize: optimizations.html,
+                minimize: mode === DevEnum.PRODUCTION && optimizations.html,
                 esModule: false,
               },
             },
@@ -267,11 +261,11 @@ module.exports = function createConfig({
               },
             ];
 
-            if (optimizations.image && !richmediarc.settings.optimizeToFileSize) {
+            if (mode === DevEnum.PRODUCTION && (optimizations.image && !richmediarc.settings.optimizeToFileSize)) {
               // don't optimize images if optimizeToFileSize is set to true
               imageLoadersArray.push({
                 loader: path.resolve(path.join(__dirname, "../loader/ImageOptimizeLoader.js")),
-                options: {}
+                options: {},
               });
             }
 
@@ -279,21 +273,20 @@ module.exports = function createConfig({
           },
         },
 
-
         {
           test: /\.(ttf|woff|woff2)$/,
           use: [
             richmediarc.settings.fontsBase64
               ? {
-                loader: "url-loader",
-              }
+                  loader: "url-loader",
+                }
               : {
-                loader: "file-loader",
-                options: {
-                  // name: `[name]${namedHashing}.[ext]`,
-                  name: `${namedHashing}.[ext]`,
+                  loader: "file-loader",
+                  options: {
+                    // name: `[name]${namedHashing}.[ext]`,
+                    name: `${namedHashing}.[ext]`,
+                  },
                 },
-              },
             {
               loader: path.resolve(path.join(__dirname, "../loader/RichmediaFontLoader.js")),
               options: {
@@ -331,7 +324,7 @@ module.exports = function createConfig({
     plugins: [
       new HtmlWebpackPlugin({
         template: richmediarc.settings.entry.html,
-        minify: optimizations.html,
+        minify: mode === DevEnum.PRODUCTION && optimizations.html,
         filename: "./index.html",
       }),
       new HtmlWebpackInlineSVGPlugin({
@@ -345,9 +338,7 @@ module.exports = function createConfig({
         "node_modules/richmediaconfig": `module.exports = "DUDE"`,
       }),
     ],
-    stats: {
-      colors: true,
-    },
+    stats: 'errors-warnings',
     devtool,
   };
 
@@ -359,30 +350,33 @@ module.exports = function createConfig({
   if (fs.existsSync(staticPath)) {
     config.plugins.push(
       new CopyFilesPlugin({
-        fromPath: staticPath
+        fromPath: staticPath,
       })
     );
   }
 
-  if (richmediarc.settings.type === "flashtalking") {
-    console.log('found flashtalking ad')
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "flashtalking") {
+
+    console.log("found flashtalking ad");
 
     const outputString = `FT.manifest({
       "filename": "index.html",
       "width": ${richmediarc.settings.size.width},
       "height": ${richmediarc.settings.size.height},
       "clickTagCount": 1
-});`
+});`;
 
-    config.plugins.push(new WriteFilePlugin({
-      filePath: './',
-      fileName: 'manifest.js',
-      content: outputString
-    }))
+    config.plugins.push(
+      new WriteFilePlugin({
+        filePath: "./",
+        fileName: "manifest.js",
+        content: outputString,
+      })
+    );
   }
 
-  if (richmediarc.settings.type === "adform") {
-    let clickTags = richmediarc.settings.clickTags || {clickTAG: "http://www.adform.com"};
+  if (mode === DevEnum.PRODUCTION && richmediarc.settings.type === "adform") {
+    let clickTags = richmediarc.settings.clickTags || { clickTAG: "http://www.adform.com" };
     let obj = {
       version: "1.0",
       title: richmediarc.settings.bundleName || bundleName,
@@ -399,26 +393,30 @@ module.exports = function createConfig({
       source: "index.html",
     };
 
-    config.plugins.push(new WriteFilePlugin({
-      filePath: './',
-      fileName: 'manifest.json',
-      content: JSON.stringify(obj, null, 2)
-    }))
+    config.plugins.push(
+      new WriteFilePlugin({
+        filePath: "./",
+        fileName: "manifest.json",
+        content: JSON.stringify(obj, null, 2),
+      })
+    );
   }
 
   config.optimization = {
-    minimize: true,
+    minimize: mode === DevEnum.PRODUCTION,
     minimizer: [],
   };
 
-  if (optimizations.js) {
+  if (mode === DevEnum.PRODUCTION && optimizations.js) {
     config.optimization.splitChunks = {
       chunks: "async",
     };
 
     config.optimization.minimizer.push(
       new TerserPlugin({
+        // minify: TerserPlugin.esbuildMinify,
         extractComments: false,
+        parallel: false,
       })
     );
   }
@@ -428,19 +426,19 @@ module.exports = function createConfig({
   }
 
   if (mode === DevEnum.PRODUCTION) {
-
     config.plugins.push(
-      richmediarc.settings.optimizeToFileSize ?
-        new OptimizeBundleToFilesizePlugin({
-          outputPath: path.join(outputPath, "../"),
-          filename: `${bundleName}.zip`,
-          maxFileSize: richmediarc.settings.maxFileSize * 1024,
-          lowestQuality: 60,
-        }) :
-        new ZipFilesPlugin({
-          outputPath: path.join(outputPath, "../"),
-          filename: `${bundleName}.zip`
-        })
+      richmediarc.settings.optimizeToFileSize
+        ? new OptimizeBundleToFilesizePlugin({
+            outputPath: path.join(outputPath, "../"),
+            filename: `${bundleName}.zip`,
+            maxFileSize: richmediarc.settings.maxFileSize * 1024,
+            optimizeUncompressed: richmediarc.settings.optimizeUncompressed,
+            lowestQuality: richmediarc.settings.lowestImageQuality || 60,
+          })
+        : new ZipFilesPlugin({
+            outputPath: path.join(outputPath, "../"),
+            filename: `${bundleName}.zip`,
+          })
     );
   }
 

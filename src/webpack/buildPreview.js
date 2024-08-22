@@ -1,55 +1,59 @@
 const fs = require("fs-extra");
 const path = require("path");
-
-const chalk = require("chalk");
-const webpack = require("webpack");
-// const HtmlWebpackPlugin = require("html-webpack-plugin");
 const archiver = require("archiver");
 const globPromise = require("glob-promise");
-const cliProgress = require("cli-progress");
-
-// const getTemplate = require("../util/getPreviewTemplate");
-const removeTempRichmediaRc = require("../util/removeTempRichmediaRc");
 const getNameFromLocation = require("../util/getNameFromLocation");
-// const previewWebackConfig = require("../preview/webpack.config");
-// const displayAdsRecorder = require("@mediamonks/display-ads-recorder");
 const htmlParser = require("node-html-parser");
+const chalk = require("chalk");
 
-
-const getFilesizeInBytes = (filename) => {
-  var stats = fs.statSync(filename);
-  var fileSizeInBytes = stats.size;
-  return fileSizeInBytes;
-};
-
-module.exports = async function buildPreview(outputDir) {
-  // // render backup images
-  // if (result[0].settings.data.settings.displayAdsRecorder) {
-  //   const locations = result.map((result) => {
-  //     const name = result.settings.data.settings.bundleName || getNameFromLocation(result.settings.location); // if bundlename does not exist, get the name from the location instead
-  //     const location = `${outputDir}/${name}/index.html`;
-  //     return location;
-  //   });
-  //   await displayAdsRecorder({
-  //     targetDir: outputDir,
-  //     adSelection: {
-  //       location: locations,
-  //       ...result[0].settings.data.settings.displayAdsRecorder,
-  //     },
-  //   });
-  // }
-
-  // get list of all files (zips, jpg, etc) in output dir
-  const filesInOutputDir = await fs.promises.readdir(outputDir);
-
+module.exports = async function buildPreview(result, qualities, outputDir) {
+  const start = Date.now()
+  
   // find all ads in directory
   const allIndexHtmlFiles = await globPromise(`${outputDir}/**/index.html`);
 
-  const allAds = allIndexHtmlFiles.reduce((acc, filename) => {
-    const rawData = fs.readFileSync(filename, "utf8");
-    const parsed = htmlParser.parse(rawData);
+  if (result) {
+    result.forEach((e, i) => {
+      e.settings.data.settings.bundleName ??= getNameFromLocation(e.settings.location)
+      e.quality = qualities[i]
+    })
+    // result.sort((a, b) => a.settings.data.settings.bundleName > b.settings.data.settings.bundleName ? 1 : -1)
+    result = result.reduce((acc, result) => {
+      acc[result.settings.data.settings.bundleName] = result
+      return acc
+    }, {})
+  }
 
-    if (parsed.querySelectorAll('meta[name="ad.size"]').length > 0) {
+  // collect all fs data
+  const parentDirsCache = {}
+
+  await Promise.all(
+    allIndexHtmlFiles
+    .map(filename => path.resolve(path.dirname(filename), '../'))
+    .filter((x, i, a) => a.indexOf(x) == i)
+    .map(async parentDir => {
+      const filesInParentDir = await fs.readdir(parentDir)
+      const fileStatsInParentDir = await Promise.all(
+        filesInParentDir.map(async file => {
+          return await fs.stat(path.resolve(parentDir, file))
+        })
+      )
+      parentDirsCache[parentDir] = {
+        files: filesInParentDir,
+        stats: fileStatsInParentDir
+      }
+    })
+  )
+
+  const allAds = (await Promise.all(
+    allIndexHtmlFiles.map(async (filename, i) => {
+      const rawData = await fs.readFile(filename, "utf8");
+      const parsed = htmlParser.parse(rawData);
+
+      if (!parsed.querySelectorAll('meta[name="ad.size"]').length) {
+        return undefined;
+      }
+
       const dimensions = parsed.querySelector('meta[name="ad.size"]').getAttribute('content').split(',').reduce((acc, attr) => {
         const keyVal = attr.split('=');
         return {
@@ -60,51 +64,62 @@ module.exports = async function buildPreview(outputDir) {
 
       const bundleName = path.basename(path.dirname(filename));
       const bundleParentDir = path.resolve(path.dirname(filename), '../');
-      const filesInParentDir = fs.readdirSync(bundleParentDir);
+      const { files, stats } = parentDirsCache[bundleParentDir]
+      const filesInParentDir = files;
 
-      const additionalOutputs = filesInParentDir.reduce((acc, file) => {
-        const fileStats = fs.statSync(path.resolve(bundleParentDir, file));
-        if (fileStats.isFile() && file.includes(bundleName)) {
-          const fileType = path.extname(file).split('.')[1];
-          const additionalOutputObj = {
-            [fileType]: {
-              // url: file,
-              url: path.relative(outputDir, path.resolve(bundleParentDir, file)).replace(/\\/g, "/"),
-              size: fileStats.size
+      const additionalOutputs = (await Promise.all(
+        filesInParentDir.map(async (file, i) => {
+          const fileStats = stats[i];
+
+          if (fileStats.isFile() && file.includes(bundleName)) {
+            const fileType = path.extname(file).split('.')[1];
+            return {
+              [fileType]: {
+                // url: file,
+                url: path.relative(outputDir, path.resolve(bundleParentDir, file)).replace(/\\/g, "/"),
+                size: fileStats.size
+              }
             }
           }
 
-          return {
-            ...acc,
-            ...additionalOutputObj
+          if (file === bundleName) {
+            if (result && result[bundleName] && result[bundleName].settings.data.settings.optimizeUncompressed) {
+              return {
+                unzip: {
+                  size: await size(path.resolve(bundleParentDir, file))
+                }
+              }
+            }
           }
 
-        } else {
-          return acc;
-        };
-      }, {})
+          return undefined
+        })
+      ))
+      .filter(output => output != undefined)
+      .reduce((a, v) => ({ ...a, ...v }), {}) // array to object
 
-
-      return [
-        ...acc,
-        {
-          bundleName,
-          ...dimensions,
-          output: {
-            html: {
-              url: path.relative(outputDir, filename).replace(/\\/g, "/")
-            },
-            ...additionalOutputs
+      return {
+        bundleName,
+        ...dimensions,
+        maxFileSize: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.maxFileSize
+          : undefined,
+        quality: (result && result[bundleName])
+          ? result[bundleName].quality || (result[bundleName].settings.data.settings?.optimizations?.image && 80) || 100
+          : undefined,
+        output: {
+          html: {
+            url: path.relative(outputDir, filename).replace(/\\/g, "/")
           },
-        }
-      ]
-    } else {
-      return acc;
-    }
-  }, [])
-
+          ...additionalOutputs
+        },
+      }
+    })
+  ))
+  .filter(ad => ad != undefined)
 
   const adsList = {
+    timestamp: Date.now(),
     ads: allAds
   };
 
@@ -112,18 +127,17 @@ module.exports = async function buildPreview(outputDir) {
 
   // copy preview folder
   console.log("copying preview files...");
-  fs.copySync(path.join(__dirname, `../preview/dist`), outputDir, {
+  await fs.copy(path.join(__dirname, `../preview/dist`), outputDir, {
     overwrite: true,
   });
 
   // write the result to ads.json in the preview dir
   console.log(`creating ${outputDir}/data/ads.json`)
-  fs.outputFileSync(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
+  await fs.outputFile(path.resolve(outputDir, 'data/ads.json'), JSON.stringify(adsList, null, 2));
 
   // write the zip file containing all zips
-
-  // console.log(adsList.ads)
   if (adsList.ads.filter(ad => ad.output.zip).length > 0) {
+    console.log(`creating all.zip`)
     await new Promise((resolve) => {
       const output = fs.createWriteStream(outputDir + "/all.zip");
       output.on("close", resolve);
@@ -136,8 +150,30 @@ module.exports = async function buildPreview(outputDir) {
     });
   }
 
-  // return {
-  //   outputDir: path.resolve(outputDir),
-  //   ads: buildResult,
-  // };
+  console.log(chalk.green(`Preview built in ${Date.now() - start}ms`));
 };
+
+function sizeSync(p) {
+  const stat = fs.statSync(p);
+  if (stat.isFile())
+    return stat.size;
+  else if (stat.isDirectory())
+    return fs.readdirSync(p).reduce((a, e) => a + sizeSync(path.join(p, e)), 0);
+  else return 0; // can't take size of a stream/symlink/socket/etc
+}
+
+async function size(p) {
+  const stat = await fs.stat(p)
+
+  if (stat.isFile())
+    return stat.size
+
+  if (stat.isDirectory()) {
+    const dir = await fs.readdir(p)
+    return (await Promise.all(
+      dir.map(async e => await size(path.join(p, e)))
+    )).reduce((a, e) => a + e, 0)
+  }
+
+  return 0; // can't take size of a stream/symlink/socket/etc
+}

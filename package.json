@@ -1,9 +1,10 @@
 {
   "name": "@mediamonks/display-dev-server",
-  "version": "11.0.11",
+  "version": "11.6.2",
   "description": "This is the Display.Monks development server, which handles previewing and compiling ads via webpack.",
   "scripts": {
-    "preview-dev": "cd ./src/preview && npm run dev"
+    "preview-dev": "cd ./src/preview && npm run dev",
+    "preview-build": "cd ./src/preview && npm run build"
   },
   "engines": {
     "node": ">= 16",
@@ -66,6 +67,7 @@
     "webpack": "^5.75.0",
     "webpack-dev-middleware": "^6.0.1",
     "webpack-hot-middleware": "^2.25.3",
-    "webpack-virtual-modules": "^0.5.0"
+    "webpack-virtual-modules": "^0.5.0",
+    "worker-farm": "^1.7.0"
   }
 }

@@ -12,6 +12,8 @@ const parsePlaceholdersInObject = require("../util/parsePlaceholdersInObject");
 const expandWithSpreadsheetData = require("../util/expandWithSpreadsheetData");
 
 module.exports = async function (options) {
+  const start = Date.now()
+
   // {mode = "development", glob = "./**/.richmediarc*", choices = null, stats = null, outputDir = "./build", configOverride = {}}
   let {mode, glob, choices, stats, outputDir} = options;
   console.log(`${chalk.blue("i")} Searching for configs`);
@@ -52,6 +54,8 @@ module.exports = async function (options) {
       config.data = parsePlaceholdersInObject(config.data, config.data);
     }
   });
+  
+  console.log(chalk.green(`Prepared ${configs.length} configs in ${Date.now() - start}ms`));
 
   const questions = [];
 
@@ -122,6 +126,8 @@ module.exports = async function (options) {
     choices = answers;
   }
 
+  const start2 = Date.now()
+
   if (choices.emptyBuildDir) {
     await fs.emptyDir(outputDir);
   }
@@ -137,13 +143,11 @@ module.exports = async function (options) {
   }
 
   //if the richmediarc location doesn't actually exist, assume its a config derived from google spreadsheets, so we write one to disk
-  configsResult.forEach((config) => {
+  await Promise.all(configsResult.map(async config => {
     let writeConfig = false;
-    if (!fs.existsSync(config.location)) {
-      writeConfig = true;
-    } else {
+    if (await fs.exists(config.location)) {
       try {
-        const configData = fs.readJsonSync(config.location);
+        const configData = await fs.readJson(config.location);
         if (configData.uniqueHash) {
           // this means it's a file marked for deletion (but somehow stayed behind)
           writeConfig = true;
@@ -151,13 +155,15 @@ module.exports = async function (options) {
       } catch (err) {
         console.error(err);
       }
+    } else {
+      writeConfig = true;
     }
 
     if (writeConfig) {
       const data = Buffer.from(JSON.stringify(config.data));
-      fs.writeFileSync(config.location, data);
+      await fs.writeFile(config.location, data);
     }
-  });
+  }));
 
   let result = await createConfigByRichmediarcList(configsResult, {
     mode,
@@ -171,6 +177,8 @@ module.exports = async function (options) {
       settings: configsResult[index],
     };
   });
+
+  console.log(chalk.green(`${result.length} webpack configs prepared in ${Date.now() - start2}ms`));
 
   return {
     result, choices
