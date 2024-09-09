@@ -113,6 +113,9 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
           },
           ...additionalOutputs
         },
+        info: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.info
+          : undefined
       }
     })
   ))

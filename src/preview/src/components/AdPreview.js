@@ -16,6 +16,7 @@ import FolderIcon from "@mui/icons-material/FolderOpen";
 import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 import Quality from "@mui/icons-material/CameraEnhance";
+import InfoIcon from '@mui/icons-material/Info';
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -150,6 +151,22 @@ export const AdPreview = (props) => {
                       <Chip icon={<Quality />} label={`${ad.quality}`} color={ad.quality > 85 ? "success" : ad.quality > 70 ? "warning" : "error"} />
                     </Tooltip>
                   : <></>
+                }
+              </Box>
+              <Divider light sx={{margin: "20px 0"}} />
+            </>
+          : <></>
+        }
+        {
+          gsdevtools === "true" && ad.info
+          ? <>
+              <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="flex-start" className="chips">
+                {
+                  Object.entries(ad.info).map(([name, value]) => {
+                    return <Tooltip title={name} key={name}>
+                      <Chip icon={<InfoIcon />} label={value} color={"info"} />
+                    </Tooltip>
+                  })
                 }
               </Box>
               <Divider light sx={{margin: "20px 0"}} />
