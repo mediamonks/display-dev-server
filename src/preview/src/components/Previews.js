@@ -83,7 +83,7 @@ const getLabelFromFilterGroup = (filterGroup) => {
 export default function Previews({ data }) {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const gsdevtools = useMemo(() => searchParams.get('gsdevtools'), []);
+  const [gsdevtools, setGSDevTools] = useState(searchParams.get('gsdevtools'));
 
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
@@ -100,7 +100,7 @@ export default function Previews({ data }) {
     page && (collectFilters.page = page)
     itemsPerPage && itemsPerPage != 10 && (collectFilters.perpage = itemsPerPage)
     setSearchParams(collectFilters)
-  }, [filters, page, itemsPerPage]);
+  }, [filters, page, itemsPerPage, gsdevtools]);
   
   useEffect(() => {
     if (gsdevtools !== "true") return
@@ -173,6 +173,19 @@ export default function Previews({ data }) {
   const pageAds = useMemo(() => {
     return paginate(ads, itemsPerPage, page + 1);
   }, [page, itemsPerPage, ads]);
+
+  // toggle devtools
+  let GSKeySequence = []
+  document.addEventListener('keydown', event => {
+    GSKeySequence.push(event.key)
+    if (GSKeySequence.includes('g') && GSKeySequence.includes('s')) {
+      setGSDevTools(!gsdevtools)
+      window.location.reload()
+    }
+  })
+  document.addEventListener('keyup', event => {
+    GSKeySequence = GSKeySequence.filter(key => key !== event.key)
+  })
 
   // generate page
   return (
