@@ -17,6 +17,8 @@ import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 import Quality from "@mui/icons-material/CameraEnhance";
 import InfoIcon from '@mui/icons-material/Info';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -24,6 +26,9 @@ gsap.registerPlugin(GSDevTools);
 
 export const AdPreview = (props) => {
   const {ad, gsdevtools, timestamp, maxFileSize = 150} = props;
+  
+  const [paused, setPaused] = useState(false);
+  const [animationForPause, setAnimationForPause] = useState();
 
   const cachedHTML = `${ad.output.html.url}?r=${timestamp}`
 
@@ -88,6 +93,59 @@ export const AdPreview = (props) => {
       setMediaSource(ad.output[type].url);
     }
   }, [activeConfigTab]);
+
+  function reload() {
+    activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = cachedHTML) : setActiveConfigTab("html,iframe");
+    setPaused(false)
+  }
+
+  // reload all
+  document.addEventListener('keydown', event => {
+    if (event.key == 'r') {
+      reload()
+    }
+  })
+
+  // read spacebar pause press
+  document.addEventListener('keydown', event => {
+    if (event.key == ' ' && gsdevtools !== 'true') {
+      event.preventDefault()
+      setPaused(!paused)
+    }
+  })
+  
+  // add play/pause listeners
+  useEffect(() => {
+    if (gsdevtools == "true") return; // skip if gsdevtools present
+
+    const ifr = adPreviewCard.current
+
+    // have to use onload in order to set events to the right element (React render thing)
+    ifr.onload = () => {
+      if (!ifr.contentWindow) return
+      ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimationForPause(e.detail), false)
+      ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
+    }
+  }, [mediaSource])
+
+  useEffect(() => {
+    if (!animationForPause) return
+
+    animationForPause.eventCallback('onComplete', () => { setPaused(true) })
+  }, [animationForPause])
+
+  useEffect(() => {
+    if (!animationForPause) return
+
+    if (paused) animationForPause.pause()
+    else {
+      if (animationForPause.progress() == 1) {
+        reload()
+      } else {
+        animationForPause.play()
+      }
+    }
+  }, [paused])
 
   return (
     <Card sx={{minWidth: `${ad.width}px`, maxWidth: `${ad.width}px`, height: "fit-content"}} className="card">
@@ -177,14 +235,26 @@ export const AdPreview = (props) => {
           <Box>
             <Tooltip title="Reload">
               <IconButton
-                onClick={(e) => {
-                  activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = cachedHTML) : setActiveConfigTab("html,iframe");
-                }}
+                onClick={() => { reload() }}
                 color="primary"
               >
                 <ReplayIcon />
               </IconButton>
             </Tooltip>
+            {
+              gsdevtools !== 'true' && activeConfigTab === "html,iframe"
+              ? <Tooltip title="▶／❚❚">
+                <IconButton
+                  onClick={() => {
+                    setPaused(!paused)
+                  }}
+                  color="primary"
+                >
+                  {paused ? <PlayArrowIcon /> : <PauseIcon />}
+                </IconButton>
+              </Tooltip>
+              : <></>
+            }
             <Tooltip title="Open in new window">
               <IconButton onClick={() => window.open(ad.output.html.url)} color="primary">
                 <OpenInNewIcon />
