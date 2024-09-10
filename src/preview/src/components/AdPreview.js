@@ -17,8 +17,9 @@ import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 import Quality from "@mui/icons-material/CameraEnhance";
 import InfoIcon from '@mui/icons-material/Info';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import PauseCircleIcon from '@mui/icons-material/PauseCircle';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -28,6 +29,7 @@ export const AdPreview = (props) => {
   const {ad, gsdevtools, timestamp, maxFileSize = 150} = props;
   
   const [paused, setPaused] = useState(false);
+  const [animationForPauseCurrentTime, setAnimationForPauseCurrentTime] = useState(0);
   const [animationForPause, setAnimationForPause] = useState();
 
   const cachedHTML = `${ad.output.html.url}?r=${timestamp}`
@@ -106,6 +108,13 @@ export const AdPreview = (props) => {
     }
   })
 
+  // reload all
+  document.addEventListener('keydown', event => {
+    if (event.key == 'ArrowRight') {
+      animationForPause.progress(1)
+    }
+  })
+
   // read spacebar pause press
   document.addEventListener('keydown', event => {
     if (event.key == ' ' && gsdevtools !== 'true') {
@@ -130,8 +139,8 @@ export const AdPreview = (props) => {
 
   useEffect(() => {
     if (!animationForPause) return
-
     animationForPause.eventCallback('onComplete', () => { setPaused(true) })
+    animationForPause.eventCallback('onUpdate', () => { setAnimationForPauseCurrentTime(animationForPause.time()) })
   }, [animationForPause])
 
   useEffect(() => {
@@ -181,6 +190,40 @@ export const AdPreview = (props) => {
           gsdevtools === "true" && animation && activeConfigTab.split(",")[0] === "html"
           ? <>
               <Box ref={gsDevContainer}></Box>
+              <Divider light sx={{margin: "20px 0"}} />
+            </>
+          : <></>
+        }
+        {
+          gsdevtools !== 'true' && animationForPause && activeConfigTab === "html,iframe"
+          ? <>
+              <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-between" alignItems="center" className="controls">
+                <Box>
+                  <Tooltip title="▶／❚❚">
+                    <IconButton
+                      onClick={() => {
+                        setPaused(!paused)
+                      }}
+                      color="primary"
+                    >
+                      {paused ? <PlayCircleIcon /> : <PauseCircleIcon />}
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Seek to the end">
+                    <IconButton
+                      onClick={() => {
+                        animationForPause.progress(1)
+                      }}
+                      color="primary"
+                    >
+                      <SkipNextIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Typography>
+                  {animationForPauseCurrentTime.toFixed(2)} / {animationForPause.duration().toFixed(2)}s
+                </Typography>
+              </Box>
               <Divider light sx={{margin: "20px 0"}} />
             </>
           : <></>
@@ -241,20 +284,6 @@ export const AdPreview = (props) => {
                 <ReplayIcon />
               </IconButton>
             </Tooltip>
-            {
-              gsdevtools !== 'true' && activeConfigTab === "html,iframe"
-              ? <Tooltip title="▶／❚❚">
-                <IconButton
-                  onClick={() => {
-                    setPaused(!paused)
-                  }}
-                  color="primary"
-                >
-                  {paused ? <PlayArrowIcon /> : <PauseIcon />}
-                </IconButton>
-              </Tooltip>
-              : <></>
-            }
             <Tooltip title="Open in new window">
               <IconButton onClick={() => window.open(ad.output.html.url)} color="primary">
                 <OpenInNewIcon />
