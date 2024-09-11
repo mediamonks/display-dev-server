@@ -100,7 +100,8 @@ ${chalk.grey.bold('-------------------------------------------------------')}
               url,
             },
           },
-          info: e.data.settings.info
+          info: e.data.settings.info,
+          client: e.data.settings.client,
         }
       })
     })
