@@ -31,7 +31,8 @@ export const AdPreview = (props) => {
   
   const [paused, setPaused] = useState(false);
   const [animationForPauseCurrentTime, setAnimationForPauseCurrentTime] = useState(0);
-  const [animationForPause, setAnimationForPause] = useState();
+  const [animationForPauseDuration, setAnimationForPauseDuration] = useState(0);
+  const [animationForPause, setAnimationForPause] = useState(null);
 
   const cachedHTML = `${ad.output.html.url}?r=${timestamp}`
 
@@ -39,7 +40,7 @@ export const AdPreview = (props) => {
   const [mediaSource, setMediaSource] = useState(cachedHTML);
   const [activeConfigTab, setActiveConfigTab] = useState("html,iframe");
 
-  const [animation, setAnimation] = useState();
+  const [animation, setAnimation] = useState(null);
 
   const adPreviewCard = useRef();
   
@@ -102,6 +103,9 @@ export const AdPreview = (props) => {
   function reload() {
     activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = cachedHTML) : setActiveConfigTab("html,iframe");
     setPaused(false)
+    setAnimationForPauseCurrentTime(0)
+    setAnimationForPause(undefined)
+    setAnimation(undefined)
   }
 
   // reload all
@@ -130,6 +134,8 @@ export const AdPreview = (props) => {
 
   // seek 250ms
   function seek() {
+    if (!animationForPause) return
+    setPaused(true)
     animationForPause.seek(animationForPause.time() + 0.25, false)
   }
 
@@ -175,6 +181,7 @@ export const AdPreview = (props) => {
 
   useEffect(() => {
     if (!animationForPause) return
+    setAnimationForPauseDuration(animationForPause.duration())
     animationForPause.eventCallback('onComplete', () => { setPaused(true) })
     animationForPause.eventCallback('onUpdate', () => { setAnimationForPauseCurrentTime(animationForPause.time()) })
   }, [animationForPause])
@@ -190,7 +197,7 @@ export const AdPreview = (props) => {
         animationForPause.play()
       }
     }
-  }, [paused])
+  }, [paused, animationForPause])
 
   return (
     <Card sx={{minWidth: `${ad.width}px`, maxWidth: `${ad.width}px`, height: "fit-content"}} className="card">
@@ -223,7 +230,7 @@ export const AdPreview = (props) => {
       <CardMedia ref={adPreviewCard} component={mediaType} scrolling="no" style={{width: ad.width, height: ad.height}} height={ad.height} width={ad.width} src={mediaSource} id={ad.bundleName} className={ad.bundleName} frameBorder="0" autoPlay controls />
       <CardContent>
         {
-          gsdevtools === "true" && animation && activeConfigTab.split(",")[0] === "html"
+          gsdevtools === "true" && animation !== null && activeConfigTab.split(",")[0] === "html"
           ? <>
               <Box ref={gsDevContainer}></Box>
               <Divider light sx={{margin: "20px 0"}} />
@@ -231,7 +238,7 @@ export const AdPreview = (props) => {
           : <></>
         }
         {
-          gsdevtools !== 'true' && animationForPause && activeConfigTab === "html,iframe"
+          gsdevtools !== 'true' && animationForPause !== null && activeConfigTab === "html,iframe"
           ? <>
               <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-between" alignItems="center" className="controls">
                 <Box>
@@ -248,7 +255,7 @@ export const AdPreview = (props) => {
                   <Tooltip title="Seek to the end">
                     <IconButton
                       onClick={() => {
-                        animationForPause.progress(1)
+                        animationForPause?.progress(1)
                       }}
                       color="primary"
                     >
@@ -265,7 +272,7 @@ export const AdPreview = (props) => {
                   </Tooltip>
                 </Box>
                 <Typography>
-                  {animationForPauseCurrentTime.toFixed(2)} / {animationForPause.duration().toFixed(2)}s
+                  {animationForPauseCurrentTime.toFixed(2)} / {animationForPauseDuration.toFixed(2)}s
                 </Typography>
               </Box>
               <Divider light sx={{margin: "20px 0"}} />
