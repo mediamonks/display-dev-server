@@ -182,6 +182,7 @@ export const AdPreview = (props) => {
   useEffect(() => {
     if (!animationForPause) return
     setAnimationForPauseDuration(animationForPause.duration())
+    setAnimationForPauseCurrentTime(animationForPause.time())
     animationForPause.eventCallback('onComplete', () => { setPaused(true) })
     animationForPause.eventCallback('onUpdate', () => { setAnimationForPauseCurrentTime(animationForPause.time()) })
   }, [animationForPause])
