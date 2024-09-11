@@ -55,8 +55,10 @@ export const AdPreview = (props) => {
     // have to use onload in order to set events to the right element (React render thing)
     ifr.onload = () => {
       if (!ifr.contentWindow) return
-      ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimation(e.detail), false)
+      const setAnim = e => setAnimation(e.detail)
+      ifr.contentWindow.addEventListener("getMainTimeline", setAnim)
       ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
+      return () => ifr.contentWindow.removeEventListener("getMainTimeline", setAnim)
     }
   }, [mediaSource])
 
@@ -102,27 +104,41 @@ export const AdPreview = (props) => {
   }
 
   // reload all
-  document.addEventListener('keydown', event => {
-    if (event.key == 'r') {
-      reload()
+  useEffect(() => {
+    const reloadAll = event => {
+      if (event.key == 'r') {
+        reload()
+      }
     }
-  })
 
-  // reload all
-  document.addEventListener('keydown', event => {
-    if (event.key == 'ArrowRight') {
-      if (!animationForPause) return
-      animationForPause.progress(1)
+    window.addEventListener('keydown', reloadAll)
+    return () => window.removeEventListener("keydown", reloadAll);
+  }, [])
+
+  // skip all
+  useEffect(() => {
+    const arrowRightClick = event => {
+      if (event.key == 'ArrowRight') {
+        if (!animationForPause) return
+        animationForPause.progress(1)
+      }
     }
-  })
+    window.addEventListener('keydown', arrowRightClick)
+    return () => window.removeEventListener('keydown', arrowRightClick)
+  }, [animationForPause])
 
   // read spacebar pause press
-  document.addEventListener('keydown', event => {
-    if (event.key == ' ' && gsdevtools !== 'true') {
-      event.preventDefault()
-      setPaused(!paused)
+  useEffect(() => {
+    const pauseAll = event => {
+      if (event.key == ' ' && gsdevtools !== 'true') {
+        event.preventDefault()
+        setPaused(x => !x)
+      }
     }
-  })
+
+    window.addEventListener('keydown', pauseAll)
+    return () => window.removeEventListener("keydown", pauseAll);
+  }, [])
   
   // add play/pause listeners
   useEffect(() => {
@@ -133,8 +149,10 @@ export const AdPreview = (props) => {
     // have to use onload in order to set events to the right element (React render thing)
     ifr.onload = () => {
       if (!ifr.contentWindow) return
-      ifr.contentWindow.addEventListener("getMainTimeline", e => setAnimationForPause(e.detail), false)
+      const setAnim = e => setAnimationForPause(e.detail)
+      ifr.contentWindow.addEventListener("getMainTimeline", setAnim)
       ifr.contentWindow.dispatchEvent(new CustomEvent("previewReady"))
+      return () => ifr.contentWindow.removeEventListener("getMainTimeline", setAnim)
     }
   }, [mediaSource])
 
