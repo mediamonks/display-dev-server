@@ -111,6 +111,7 @@ export const AdPreview = (props) => {
   // reload all
   document.addEventListener('keydown', event => {
     if (event.key == 'ArrowRight') {
+      if (!animationForPause) return
       animationForPause.progress(1)
     }
   })
