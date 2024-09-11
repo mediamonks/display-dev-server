@@ -20,6 +20,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
+import Forward5Icon from '@mui/icons-material/Forward5';
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -125,6 +126,22 @@ export const AdPreview = (props) => {
     }
     window.addEventListener('keydown', arrowRightClick)
     return () => window.removeEventListener('keydown', arrowRightClick)
+  }, [animationForPause])
+
+  // seek 250ms
+  function seek() {
+    animationForPause.seek(animationForPause.time() + 0.25, false)
+  }
+
+  useEffect(() => {
+    const dotClick = event => {
+      if (event.key == '.') {
+        if (!animationForPause) return
+        seek()
+      }
+    }
+    window.addEventListener('keydown', dotClick)
+    return () => window.removeEventListener('keydown', dotClick)
   }, [animationForPause])
 
   // read spacebar pause press
@@ -236,6 +253,14 @@ export const AdPreview = (props) => {
                       color="primary"
                     >
                       <SkipNextIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Seek 250ms">
+                    <IconButton
+                      onClick={() => seek()}
+                      color="primary"
+                    >
+                      <Forward5Icon />
                     </IconButton>
                   </Tooltip>
                 </Box>
