@@ -205,10 +205,10 @@ export default function Previews({ data }) {
             <Box className="logos" display="flex" gap="0px" alignItems="center">
               <img src="Monks-Logo_Small_White.png" />
               {
-                (pageAds.length > 0 && pageAds[0].client) &&
+                data.client &&
                 <Box display="flex" gap="10px" alignItems="center" sx={{marginRight: "10px"}}>
                   <span>&times;</span>
-                  <img src={pageAds[0].client} />
+                  <img src={data.client} />
                 </Box>
               }
             </Box>
