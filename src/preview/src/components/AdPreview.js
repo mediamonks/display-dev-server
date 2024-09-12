@@ -239,7 +239,7 @@ export const AdPreview = (props) => {
           : <></>
         }
         {
-          gsdevtools !== 'true' && animationForPause !== null && activeConfigTab === "html,iframe"
+          gsdevtools !== 'true' && animationForPause !== null && activeConfigTab === "html,iframe" && !ad.controlsOff
           ? <>
               <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-between" alignItems="center" className="controls">
                 <Box>
