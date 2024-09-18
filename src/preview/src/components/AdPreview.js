@@ -183,8 +183,16 @@ export const AdPreview = (props) => {
     if (!animationForPause) return
     setAnimationForPauseDuration(animationForPause.duration())
     setAnimationForPauseCurrentTime(animationForPause.time())
-    animationForPause.eventCallback('onComplete', () => { setPaused(true) })
-    animationForPause.eventCallback('onUpdate', () => { setAnimationForPauseCurrentTime(animationForPause.time()) })
+    const onComplete = animationForPause.eventCallback('onComplete')
+    animationForPause.eventCallback('onComplete', () => {
+      onComplete && onComplete()
+      setPaused(true)
+    })
+    const onUpdate = animationForPause.eventCallback('onUpdate')
+    animationForPause.eventCallback('onUpdate', () => {
+      onUpdate && onUpdate()
+      setAnimationForPauseCurrentTime(animationForPause.time())
+    })
   }, [animationForPause])
 
   useEffect(() => {
