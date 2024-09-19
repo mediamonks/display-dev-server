@@ -245,6 +245,7 @@ module.exports = function createConfig({
                 },
               },
             },
+            "sass-loader",
           ],
         },
 
