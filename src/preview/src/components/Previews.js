@@ -85,6 +85,9 @@ export default function Previews({ data }) {
   
   const [gsdevtools, setGSDevTools] = useState(searchParams.get('gsdevtools'));
 
+  const [didMount, setDidMount] = useState(false);
+  useEffect(() => { setDidMount(true) }, []);
+
   const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
 
@@ -104,12 +107,14 @@ export default function Previews({ data }) {
   
   useEffect(() => {
     if (gsdevtools !== "true") return
-    window.addEventListener('keydown', (e) => {
+    const preventSpace = e => {
       if (e.defaultPrevented) return;
       if (e.key === " ") {
         e.preventDefault();
       }
-    })
+    }
+    window.addEventListener('keydown', preventSpace)
+    return () => window.removeEventListener('keydown', preventSpace)
   }, [])
 
   const getSelectedFilters = () => {
@@ -175,17 +180,31 @@ export default function Previews({ data }) {
   }, [page, itemsPerPage, ads]);
 
   // toggle devtools
-  let GSKeySequence = []
-  document.addEventListener('keydown', event => {
-    GSKeySequence.push(event.key)
-    if (GSKeySequence.includes('g') && GSKeySequence.includes('s')) {
-      setGSDevTools(!gsdevtools)
+  useEffect(() => {
+    let GSKeySequence = []
+    const keyDown = event => {
+      GSKeySequence.push(event.key)
+      if (GSKeySequence.includes('g') && GSKeySequence.includes('s')) {
+        setGSDevTools(x => !x)
+      }
+    }
+    const keyUp = event => {
+      GSKeySequence = GSKeySequence.filter(key => key !== event.key)
+    }
+    window.addEventListener('keydown', keyDown)
+    window.addEventListener('keyup', keyUp)
+
+    return () => {
+      window.removeEventListener('keydown', keyDown)
+      window.removeEventListener('keyup', keyUp)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (didMount) {
       window.location.reload()
     }
-  })
-  document.addEventListener('keyup', event => {
-    GSKeySequence = GSKeySequence.filter(key => key !== event.key)
-  })
+  }, [gsdevtools])
 
   // generate page
   return (

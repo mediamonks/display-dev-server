@@ -115,6 +115,9 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
         },
         info: (result && result[bundleName])
           ? result[bundleName].settings.data.settings.info
+          : undefined,
+        controlsOff: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.controlsOff
           : undefined
       }
     })
