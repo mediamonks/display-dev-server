@@ -115,14 +115,22 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
         },
         info: (result && result[bundleName])
           ? result[bundleName].settings.data.settings.info
+          : undefined,
+        client: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.client
           : undefined
       }
     })
   ))
   .filter(ad => ad != undefined)
 
+  const client = result[Object.keys(result)[0]]?.settings.data.settings.client
+
   const adsList = {
     timestamp: Date.now(),
+    client: client
+      ? `client.${client.split('.').at(-1)}`
+      : undefined,
     ads: allAds
   };
 
@@ -133,6 +141,14 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
   await fs.copy(path.join(__dirname, `../preview/dist`), outputDir, {
     overwrite: true,
   });
+  
+  // copy client logo
+  if (client) {
+    console.log("copying client logo...");
+    await fs.copy(client, path.join(outputDir, `client.${client.split('.').at(-1)}`), {
+      overwrite: true,
+    });
+  }
 
   // write the result to ads.json in the preview dir
   console.log(`creating ${outputDir}/data/ads.json`)
