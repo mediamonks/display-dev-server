@@ -11,7 +11,7 @@
     "npm": ">= 8"
   },
   "bin": {
-    "dds": "./cli/displayDevServer.js"
+    "dds": "cli/displayDevServer.js"
   },
   "main": "./src/index.js",
   "repository": {
