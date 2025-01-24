@@ -30,6 +30,21 @@ code {
   }
 }
 
+.logos img {
+  height: 30px;
+}
+
+.logos span {
+  height: 36px;
+  line-height: 36px;
+}
+
+.dynamic-reload {
+  height: 36px !important;
+  min-width: auto !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
 @container (max-width: 200px) {
   .controls {
     justify-content: center !important;

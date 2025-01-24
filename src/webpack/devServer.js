@@ -84,9 +84,17 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
   openLocation && open(`${httpLocation}?gsdevtools=true`);
 
+  const client = configs[0].settings.data.settings.client
+  if (client) {
+    app.get(`/client.${client.split('.').at(-1)}`, (req, res) => {
+      res.sendFile(configs[0].settings.data.settings.client)
+    })
+  }
+
   app.get('/data/ads.json', (req, res) => {
     res.json({
       isGoogleSpreadsheetBanner: typeof configs[0].settings.data.settings.contentSource !== 'undefined',
+      client: client ? `client.${client.split('.').at(-1)}` : undefined,
       ads: settingsList.map(e => {
         const assetName = getNameFromLocation(e.location)
         const bundleName = e.data.settings.bundleName || getNameFromLocation(e.location)

@@ -211,17 +211,27 @@ export default function Previews({ data }) {
     <>
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
-          <Box sx={{ display: 'flex', gap: '10px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {
               data.isGoogleSpreadsheetBanner
-              ? <Tooltip title="Reload dynamic data">
-                  <Button onClick={handleReloadDynamicData} color="inherit">
+              ? <Tooltip title="Reload dynamic data" sx={{marginRight: "10px"}}>
+                  <Button className="dynamic-reload" onClick={handleReloadDynamicData} color="inherit">
                     <CachedIcon />
                   </Button>
                 </Tooltip>
               : <></>
             }
-            <Tooltip title={(new Date(data.timestamp)).toLocaleString()}>
+            <Box className="logos" display="flex" gap="0px" alignItems="center">
+              <img src="Monks-Logo_Small_White.png" />
+              {
+                data.client &&
+                <Box display="flex" gap="10px" alignItems="center" sx={{marginRight: "10px"}}>
+                  <span>&times;</span>
+                  <img src={data.client} />
+                </Box>
+              }
+            </Box>
+            <Tooltip title={(new Date(data.timestamp)).toLocaleString()} sx={{marginLeft: "10px"}}>
               <Typography align="left" variant="h5" component="div">
                 Preview
               </Typography>
