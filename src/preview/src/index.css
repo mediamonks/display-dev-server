@@ -44,3 +44,9 @@ code {
   min-width: auto !important;
   aspect-ratio: 1 / 1 !important;
 }
+
+@container (max-width: 200px) {
+  .controls {
+    justify-content: center !important;
+  }
+}

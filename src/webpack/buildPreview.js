@@ -118,13 +118,16 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
           : undefined,
         client: (result && result[bundleName])
           ? result[bundleName].settings.data.settings.client
+          : undefined,
+        controlsOff: (result && result[bundleName])
+          ? result[bundleName].settings.data.settings.controlsOff
           : undefined
       }
     })
   ))
   .filter(ad => ad != undefined)
 
-  const client = result[Object.keys(result)[0]]?.settings.data.settings.client
+  const client = result && result[Object.keys(result)[0]]?.settings.data.settings.client
 
   const adsList = {
     timestamp: Date.now(),

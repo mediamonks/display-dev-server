@@ -123,6 +123,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
             },
           },
           info: e.data.settings.info,
+          controlsOff: e.data.settings.controlsOff,
         }
       })
     })
