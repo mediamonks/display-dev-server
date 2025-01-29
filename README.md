@@ -33,6 +33,24 @@ The easiest way to get started is by using the yeoman template [@mediamonks/gene
 
 View the [documentation](https://mediamonks.github.io/display-advertising-docs/).
 
+## 🆕 Latest Updates (v11.8.0)
+### Enhanced Animation Controls
+- ⌨️ Keyboard Controls
+  - `Space` - Play/Pause animations
+  - `R` - Reload all visible banners
+  - `→` - Skip to end frame
+  - `.` - Forward 250ms
+- 🖱 Mouse click support for play/pause
+- ⏱ Animation time tracker
+- ⚙️ Configurable controls visibility via `controlsOff` setting
+
+### Configuration
+```javascript
+{
+  // Hide visual controls while maintaining keyboard shortcuts
+  controlsOff: false
+}
+
 ## Contribute
 
 View [CONTRIBUTING.md](./CONTRIBUTING.md)

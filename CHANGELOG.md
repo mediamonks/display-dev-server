@@ -1,5 +1,21 @@
 # Changelog
 
+## [11.8.0] - 2024-09-10
+
+### Added
+- Enhanced animation control features:
+  - Keyboard shortcuts for play/pause (Space)
+  - Reload functionality (R key)
+  - Skip to end (Right arrow)
+  - Forward 250ms (. key)
+  - Mouse click controls
+  - Animation time tracker
+- New configuration option `controlsOff` to toggle visual controls
+
+### Changed
+- Improved animation control accessibility for non-technical users
+- Enhanced preview interface with time tracking display
+
 ## [11.7.0] - 2024-03-27
 
 ### Added
