@@ -13,16 +13,12 @@ import MovieIcon from "@mui/icons-material/Movie";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import FolderZipIcon from "@mui/icons-material/FolderZip";
 import FolderIcon from "@mui/icons-material/FolderOpen";
-import DoneIcon from "@mui/icons-material/Done";
-import ClearIcon from "@mui/icons-material/Clear";
 import Quality from "@mui/icons-material/CameraEnhance";
 import InfoIcon from '@mui/icons-material/Info';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import Forward5Icon from '@mui/icons-material/Forward5';
-
-import LoadingButton from "@mui/lab/LoadingButton";
 
 gsap.registerPlugin(GSDevTools);
 
@@ -34,11 +30,34 @@ export const AdPreview = (props) => {
   const [animationForPauseDuration, setAnimationForPauseDuration] = useState(0);
   const [animationForPause, setAnimationForPause] = useState(null);
 
-  const cachedHTML = `${ad.output.html.url}?r=${timestamp}`
+  const cachedHTML = ad.output.html ? `${ad.output.html.url}?r=${timestamp}` : ''
 
-  const [mediaType, setMediaType] = useState("iframe");
+  const extensionTypes = ["jpg,img", "mp4,video", "gif,img"];
+  const extensionIcons = {
+    html: "",
+    zip: <FolderZipIcon />,
+    jpg: <ImageIcon />,
+    mp4: <MovieIcon />,
+    gif: <GifIcon />,
+  };
+
+  const [mediaType, setMediaType] = useState(
+    ad.output.html
+      ? "iframe"
+      : extensionTypes.find(tab => {
+        const [type, tag] = tab.split(',')
+        return Object.keys(ad.output).includes(type)
+      }).split(',')[1]
+  );
   const [mediaSource, setMediaSource] = useState(cachedHTML);
-  const [activeConfigTab, setActiveConfigTab] = useState("html,iframe");
+  const [activeConfigTab, setActiveConfigTab] = useState(
+    ad.output.html
+      ? "html,iframe"
+      : extensionTypes.find(tab => {
+        const [type, tag] = tab.split(',')
+        return Object.keys(ad.output).includes(type)
+      })
+  );
 
   const [animation, setAnimation] = useState(null);
 
@@ -80,15 +99,6 @@ export const AdPreview = (props) => {
     });
   }, [animation])
 
-  const extensionTypes = ["jpg,img", "mp4,video", "gif,img"];
-  const extensionIcons = {
-    html: "",
-    zip: <FolderZipIcon />,
-    jpg: <ImageIcon />,
-    mp4: <MovieIcon />,
-    gif: <GifIcon />,
-  };
-
   useEffect(() => {
     const [type, mediaType] = activeConfigTab.split(",");
     setMediaType(mediaType);
@@ -101,7 +111,16 @@ export const AdPreview = (props) => {
   }, [activeConfigTab]);
 
   function reload() {
-    activeConfigTab === "html,iframe" ? (adPreviewCard.current.src = cachedHTML) : setActiveConfigTab("html,iframe");
+    activeConfigTab === "html,iframe"
+      ? (adPreviewCard.current.src = cachedHTML)
+      : setActiveConfigTab(
+        ad.output.html
+          ? "html,iframe"
+          : extensionTypes.find(tab => {
+            const [type, tag] = tab.split(',')
+            return Object.keys(ad.output).includes(type)
+          })
+      );
     setPaused(false)
     setAnimationForPauseCurrentTime(0)
     setAnimationForPause(undefined)
@@ -219,15 +238,19 @@ export const AdPreview = (props) => {
             variant="fullWidth"
             onChange={(event, newValue) => setActiveConfigTab(newValue)}
             TabIndicatorProps={
-              extensionTypes.filter(item => {
+              (extensionTypes.filter(item => {
                 const [extension, type] = item.split(",");
                 return ad.output[extension];
-              }).length
+              }).length + (ad.output.html ? 1 : 0)) > 1 // hide blue line if only 1 tab
               ? {}
               : { style:{ display: 'none' } }
             }
           >
-            <Tab wrapped sx={{minWidth: "50px"}} label="html" value="html,iframe" />
+            {
+              ad.output.html
+                ? <Tab wrapped sx={{minWidth: "50px"}} label="html" value="html,iframe" />
+                : ''
+            }
             {extensionTypes.map((item) => {
               const [extension, type] = item.split(",");
               if (ad.output[extension]) return <Tab key={item} disabled={!ad.output[extension]?.url} icon={extensionIcons[extension]} sx={{minWidth: "50px"}} value={item} />;
@@ -289,7 +312,8 @@ export const AdPreview = (props) => {
           : <></>
         }
         {
-          ad.output?.zip?.size || ad.output?.unzip?.size || ad.quality
+          ['zip', 'unzip', 'jpg', 'mp4', 'gif'].some(ext => ad.output && ad.output[ext] && ad.output[ext].size)
+          || ad.quality
           ? <>
               <Box marginBottom="20px" display="flex" flexWrap="wrap" gap="10px" justifyContent="space-evenly" className="chips">
                 {
@@ -305,6 +329,16 @@ export const AdPreview = (props) => {
                       <Chip icon={<FolderIcon />} label={`${Math.floor(ad.output.unzip.size / 1024)} KB`} color={ad.output.unzip.size / 1024 <= maxFileSize ? "success" : "error"} />
                     </Tooltip>
                   : <></>
+                }
+                {
+                  ['jpg', 'mp4', 'gif'].map(ext => {
+                    if (ad.output[ext] && ad.output[ext].size) {
+                      return <Tooltip key={ext} title={`${ext.toUpperCase()} size: ${(ad.output[ext].size / 1024).toFixed(1)} KB`}>
+                        <Chip icon={extensionIcons[ext]} label={`${Math.floor(ad.output[ext].size / 1024)} KB`} color={ad.output[ext].size / 1024 <= maxFileSize ? "success" : "error"} />
+                      </Tooltip>
+                    }
+                    return ''
+                  })
                 }
                 {
                   ad.quality && gsdevtools === "true"
@@ -336,19 +370,25 @@ export const AdPreview = (props) => {
         }
         <Box display="flex" flexWrap="wrap" justifyContent="space-between">
           <Box>
-            <Tooltip title="Reload">
-              <IconButton
-                onClick={() => { reload() }}
-                color="primary"
-              >
-                <ReplayIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Open in new window">
-              <IconButton onClick={() => window.open(ad.output.html.url)} color="primary">
-                <OpenInNewIcon />
-              </IconButton>
-            </Tooltip>
+            {
+              ad.output.html
+                ? <>
+                  <Tooltip title="Reload">
+                    <IconButton
+                      onClick={() => { reload() }}
+                      color="primary"
+                    >
+                      <ReplayIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Open in new window">
+                    <IconButton onClick={() => window.open(ad.output.html.url)} color="primary">
+                      <OpenInNewIcon />
+                    </IconButton>
+                  </Tooltip>
+                </>
+                : ''
+            }
           </Box>
           <Box>
             <Box display="flex" flexWrap="wrap">
