@@ -5,6 +5,8 @@ const globPromise = require("glob-promise");
 const getNameFromLocation = require("../util/getNameFromLocation");
 const htmlParser = require("node-html-parser");
 const chalk = require("chalk");
+const ffmpeg = require('fluent-ffmpeg');
+const { imageSize } = require('image-size');
 
 module.exports = async function buildPreview(result, qualities, outputDir) {
   const start = Date.now()
@@ -127,6 +129,78 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
   ))
   .filter(ad => ad != undefined)
 
+  const alreadyProcessed = allAds.map(ad => ad.bundleName)
+  const topLevelFilesInBuild = (await fs.readdir(outputDir))
+    .map(file => path.resolve(outputDir, file)) // relative to full path
+    .filter(file => {
+      const stats = fs.statSync(file)
+      return stats.isFile()
+    }) // only files, skip dirs
+    .filter(file => {
+      const filename = path.basename(file).replace(path.extname(file), '')
+      return !alreadyProcessed.includes(filename)
+    }) // filter out processed files
+    .filter(file => path.extname(file) != '.zip')
+    .filter(file => path.extname(file) != '.html')
+    .filter(file => path.extname(file) != '.svg')
+    .filter(file => {
+      const filename = path.basename(file)
+      return ![
+        'Favicon_black_32X32.png',
+        'Monks-Logo_Small_White.png',
+      ].includes(filename)
+    })
+    .map(file => path.basename(file).replace(path.extname(file), ''))
+    .filter((x, i, a) => a.indexOf(x) == i)
+
+  const mediaOutputs = await Promise.all(topLevelFilesInBuild.map(async file => {
+    const jpgFile = path.resolve(outputDir, file) + '.jpg'
+    const mp4File = path.resolve(outputDir, file) + '.mp4'
+    const gifFile = path.resolve(outputDir, file) + '.gif'
+
+    const jpg = await additionalOutput(jpgFile)
+    const mp4 = await additionalOutput(mp4File)
+    const gif = await additionalOutput(gifFile)
+
+    async function additionalOutput(file) {
+      return await new Promise(async resolve => {
+        if (await fs.exists(file)) {
+          return resolve({
+            url: path.relative(outputDir, path.resolve(file)).replace(/\\/g, "/"),
+            size: (await fs.stat(file)).size
+          })
+        }
+
+        resolve()
+      })
+    }
+
+    async function getDimensions() {
+      for (const [format, file, fn] of [
+        [jpg, jpgFile, getImageDimensions],
+        [mp4, mp4File, getVideoDimensions],
+        [gif, gifFile, getVideoDimensions]
+      ]) {
+        if (format) {
+          return await fn(file)
+        }
+      }
+    }
+
+    const { width, height } = await getDimensions()
+
+    return {
+      bundleName: file,
+      width,
+      height,
+      output: {
+        jpg,
+        mp4,
+        gif,
+      }
+    }
+  }))
+
   const client = result && result[Object.keys(result)[0]]?.settings.data.settings.client
 
   const adsList = {
@@ -134,7 +208,7 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
     client: client
       ? `client.${client.split('.').at(-1)}`
       : undefined,
-    ads: allAds
+    ads: allAds.concat(mediaOutputs)
   };
 
   console.log(`found ${allAds.length} for previews.`)
@@ -167,7 +241,11 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
         zlib: {level: 9}, // Sets the compression level.
       });
       archive.pipe(output);
-      adsList.ads.forEach((ad) => archive.file(path.resolve(outputDir, ad.output.zip.url), {name: path.basename(ad.output.zip.url)}));
+      adsList.ads.forEach((ad) => {
+        if (ad.output.zip) {
+          archive.file(path.resolve(outputDir, ad.output.zip.url), {name: path.basename(ad.output.zip.url)})
+        }
+      });
       archive.finalize();
     });
   }
@@ -198,4 +276,19 @@ async function size(p) {
   }
 
   return 0; // can't take size of a stream/symlink/socket/etc
+}
+
+function getVideoDimensions(file) {
+  return new Promise(resolve => {
+    ffmpeg.ffprobe(file, (err, metadata) => {
+      const { width, height } = metadata.streams.find(s => s.codec_type === 'video')
+      resolve({ width, height })
+    })
+  })
+}
+
+async function getImageDimensions(file) {
+  const data = await fs.readFile(file)
+  const { width, height } = imageSize(data)
+  return { width, height }
 }
