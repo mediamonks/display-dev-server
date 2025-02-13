@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.9.0] - 2025-02-07
+### Changed
+- Updated media handling and preview functionality
+- Version alignment in package.json and package-lock.json
+
+### Fixed
+- Version inconsistency between package files
+
 ## [11.8.0] - 2024-09-10
 
 ### Added
