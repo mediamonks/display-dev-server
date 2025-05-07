@@ -27,7 +27,7 @@ const AnimationTimer = ({ animation, duration }) => {
         lastUpdateTimeRef.current = now;
 
         // Checking the end of the animation
-        if (time >= duration) {
+        if (time >= duration && duration > 0) {
           return; // Stops the loop without requesting the next frame
         }
       }
