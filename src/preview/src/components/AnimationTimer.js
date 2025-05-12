@@ -20,7 +20,7 @@ const AnimationTimer = ({ animation, duration }) => {
     // Our throttled update function
     const updateTimeDisplay = () => {
       const now = performance.now();
-      if (now - lastUpdateTimeRef.current > 100) {
+      if (now - lastUpdateTimeRef.current > 50) {
         const time = animation.time();
         // Update at most 10 times per second
         setCurrentTime(animation.time());
