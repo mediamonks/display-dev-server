@@ -22,7 +22,7 @@ const AnimationTimer = ({ animation, duration }) => {
       const now = performance.now();
       if (now - lastUpdateTimeRef.current > 50) {
         const time = animation.time();
-        // Update at most 10 times per second
+        // Update at most 20 times per second
         setCurrentTime(animation.time());
         lastUpdateTimeRef.current = now;
 
