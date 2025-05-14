@@ -152,6 +152,7 @@ module.exports = async function buildPreview(result, qualities, outputDir) {
     })
     .map(file => path.basename(file).replace(path.extname(file), ''))
     .filter((x, i, a) => a.indexOf(x) == i)
+    .filter( file => file !== '.DS_Store')
 
   const mediaOutputs = await Promise.all(topLevelFilesInBuild.map(async file => {
     const jpgFile = path.resolve(outputDir, file) + '.jpg'
