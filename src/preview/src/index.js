@@ -8,5 +8,8 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
+// eslint-disable-next-line no-undef
+gsap.registerPlugin(GSDevTools);
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
