@@ -5,7 +5,7 @@ import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 // import adsList from './data/ads.json'
 import getData from "./utils/getData";
