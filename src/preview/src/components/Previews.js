@@ -1,11 +1,13 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React from "react";
 import styles from "./Previews.module.scss";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { ListSubheader, Tooltip, Box, Chip, FormControl, InputLabel, Card, CardMedia, CardContent, Button, Select, MenuItem, Typography, Stack, Pagination, TablePagination, AppBar, Toolbar, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { ListSubheader, Tooltip, Box, Chip, FormControl, InputLabel, Button, Select, MenuItem, Typography, TablePagination, AppBar, Toolbar, OutlinedInput } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
-import CachedIcon from '@mui/icons-material/Cached';
+import CachedIcon from "@mui/icons-material/Cached";
 
 import { AdPreview } from "./AdPreview";
 
@@ -82,40 +84,44 @@ const getLabelFromFilterGroup = (filterGroup) => {
 
 export default function Previews({ data }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  const [gsdevtools, setGSDevTools] = useState(searchParams.get('gsdevtools'));
 
-  const [didMount, setDidMount] = useState(false);
-  useEffect(() => { setDidMount(true) }, []);
+  const [gsdevtools, setGSDevTools] = useState(searchParams.get("gsdevtools"));
+  const isFirstRender = useRef(true);
 
-  const [ads, setAds] = useState([]);
   const [filters, setFilters] = useState(getFiltersFromAds(data.ads, searchParams));
+  const [page, setPage] = useState(+searchParams.get("page") || 0);
+  const [itemsPerPage, setItemsPerPage] = useState(+searchParams.get("perpage") || 10);
 
-  const [page, setPage] = useState(+searchParams.get('page') || 0);
-  const [itemsPerPage, setItemsPerPage] = useState(+searchParams.get('perpage') || 10);
+  const ads = useMemo(() => getAdsListFromFilters(data.ads, filters), [data.ads, filters]);
 
   useEffect(() => {
-    setAds(getAdsListFromFilters(data.ads, filters));
-    const filter = decodeURI(composeSearchParamsFromFilters(filters))
-    const collectFilters = {}
-    filter && (collectFilters.filter = filter)
-    gsdevtools && (collectFilters.gsdevtools = gsdevtools)
-    page && (collectFilters.page = page)
-    itemsPerPage && itemsPerPage != 10 && (collectFilters.perpage = itemsPerPage)
-    setSearchParams(collectFilters)
+    const filter = decodeURI(composeSearchParamsFromFilters(filters));
+    const collectFilters = {};
+    filter && (collectFilters.filter = filter);
+    gsdevtools && (collectFilters.gsdevtools = gsdevtools);
+    page && (collectFilters.page = page);
+    itemsPerPage && itemsPerPage != 10 && (collectFilters.perpage = itemsPerPage);
+
+    // Check if the parameters have actually changed
+    const currentParams = Object.fromEntries(searchParams.entries());
+    const paramsChanged = JSON.stringify(currentParams) !== JSON.stringify(collectFilters);
+
+    if (paramsChanged) {
+      setSearchParams(collectFilters);
+    }
   }, [filters, page, itemsPerPage, gsdevtools]);
-  
+
   useEffect(() => {
-    if (gsdevtools !== "true") return
-    const preventSpace = e => {
+    if (gsdevtools !== "true") return;
+    const preventSpace = (e) => {
       if (e.defaultPrevented) return;
       if (e.key === " ") {
         e.preventDefault();
       }
-    }
-    window.addEventListener('keydown', preventSpace)
-    return () => window.removeEventListener('keydown', preventSpace)
-  }, [])
+    };
+    window.addEventListener("keydown", preventSpace);
+    return () => window.removeEventListener("keydown", preventSpace);
+  }, []);
 
   const getSelectedFilters = () => {
     // returns flat array of selected filters i.e. ["en","300x400"] (the input element needs this as a value)
@@ -159,11 +165,10 @@ export default function Previews({ data }) {
     window.open("all.zip");
   };
 
-  const handleReloadDynamicData = async e => {
-    const res = await fetch('reload_dynamic_data')
-    if (res.status === 200)
-      location.reload()
-  }
+  const handleReloadDynamicData = async (e) => {
+    const res = await fetch("reload_dynamic_data");
+    if (res.status === 200) location.reload();
+  };
 
   // handle pages
   const handleChangePage = (event, newPage) => {
@@ -172,7 +177,7 @@ export default function Previews({ data }) {
 
   const handleChangeRowsPerPage = (event) => {
     setItemsPerPage(parseInt(event.target.value, 10));
-    setPage(0)
+    setPage(0);
   };
 
   const pageAds = useMemo(() => {
@@ -181,57 +186,58 @@ export default function Previews({ data }) {
 
   // toggle devtools
   useEffect(() => {
-    let GSKeySequence = []
-    const keyDown = event => {
-      GSKeySequence.push(event.key)
-      if (GSKeySequence.includes('g') && GSKeySequence.includes('s')) {
-        setGSDevTools(x => !x)
+    let GSKeySequence = [];
+    const keyDown = (event) => {
+      GSKeySequence.push(event.key);
+      if (GSKeySequence.includes("g") && GSKeySequence.includes("s")) {
+        setGSDevTools((x) => !x);
       }
-    }
-    const keyUp = event => {
-      GSKeySequence = GSKeySequence.filter(key => key !== event.key)
-    }
-    window.addEventListener('keydown', keyDown)
-    window.addEventListener('keyup', keyUp)
+    };
+    const keyUp = (event) => {
+      GSKeySequence = GSKeySequence.filter((key) => key !== event.key);
+    };
+    window.addEventListener("keydown", keyDown);
+    window.addEventListener("keyup", keyUp);
 
     return () => {
-      window.removeEventListener('keydown', keyDown)
-      window.removeEventListener('keyup', keyUp)
-    }
-  }, [])
+      window.removeEventListener("keydown", keyDown);
+      window.removeEventListener("keyup", keyUp);
+    };
+  }, []);
 
   useEffect(() => {
-    if (didMount) {
-      window.location.reload()
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }, [gsdevtools])
+
+    // This code will only run on subsequent changes to gsdevtools
+    window.location.reload();
+  }, [gsdevtools]);
 
   // generate page
   return (
     <>
       <AppBar position="sticky">
         <Toolbar className={styles.toolbar}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {
-              data.isGoogleSpreadsheetBanner
-              ? <Tooltip title="Reload dynamic data" sx={{marginRight: "10px"}}>
-                  <Button className="dynamic-reload" onClick={handleReloadDynamicData} color="inherit">
-                    <CachedIcon />
-                  </Button>
-                </Tooltip>
-              : <></>
-            }
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {data.isGoogleSpreadsheetBanner ? (
+              <Tooltip title="Reload dynamic data" sx={{ marginRight: "10px" }}>
+                <Button className="dynamic-reload" onClick={handleReloadDynamicData} color="inherit">
+                  <CachedIcon />
+                </Button>
+              </Tooltip>
+            ) : null}
             <Box className="logos" display="flex" gap="0px" alignItems="center">
               <img src="Monks-Logo_Small_White.png" />
-              {
-                data.client &&
-                <Box display="flex" gap="10px" alignItems="center" sx={{marginRight: "10px"}}>
+              {data.client && (
+                <Box display="flex" gap="10px" alignItems="center" sx={{ marginRight: "10px" }}>
                   <span>&times;</span>
                   <img src={data.client} />
                 </Box>
-              }
+              )}
             </Box>
-            <Tooltip title={(new Date(data.timestamp)).toLocaleString()} sx={{marginLeft: "10px"}}>
+            <Tooltip title={new Date(data.timestamp).toLocaleString()} sx={{ marginLeft: "10px" }}>
               <Typography align="left" variant="h5" component="div">
                 Preview
               </Typography>
@@ -258,7 +264,7 @@ export default function Previews({ data }) {
               {filters
                 .filter((filterGroup) => filterGroup.length > 1) // only show filtergroups with more than 1 filter
                 .map((filterGroup, filterGroupIndex) => [
-                  <ListSubheader>{getLabelFromFilterGroup(filterGroup)}</ListSubheader>,
+                  <ListSubheader key={filterGroupIndex}>{getLabelFromFilterGroup(filterGroup)}</ListSubheader>,
                   filterGroup.map((filter, filterIndex) => (
                     <MenuItem key={filter.value} value={filter.value}>
                       {filter.value}
@@ -275,7 +281,7 @@ export default function Previews({ data }) {
       </AppBar>
 
       <div className={styles.previews}>
-        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools}  key={ad.bundleName} ad={ad} maxFileSize={ad.maxFileSize} timestamp={data.timestamp} />)}
+        {pageAds.length > 0 && pageAds.map((ad) => <AdPreview gsdevtools={gsdevtools} key={ad.bundleName} ad={ad} maxFileSize={ad.maxFileSize} timestamp={data.timestamp} />)}
         {pageAds.length < 1 && "No ads found with the current combination of filters"}
       </div>
     </>

@@ -124,20 +124,15 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
 
       const uniqueLocation = getUniqueLocation(location, contentSource, row, index);
 
-      //this line makes unique js and html files on every build. Need to prevent it to be able to compare files with previous build
-      // const uniqueHash = crypto.randomBytes(20).toString('hex');
-
       let newObj = {
         data: {
           ...JSON.parse(JSON.stringify(data)),
           content,
-          //using uniqueLocation for uniqueHash to prevent making unique files on every build
           uniqueHash: uniqueLocation,
         },
         location: uniqueLocation,
         willBeDeletedAfterServerCloses: true,
         row,
-        //using uniqueLocation for uniqueHash to prevent making unique files on every build
         uniqueHash: uniqueLocation,
         mode,
       };
