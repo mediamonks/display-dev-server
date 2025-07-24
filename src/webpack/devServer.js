@@ -13,7 +13,7 @@ const cliProgress = require("cli-progress");
 
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
-const getDataFromGoogleSpreadsheet = require('../util/getDataFromGoogleSpreadsheet');
+const getDataFromContentSource = require('../util/getDataFromContentSource');
 const removeTempRichmediaRcSync = require('../util/removeTempRichmediaRcSync');
 
 const getNameFromLocation = require('../util/getNameFromLocation');
@@ -123,11 +123,21 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       configs
       .map(config => config.settings?.data?.settings?.contentSource)
       .filter(contentSource => contentSource !== undefined)
-      .map(({ url, tabName, apiKey }) => JSON.stringify({ url, tabName, apiKey }))
+      .map(contentSource => {
+        // Create a cache key based on the content source type and configuration
+        if (contentSource.type === 'assetPlanner') {
+          const { baseUrl, project, workspace, sheetId, apiKey } = contentSource;
+          return JSON.stringify({ type: 'assetPlanner', baseUrl, project, workspace, sheetId, apiKey });
+        } else {
+          // Fallback to Google Sheets format for backward compatibility
+          const { url, tabName, apiKey } = contentSource;
+          return JSON.stringify({ type: 'googleSheets', url, tabName, apiKey });
+        }
+      })
       .filter((x, i, a) => a.indexOf(x) == i) // unique
       .map(JSON.parse)
       .map(async contentSource => {
-        const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource)
+        const spreadsheetData = await getDataFromContentSource(contentSource)
   
         const staticRowObjects = spreadsheetData.rows.map(row => {
           const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {
@@ -146,7 +156,8 @@ ${chalk.grey.bold('-------------------------------------------------------')}
           return staticRowObject
         })
   
-        cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey } = contentSource)] = {
+        const cacheKeyString = JSON.stringify(contentSource);
+        cacheSpreadSheets[cacheKeyString] = {
           spreadsheetData,
           staticRowObjects
         }
@@ -158,8 +169,17 @@ ${chalk.grey.bold('-------------------------------------------------------')}
 
       const contentSource = data.settings.contentSource;
 
-      const { url, tabName, apiKey } = contentSource
-      const { staticRowObjects } = cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey })]
+      // Create cache key for lookup
+      let cacheKey;
+      if (contentSource.type === 'assetPlanner') {
+        const { baseUrl, project, workspace, sheetId, apiKey } = contentSource;
+        cacheKey = JSON.stringify({ type: 'assetPlanner', baseUrl, project, workspace, sheetId, apiKey });
+      } else {
+        const { url, tabName, apiKey } = contentSource;
+        cacheKey = JSON.stringify({ type: 'googleSheets', url, tabName, apiKey });
+      }
+
+      const { staticRowObjects } = cacheSpreadSheets[cacheKey]
 
       const index = config.settings.row.rowNumber - 2 //for example, row number 2 is array element 0
 

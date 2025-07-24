@@ -82,6 +82,127 @@
             }
           }
         },
+        "contentSource": {
+          "description": "Configuration for external data sources like Google Sheets or Asset Planner",
+          "type": "object",
+          "oneOf": [
+            {
+              "description": "Google Sheets configuration",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["googleSheets"]
+                },
+                "url": {
+                  "description": "Google Sheets URL",
+                  "type": "string",
+                  "format": "uri"
+                },
+                "tabName": {
+                  "description": "Name of the specific tab/sheet to use",
+                  "type": "string"
+                },
+                "apiKey": {
+                  "description": "Google Sheets API key",
+                  "type": "string"
+                },
+                "idField": {
+                  "description": "Field to use as unique identifier for rows",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "Filter conditions to apply to rows",
+                  "oneOf": [
+                    {"type": "object"},
+                    {"type": "array", "items": {"type": "object"}}
+                  ]
+                }
+              },
+              "required": ["url"]
+            },
+            {
+              "description": "Asset Planner configuration",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["assetPlanner"]
+                },
+                "baseUrl": {
+                  "description": "Asset Planner API base URL",
+                  "type": "string",
+                  "format": "uri"
+                },
+                "project": {
+                  "description": "Monks Flow project identifier",
+                  "type": "string"
+                },
+                "workspace": {
+                  "description": "Monks Flow workspace identifier",
+                  "type": "string"
+                },
+                "sheetId": {
+                  "description": "Asset Planner sheet ID",
+                  "type": "string"
+                },
+                "apiKey": {
+                  "description": "API key for authentication",
+                  "type": "string"
+                },
+                "idField": {
+                  "description": "Field to use as unique identifier for rows",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "Filter conditions to apply to rows",
+                  "oneOf": [
+                    {"type": "object"},
+                    {"type": "array", "items": {"type": "object"}}
+                  ]
+                }
+              },
+              "required": ["type", "baseUrl", "project", "workspace", "sheetId"]
+            },
+            {
+              "description": "Legacy Google Sheets configuration (for backward compatibility)",
+              "type": "object",
+              "properties": {
+                "url": {
+                  "description": "Google Sheets URL",
+                  "type": "string",
+                  "format": "uri"
+                },
+                "tabName": {
+                  "description": "Name of the specific tab/sheet to use",
+                  "type": "string"
+                },
+                "apiKey": {
+                  "description": "Google Sheets API key",
+                  "type": "string"
+                },
+                "idField": {
+                  "description": "Field to use as unique identifier for rows",
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "Filter conditions to apply to rows",
+                  "oneOf": [
+                    {"type": "object"},
+                    {"type": "array", "items": {"type": "object"}}
+                  ]
+                }
+              },
+              "required": ["url"],
+              "not": {
+                "anyOf": [
+                  {"properties": {"type": {"const": "assetPlanner"}}},
+                  {"properties": {"type": {"const": "googleSheets"}}}
+                ]
+              }
+            }
+          ]
+        },
         "fonts": {
           "description": "Define fonts and subsets of characters with richmediarc content objects or just a text string",
           "type": "array",

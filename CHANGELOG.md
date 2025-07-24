@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Asset Planner integration as alternative content source
+  - Support for Asset Planner API as data source alongside Google Sheets
+  - New `contentSource.type` field to specify source type ("assetPlanner" or "googleSheets")
+  - Backward compatibility with existing Google Sheets configurations
+  - Unified data fetching through `getDataFromContentSource` utility
+  - Schema validation for Asset Planner configuration
+  - Example configurations and documentation
+
+### Enhanced
+- Content source detection and type validation
+- Schema definition for contentSource configurations
+- Error handling for external API integrations
+
 ## [11.9.0] - 2025-02-07
 ### Changed
 - Updated media handling and preview functionality

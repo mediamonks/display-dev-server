@@ -33,6 +33,77 @@ The easiest way to get started is by using the yeoman template [@mediamonks/gene
 
 View the [documentation](https://mediamonks.github.io/display-advertising-docs/).
 
+## Content Sources
+
+The Display Development Server supports external data sources for dynamic content generation:
+
+### Google Sheets
+```javascript
+{
+  "settings": {
+    "contentSource": {
+      "type": "googleSheets", // explicit type (optional for backward compatibility)
+      "url": "https://docs.google.com/spreadsheets/d/your-sheet-id/edit",
+      "tabName": "Sheet1",
+      "apiKey": "your-google-api-key", // optional
+      "idField": "id", // optional
+      "filter": { "active": true } // optional
+    }
+  }
+}
+```
+
+### Asset Planner ⭐ **NEW**
+```javascript
+{
+  "settings": {
+    "contentSource": {
+      "type": "assetPlanner",
+      "baseUrl": "https://api.asset-planner.dev.monksflow.ai",
+      "project": "your-monks-flow-project",
+      "workspace": "your-monks-flow-workspace", 
+      "sheetId": "your-sheet-id",
+      "apiKey": "your-api-key", // optional
+      "idField": "id", // optional
+      "filter": { "active": true } // optional
+    }
+  }
+}
+```
+
+### Legacy Google Sheets (Backward Compatible)
+```javascript
+{
+  "settings": {
+    "contentSource": {
+      "url": "https://docs.google.com/spreadsheets/d/your-sheet-id/edit",
+      "tabName": "Sheet1",
+      "apiKey": "your-google-api-key" // optional
+    }
+  }
+}
+```
+
+### Asset Planner
+```javascript
+{
+  "settings": {
+    "contentSource": {
+      "type": "assetPlanner",
+      "baseUrl": "https://api.asset-planner.dev.monksflow.ai",
+      "project": "your-monks-flow-project",
+      "workspace": "your-monks-flow-workspace", 
+      "sheetId": "your-sheet-id",
+      "apiKey": "your-api-key", // optional
+      "idField": "id", // optional
+      "filter": { "active": true } // optional
+    }
+  }
+}
+```
+
+The content source will dynamically generate variations of your display ads based on the data from the external source.
+
 ## 🆕 Latest Updates (v11.8.0)
 ### Enhanced Animation Controls
 - ⌨️ Keyboard Controls

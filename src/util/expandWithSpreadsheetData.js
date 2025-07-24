@@ -2,7 +2,7 @@ const chalk = require("chalk");
 const extendObject = require("./extendObject");
 const createObjectFromJSONPath = require("./createObjectFromJSONPath");
 const crypto = require("crypto");
-const getDataFromGoogleSpreadsheet = require("./getDataFromGoogleSpreadsheet");
+const getDataFromContentSource = require("./getDataFromContentSource");
 
 module.exports = async function expandWithSpreadsheetData(configs, mode) {
   // add support for google sheets.
@@ -27,7 +27,9 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
    * @return {string}
    */
   const getUniqueLocation = (location, contentSource, row, index, offset = 0) => {
-    location = location.replace("richmediarc", "googlesheet");
+    // Update the location naming to be more generic
+    const sourceType = contentSource.type || 'googlesheet';
+    location = location.replace("richmediarc", sourceType === 'assetPlanner' ? 'assetplanner' : 'googlesheet');
 
     if (contentSource.idField) {
       let name = `${location}.${row[contentSource.idField]}`;
@@ -53,11 +55,25 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
     configs
       .map((config) => config.data?.settings?.contentSource)
       .filter((contentSource) => contentSource !== undefined)
-      .map(({ url, tabName, apiKey }) => JSON.stringify({ url, tabName, apiKey }))
+      .map((contentSource) => {
+        // Create a cache key based on the content source type and configuration
+        if (contentSource.type === 'assetPlanner') {
+          const { baseUrl, project, workspace, sheetId, apiKey } = contentSource;
+          return JSON.stringify({ type: 'assetPlanner', baseUrl, project, workspace, sheetId, apiKey });
+        } else {
+          // Fallback to Google Sheets format for backward compatibility
+          const { url, tabName, apiKey } = contentSource;
+          return JSON.stringify({ type: 'googleSheets', url, tabName, apiKey });
+        }
+      })
       .filter((x, i, a) => a.indexOf(x) == i) // unique
       .map(JSON.parse)
-      .map(async (contentSource) => {
-        const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource);
+      .map(async (cacheKey) => {
+        // Reconstruct contentSource from cache key
+        const contentSource = { ...cacheKey };
+        delete contentSource.type; // Remove type as it's just for caching
+        
+        const spreadsheetData = await getDataFromContentSource(contentSource);
 
         const staticRowObjects = spreadsheetData.rows.map((row) => {
           const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {
@@ -76,7 +92,8 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
           return staticRowObject;
         });
 
-        cacheSpreadSheets[JSON.stringify(({ url, tabName, apiKey } = contentSource))] = {
+        const cacheKeyString = JSON.stringify(cacheKey);
+        cacheSpreadSheets[cacheKeyString] = {
           spreadsheetData,
           staticRowObjects,
         };
@@ -94,8 +111,17 @@ module.exports = async function expandWithSpreadsheetData(configs, mode) {
       return newConfigList.push({ data, location });
     }
 
-    const { url, tabName, apiKey } = contentSource;
-    const { spreadsheetData, staticRowObjects } = cacheSpreadSheets[JSON.stringify({ url, tabName, apiKey })];
+    // Create cache key for lookup
+    let cacheKey;
+    if (contentSource.type === 'assetPlanner') {
+      const { baseUrl, project, workspace, sheetId, apiKey } = contentSource;
+      cacheKey = JSON.stringify({ type: 'assetPlanner', baseUrl, project, workspace, sheetId, apiKey });
+    } else {
+      const { url, tabName, apiKey } = contentSource;
+      cacheKey = JSON.stringify({ type: 'googleSheets', url, tabName, apiKey });
+    }
+
+    const { spreadsheetData, staticRowObjects } = cacheSpreadSheets[cacheKey];
 
     spreadsheetData.rows.forEach((row, index) => {
       const staticRowObject = staticRowObjects[index];
