@@ -9,7 +9,7 @@ const cliProgress = require("cli-progress");
 
 const extendObject = require('../util/extendObject');
 const createObjectFromJSONPath = require('../util/createObjectFromJSONPath');
-const getDataFromGoogleSpreadsheet = require('../util/getDataFromGoogleSpreadsheet');
+const getDataFromContentSource = require('../util/getDataFromContentSource');
 const removeTempRichmediaRcSync = require('../util/removeTempRichmediaRcSync');
 
 const getNameFromLocation = require('../util/getNameFromLocation');
@@ -141,7 +141,7 @@ ${chalk.grey.bold('-------------------------------------------------------')}
       .filter((x, i, a) => a.indexOf(x) == i) // unique
       .map(JSON.parse)
       .map(async contentSource => {
-        const spreadsheetData = await getDataFromGoogleSpreadsheet(contentSource)
+        const spreadsheetData = await getDataFromContentSource(contentSource)
   
         const staticRowObjects = spreadsheetData.rows.map(row => {
           const staticRow = spreadsheetData.headerValues.reduce((prev, name) => {

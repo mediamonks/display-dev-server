@@ -1,0 +1,23 @@
+{
+  "settings": {
+    "entry": {
+      "js": "../../src/main.js",
+      "html": "./index.html"
+    },
+    "size": {
+      "width": 320,
+      "height": 250
+    },
+    "contentSource": {
+      "url": "https://docs.google.com/spreadsheets/d/1234567890/edit",
+      "tabName": "Sheet1",
+      "apiKey": "your-google-api-key",
+      "idField": "id",
+      "filter": { "active": true }
+    }
+  },
+  "content": {
+    "title": "Default Title",
+    "description": "Default Description"
+  }
+}
